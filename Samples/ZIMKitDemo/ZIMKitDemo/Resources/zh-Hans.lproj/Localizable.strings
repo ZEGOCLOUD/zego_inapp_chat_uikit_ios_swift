@@ -1,0 +1,37 @@
+/* 
+  Localizable.strings
+  ZIMKitDemo
+
+  Created by Kael Ding on 2022/8/2.
+  
+*/
+
+
+"demo_login_hint" = "输入用户id";
+"demo_login" = "登录";
+"demo_user_name" = "用户名为: %@";
+"demo_welcome" = "您好，\n欢迎使用 ZEGO In-app Chat";
+"demo_input_user_id_error_tips" = "请输入6–12位英文或数字的用户ID";
+"demo_user_id_login" = "用户ID登录";
+"demo_network_error_tip" = "网络异常，请检查网络后重试";
+"demo_confirm" = "确认";
+"demo_user_kick_out" = "重复登录，用户被踢出";
+"demo_message" = "消息总数";
+"demo_connecting" = "连接中...";
+"demo_disconnected" = "未连接";
+
+"message_input_user_id_error_tips" = "请输入6–12位英文或数字的用户ID";
+"message_input_user_id" = "请输入对方用户ID";
+"group_input_group_id" = "输入群ID";
+"group_input_user_id_of_group" = "输入群成员的用户ID，\';\'英文分号隔开";
+"group_input_group_name" = "输入群聊名称";
+"group_input_user_id_error_tip" = "请输入6–12位英文或数字的用户ID";
+"group_create_chat" = "发起会话";
+"message_create_single_chat" = "发起单聊会话";
+"group_create_group_chat_title" = "发起群聊会话";
+"group_join_group_chat" = "加入群聊会话";
+"group_group_user_id_not_exit" = "群成员用户ID %@ 不存在，请返回";
+"group_user_not_exit" = "用户不存在";
+"common_sure" = "确定";
+"group_group_not_exit" = "群不存在";
+"group_repeat_join_group_chat" = "你已在该群组";

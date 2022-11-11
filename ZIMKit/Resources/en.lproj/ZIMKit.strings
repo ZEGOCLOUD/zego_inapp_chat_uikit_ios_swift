@@ -1,0 +1,109 @@
+/* 
+  ZIMKit.strings
+  Pods
+
+  Created by Kael Ding on 2022/8/4.
+  
+*/
+
+"common_yesterday" = "Yesterday";
+"common_user_kick_out" = "The user is kicked out because the ID is reused for login. ";
+"common_monday" = "Monday";
+"common_tuesday" = "Tuesday";
+"common_wednesday" = "Wednesday";
+"common_thursday" = "Thursday";
+"common_friday" = "Friday";
+"common_saturday" = "Saturday";
+"common_sunday" = "Sunday";
+"common_logout" = "Log out";
+"common_return" = "Back";
+"common_message_photo" = "[Image]";
+"common_message_unknown" = "This type of message is not supported. Please upgrade to the latest version.";
+"common_message_audio" = "[Audio]";
+"common_message_video" = "[Video]";
+"common_message_file" = "[File]";
+"common_open_file_tips" = "Select an app to open the file";
+"common_title_cancel" = "Cancel";
+"common_sure" = "OK";
+
+"conversation_start_chat" = "+ New Chat";
+"conversation_empty" = "No chats. Start chatting now.";
+"conversation_start_single_chat" = "One-on-one chat";
+"conversation_start_group_chat" = "Group chat";
+"conversation_join_group_chat" = "Join a group";
+"conversation_cancel" = "Cancel";
+"conversation_delete" = "Delete";
+"conversation_message_total_count" = "Chats";
+"conversation_reload" = "Reload";
+"conversation_disconnected" = "Disconnected";
+"conversation_connecting" = "Connecting...";
+
+"message_user_not_exit_please_again" = "The user ID (%@) doesn't exist. Please try again.";
+"message_cant_send_empty_msg" = "Blank messages are not allowed";
+"message_create_chat" = "OK";
+
+"message_send" = "Send";
+"message_album" = "Album";
+"message_file" = "File";
+"message_dialog_tips" = "Note";
+"message_btn_cancle" = "Cancel";
+"message_go_setting" = "Go Settings";
+"message_need_permission_content" = "Please allow to access your album.";
+"message_network_anomaly" = "Network error. Please check the network and try again.";
+"message_photo_no_acess_tip" = "No access permission to the album.";
+"message_photo_no_acess_description" = "To use the album in chats, please allow to access first.";
+"message_photo_no_camera_tip" = "No access permission to the camera.";
+"message_photo_no_camera_description" = "To use the camera in chats, please allow to access first.";
+"message_photo_no_mic_tip" = "No access permission to the microphone.";
+"message_photo_no_mic_description" = "To use the microphone in chats, please allow to access first.";
+"message_access_later" = "Later";
+"message_audio_record_normal" = "Hold to Talk";
+"message_audio_record_release_to_send" = "Release to Send";
+"message_audio_record_release_to_cancel" = "Release to Cancel";
+"message_audio_record_tip1" = "Release to send, swipe up to cancel";
+"message_audio_record_tip2" = "Release to Cancel";
+"message_audio_record_stop" = "Recording will stop in %ds";
+"message_audio_play_error_tips" = "Playback failed. Please check the network and try again.";
+"message_audio_record_too_short" = "Message is too short.";
+"message_multi_select" = "Select";
+"message_delete_confirmation_desc" = "Are you sure to delete?";
+"message_delete_succeed_tips" = "Deleted successfully";
+"message_option_speaker_on" = "Turn On Speaker";
+"message_option_speaker_off" = "Turn Off Speaker";
+"message_option_copy" = "Copy";
+"message_speaker_on_tip" = "Speaker mode on";
+"message_speaker_off_tip" = "Switched to ear speaker";
+"message_file_empty_error_tips" = "Unable to send empty file, please reselect.";
+"message_photo_size_err_tips" = "The image cannot exceed 10 MB, please compress it and resend.";
+"message_photo_format_err_tips" = "Only JPG, PNG, BMP, TIFF, GIF, WebP format images are supported.";
+"message_video_size_err_tips" = "The video cannot exceed 100 MB, please process it and resend.";
+"message_video_format_err_tips" = "Only MP4 and MOV format videos are supported.";
+"message_file_size_err_tips" = "The file cannot exceed 100 MB, please process it and resend.";
+"message_play_error_tip" = "The voice message is corrupted or does not exist.";
+"message_option_delete" = "Delete";
+"message_option_save" = "Save";
+"message_storage_permissions_tip" = "No storage permission.";
+"message_storage_permissions_description" = "To use it in chats, please allow storage access permission.";
+"message_record_fail" = "Recording failed. Please try again.";
+"message_file_save_fail" = "File saving failed. Please try again.";
+"message_file_save_path_tip" = "The file has been saved to /sdcard/Download/ZIMKit/ %@.";
+"message_copy_success" = "Copied.";
+"message_video_play_error" = "Unable to play this video.";
+"message_title_chat" = "Chat";
+"message_title_group_chat" = "Group chat";
+
+"group_user_id_cant_null" = "User ID is required.";
+"group_group_id_not_exit" = "The group doesn't exist. Please try again.";
+"group_group_id" = "Group ID";
+"group_copy" = "Copy";
+"group_copy_success" = "Copied.";
+
+"album_download_image" = "Save Image";
+"album_redownload_image" = "Relaod";
+"album_save_success" = "Saved to album.";
+"album_save_fail" = "Failed to save. Please try again.";
+"album_need_permission_content" = "Storage permission is required.";
+"album_loading_txt" = "Loading...";
+"album_downloading_txt" = "Saving...";
+"album_over_size" = "The file size exceeds the limit.";
+

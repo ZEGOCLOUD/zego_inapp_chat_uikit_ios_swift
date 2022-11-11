@@ -1,0 +1,109 @@
+/* 
+  ZIMKit.strings
+  Pods
+
+  Created by Kael Ding on 2022/8/4.
+  
+*/
+
+"common_yesterday" = "昨天";
+"common_user_kick_out" = "重复登录，用户被踢出";
+"common_monday" = "周一";
+"common_tuesday" = "周二";
+"common_wednesday" = "周三";
+"common_thursday" = "周四";
+"common_friday" = "周五";
+"common_saturday" = "周六";
+"common_sunday" = "周日";
+"common_logout" = "退出";
+"common_return" = "返回";
+"common_message_photo" = "[图片]";
+"common_message_unknown" = "暂不支持该类型消息，请升级到最新版本";
+"common_message_audio" = "[语音]";
+"common_message_video" = "[视频]";
+"common_message_file" = "[文件]";
+"common_open_file_tips" = "选择要打开此文件的应用";
+"common_title_cancel" = "取消";
+"common_sure" = "确定";
+
+"conversation_start_chat" = "+ 开始聊天";
+"conversation_empty" = "暂无消息\n快去发起聊天吧";
+"conversation_start_single_chat" = "发起单聊";
+"conversation_start_group_chat" = "发起群聊";
+"conversation_join_group_chat" = "加入群聊";
+"conversation_cancel" = "取消";
+"conversation_delete" = "删除";
+"conversation_message_total_count" = "消息总数";
+"conversation_reload" = "重新加载";
+"conversation_disconnected" = "未连接";
+"conversation_connecting" = "连接中...";
+
+"message_input_new_message" = "输入新消息";
+"message_user_not_exit_please_again" = "用户ID:%@不存在，请返回重新添加";
+"message_cant_send_empty_msg" = "不允许发送空白消息";
+"message_create_chat" = "发起会话";
+
+"message_send" = "发送";
+"message_album" = "相册";
+"message_file" = "文件";
+"message_dialog_tips" = "提示";
+"message_btn_cancle" = "取消";
+"message_go_setting" = "去设置";
+"message_need_permission_content" = "需要获取相册权限";
+"message_network_anomaly" = "网络异常，请检查网络后重试";
+"message_photo_no_acess_tip" = "相册权限未开启";
+"message_photo_no_acess_description" = "不开启相册权限，无法在聊天功能中使用";
+"message_photo_no_camera_tip" = "相机权限未开启";
+"message_photo_no_camera_description" = "不开启相机权限，无法在聊天功能中使用";
+"message_photo_no_mic_tip" = "麦克风权限未开启";
+"message_photo_no_mic_description" = "不开启麦克风权限，无法在聊天功能中使用";
+"message_access_later" = "以后再说";
+"message_audio_record_normal" = "按住 说话";
+"message_audio_record_release_to_send" = "松开 发送";
+"message_audio_record_release_to_cancel" = "松开 取消";
+"message_audio_record_tip1" = "松开发送，上划取消";
+"message_audio_record_tip2" = "松开手指，取消发送";
+"message_audio_record_stop" = "%d 秒后结束录制";
+"message_audio_play_error_tips" = "播放失败，请检测网络后重试";
+"message_audio_record_too_short" = "说话时间太短";
+"message_multi_select" = "多选";
+"message_delete_confirmation_desc" = "确认删除？";
+"message_delete_succeed_tips" = "删除成功";
+"message_option_speaker_on" = "扬声器播放";
+"message_option_speaker_off" = "听筒播放";
+"message_option_copy" = "复制";
+"message_speaker_on_tip" = "已切换扬声器播放";
+"message_speaker_off_tip" = "已切换听筒播放";
+"message_file_empty_error_tips" = "无法发送空文件，请重新选择";
+"message_photo_size_err_tips" = "图片不支持超过10MB，请压缩后重新发送";
+"message_photo_format_err_tips" = "图片只支持JPG、PNG、BMP、TIFF、GIF、WebP格式，请处理后重新发送";
+"message_video_size_err_tips" = "视频不支持超过100MB，请处理后重新发送";
+"message_video_format_err_tips" = "视频只支持mp4和mov格式，请处理后重新发送";
+"message_file_size_err_tips" = "文件不支持超过100MB，请处理后重新发送";
+"message_play_error_tip" = "语音文件已损坏或不存在";
+"message_option_delete" = "删除";
+"message_option_save" = "保存";
+"message_storage_permissions_tip" = "存储权限未开启";
+"message_storage_permissions_description" = "不开启存储权限，无法在聊天功能中使用";
+"message_record_fail" = "录制失败，请重试";
+"message_file_save_fail" = "文件保存失败，请重试";
+"message_file_save_path_tip" = "文件已保存到 /sdcard/Download/ZIMKit/ %@";
+"message_copy_success" = "复制成功";
+"message_video_play_error" = "无法播放此视频";
+"message_title_chat" = "聊天";
+"message_title_group_chat" = "群聊";
+
+"group_user_id_cant_null" = "用户id不能为空";
+"group_group_id_not_exit" = "群ID %@ 不存在，请返回";
+"group_group_id" = "群聊ID";
+"group_copy" = "复制";
+"group_copy_success" = "复制成功";
+
+"album_download_image" = "下载图片";
+"album_redownload_image" = "重新加载";
+"album_save_success" = "已保存到系统相册";
+"album_save_fail" = "图片下载失败，请重试";
+"album_need_permission_content" = "需要获取存储权限";
+"album_loading_txt" = "加载中...";
+"album_downloading_txt" = "下载中...";
+"album_over_size" = "文件大小超过限制";

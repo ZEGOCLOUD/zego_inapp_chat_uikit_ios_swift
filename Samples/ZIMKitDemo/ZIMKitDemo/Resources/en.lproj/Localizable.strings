@@ -1,0 +1,36 @@
+/* 
+  Localizable.strings
+  ZIMKitDemo
+
+  Created by Kael Ding on 2022/8/2.
+  
+*/
+
+"demo_login_hint" = "User ID";
+"demo_login" = "Log In";
+"demo_user_name" = "Username: %@";
+"demo_welcome" = "Hi, Welcome to ZEGOCLOUD \nIn-app Chat.";
+"demo_input_user_id_error_tips" = "6-12 bit userID using letters and numbers.";
+"demo_user_id_login" = "User Login";
+"demo_network_error_tip" = "Network error. Please check the network and try again.";
+"demo_confirm" = "OK";
+"demo_user_kick_out" = "You've been logged out because the ID is reused for login.";
+"demo_message" = "Chats";
+"demo_connecting" = "Connecting...";
+"demo_disconnected" = "Disconnected";
+
+"message_input_user_id_error_tips" = "The userID must be between 6-12 characters using letters and numbers.";
+"message_input_user_id" = "Enter a user ID";
+"group_input_group_id" = "Group ID";
+"group_input_user_id_of_group" = "Enter group member IDs, separated by \';\'";
+"group_input_group_name" = "Group name";
+"group_input_user_id_error_tip" = "The userID must be between 6-12 characters using letters and numbers.";
+"group_create_chat" = "OK";
+"message_create_single_chat" = "New 1-on-1 chat";
+"group_create_group_chat_title" = "New group chat";
+"group_join_group_chat" = "Join a group chat";
+"group_group_user_id_not_exit" = "The user ID (%@) doesn't exist. Please modify and try again.";
+"group_user_not_exit" = "The user doesn't exist.";
+"common_sure" = "OK";
+"group_group_not_exit" = "The group doesn't exist.";
+"group_repeat_join_group_chat" = "You are already in the group.";
