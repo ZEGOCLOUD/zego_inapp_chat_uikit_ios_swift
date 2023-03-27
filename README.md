@@ -2,6 +2,10 @@
 
 ---
 
+[![](https://img.shields.io/badge/chat-on%20discord-7289da.svg)](https://discord.gg/EtNRATttyp)
+
+> If you have any questions regarding bugs and feature requests, visit the [ZEGOCLOUD community](https://discord.gg/EtNRATttyp) .
+
 ## What is the In-app Chat Kit
 
 In-app Chat Kit is a UI component library based on the In-app Chat SDK. It provides general UI components, such as the chat list, one-on-one chat, and group chat. You can use the In-app Chat Kit to quickly build custom IM applications based on actual business requirements.
@@ -45,8 +49,3 @@ To finest-grained build an in-app chat app, you may try our [In-app Chat SDK](ht
 * To explore more customizable components, check this out: [Component overview](https://docs.zegocloud.com/article/14861)
 * To check and run the sample code, click here: [Run the sample code](https://github.com/ZEGOCLOUD/zego_inapp_chat_uikit_example_ios)
 
-
-
-## Get support
-
-If you have any questions regarding bugs and feature requests, visit the [ZEGOCLOUD community](https://discord.gg/EtNRATttyp).
