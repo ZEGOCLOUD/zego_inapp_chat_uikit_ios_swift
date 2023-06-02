@@ -19,6 +19,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     public var conversationID: String = ""
     public var conversationName: String = ""
     public var conversationType: ZIMConversationType = .peer
+    public var inputConfig: InputConfig?
     
     var firstHistoryMessageViewModel: MessageViewModel?
 
@@ -29,11 +30,13 @@ open class ZIMKitMessagesListVC: _ViewController {
     ///   - conversationName: session name.
     public convenience init(conversationID: String,
                             type: ZIMConversationType,
-                            conversationName: String = "") {
+                            conversationName: String = "",
+                            inputConfig: InputConfig? = nil) {
         self.init()
         self.conversationID = conversationID
         self.conversationName = conversationName
         self.conversationType = type
+        self.inputConfig = inputConfig
     }
 
     lazy var zoomTransitionController = ZoomTransitionController()
@@ -76,7 +79,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     }()
 
     lazy var chatBar: ChatBar = {
-        let chatBar = ChatBar().withoutAutoresizingMaskConstraints
+        let chatBar = ChatBar(config: inputConfig).withoutAutoresizingMaskConstraints
         chatBar.delegate = self
         return chatBar
     }()

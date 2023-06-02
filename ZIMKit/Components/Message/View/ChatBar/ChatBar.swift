@@ -7,9 +7,9 @@
 
 import Foundation
 
-let chatTextViewTBMargin: CGFloat = 7
+let chatTextViewTBMargin: CGFloat = 6
 let chatTextViewLRMargin: CGFloat = 12.0
-let textViewHeightMin: CGFloat = 35
+let textViewHeightMin: CGFloat = 36
 let textViewHeightMax: CGFloat = 92.0
 
 protocol ChatBarDelegate: AnyObject {
@@ -65,9 +65,14 @@ enum ChatBarStatus {
 class ChatBar: _View {
 
     // MARK: - Top ContentView
-    lazy var topContentView: UIView = {
-        let view = UIView().withoutAutoresizingMaskConstraints
+    lazy var topContentView: UIStackView = {
+        let view = UIStackView().withoutAutoresizingMaskConstraints
         view.backgroundColor = .clear
+        view.distribution = .fill
+        view.alignment = .bottom
+        view.spacing = 12
+        view.layoutMargins = .init(top: 6, left: 12, bottom: 6, right: 12)
+        view.isLayoutMarginsRelativeArrangement = true
         return view
     }()
 
@@ -182,6 +187,13 @@ class ChatBar: _View {
         button.addTarget(self, action: #selector(deleteButtonClick), for: .touchUpInside)
         return button
     }()
+    
+    var config: InputConfig? = nil
+    
+    convenience init(config: InputConfig? = nil) {
+        self.init()
+        self.config = config
+    }
 
     override func setUp() {
         super.setUp()
@@ -202,45 +214,35 @@ class ChatBar: _View {
         topContentHeightConstraint = topContentView.heightAnchor.pin(equalToConstant: height)
         topContentHeightConstraint.isActive = true
 
-        topContentView.addSubview(addButton)
+        topContentView.setHStack([voiceButton, chatTextView, recordButton, emotionButton, addButton])
+        
         NSLayoutConstraint.activate([
-            addButton.trailingAnchor.pin(
-                equalTo: topContentView.trailingAnchor,
-                constant: -12.0),
-            addButton.bottomAnchor.pin(equalTo: topContentView.bottomAnchor, constant: -13.5)
+            voiceButton.widthAnchor.pin(equalToConstant: 34),
+            voiceButton.heightAnchor.pin(equalToConstant: 48),
+            emotionButton.widthAnchor.pin(equalToConstant: 34),
+            emotionButton.heightAnchor.pin(equalToConstant: 48),
+            addButton.widthAnchor.pin(equalToConstant: 34),
+            addButton.heightAnchor.pin(equalToConstant: 48)
         ])
-        addButton.pin(to: 34)
-
-        topContentView.addSubview(emotionButton)
-        emotionButton.pin(anchors: [.centerY, .width, .height], to: addButton)
-        emotionButton.trailingAnchor.pin(equalTo: addButton.leadingAnchor, constant: -12)
-            .isActive = true
-
-        topContentView.addSubview(voiceButton)
-        voiceButton.pin(anchors: [.centerY, .width, .height], to: addButton)
-        voiceButton.leadingAnchor.pin(
-            equalTo: topContentView.leadingAnchor,
-            constant: 12)
-            .isActive = true
-
-        topContentView.addSubview(chatTextView)
+        
         NSLayoutConstraint.activate([
-            chatTextView.leadingAnchor.pin(
-                equalTo: voiceButton.trailingAnchor,
-                constant: chatTextViewLRMargin),
-            chatTextView.trailingAnchor.pin(
-                equalTo: emotionButton.leadingAnchor,
-                constant: -chatTextViewLRMargin),
             chatTextView.topAnchor.pin(
                 equalTo: topContentView.topAnchor,
                 constant: chatTextViewTBMargin),
             chatTextView.bottomAnchor.pin(
                 equalTo: topContentView.bottomAnchor,
-                constant: -chatTextViewTBMargin)
+                constant: chatTextViewTBMargin),
+            recordButton.topAnchor.pin(
+                equalTo: topContentView.topAnchor,
+                constant: chatTextViewTBMargin),
+            recordButton.bottomAnchor.pin(
+                equalTo: topContentView.bottomAnchor,
+                constant: chatTextViewTBMargin),
         ])
-
-        topContentView.addSubview(recordButton)
-        recordButton.pin(to: chatTextView)
+        
+        voiceButton.isHidden = config?.showVoiceButton == false
+        emotionButton.isHidden = config?.showEmojiButton == false
+        addButton.isHidden = config?.showAddButton == false
 
         addSubview(faceView)
         faceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
@@ -280,7 +282,7 @@ class ChatBar: _View {
         let contentHeight = textViewHeight + (chatTextViewTBMargin + textViewTBMargin) * 2
         var height = contentHeight
         // use the default height, when status is `voice`
-        if status == .voice {
+        if status == .voice || status == .select {
             height -= textViewHeight
             height += textViewHeightMin
         }
@@ -416,9 +418,7 @@ extension ChatBar {
         }
 
         deleteButton.isHidden = status != .select
-        addButton.isHidden = status == .select
-        emotionButton.isHidden = status == .select
-        voiceButton.isHidden = status == .select
+        topContentView.isHidden = status == .select
 
         updateChatBarConstraints()
         delegate?.chatBar(self, didChangeStatus: status)
