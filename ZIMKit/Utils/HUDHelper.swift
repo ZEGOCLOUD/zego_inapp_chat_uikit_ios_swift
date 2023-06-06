@@ -29,4 +29,18 @@ class HUDHelper {
     static func dismiss(_ immediately: Bool = false) {
         ProgressHUD.dismiss(immediately)
     }
+    
+    static func showErrorMessageIfNeeded(_ errorCode: UInt, defaultMessage: String) {
+        for delegate in ZIMKitCore.shared.delegates.allObjects {
+            if let method = delegate.onErrorToastCallback {
+                if let message = method(errorCode, defaultMessage) {
+                    showMessage(message)
+                    return
+                } else {
+                    return
+                }
+            }
+        }
+        showMessage(defaultMessage)
+    }
 }

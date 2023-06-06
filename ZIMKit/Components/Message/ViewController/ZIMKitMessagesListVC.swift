@@ -262,7 +262,8 @@ open class ZIMKitMessagesListVC: _ViewController {
             
             self.indicatorView.stopAnimating()
             if error.code != .success {
-                HUDHelper.showMessage(error.message)
+                HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                                   defaultMessage: error.message)
                 return
             }
             if self.viewModel.isNoMoreMsg {
@@ -290,7 +291,8 @@ open class ZIMKitMessagesListVC: _ViewController {
         viewModel.loadMoreMessages { [weak self] error in
             self?.indicatorView.stopAnimating()
             if error.code != .success {
-                HUDHelper.showMessage(error.message)
+                HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                                   defaultMessage: error.message)
                 return
             }
         }
@@ -594,17 +596,27 @@ extension ZIMKitMessagesListVC {
 
     func showError(_ error: ZIMError, _ type: ZIMMessageType = .text) {
         if error.code == .networkModuleNetworkError {
-            HUDHelper.showMessage(L10n("message_network_anomaly"))
+            HUDHelper.showErrorMessageIfNeeded(
+                error.code.rawValue,
+                defaultMessage: L10n("message_network_anomaly"))
         } else if error.code == .messageModuleFileSizeInvalid {
             if type == .image {
-                HUDHelper.showMessage(L10n("message_photo_size_err_tips"))
+                HUDHelper.showErrorMessageIfNeeded(
+                    error.code.rawValue,
+                    defaultMessage: L10n("message_photo_size_err_tips"))
             } else if type == .video {
-                HUDHelper.showMessage(L10n("message_video_size_err_tips"))
+                HUDHelper.showErrorMessageIfNeeded(
+                    error.code.rawValue,
+                    defaultMessage: L10n("message_video_size_err_tips"))
             } else if type == .file {
-                HUDHelper.showMessage(L10n("message_file_size_err_tips"))
+                HUDHelper.showErrorMessageIfNeeded(
+                    error.code.rawValue,
+                    defaultMessage: L10n("message_file_size_err_tips"))
             }
         } else {
-            HUDHelper.showMessage(error.message)
+            HUDHelper.showErrorMessageIfNeeded(
+                error.code.rawValue,
+                defaultMessage: error.message)
         }
     }
 }

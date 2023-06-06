@@ -45,4 +45,7 @@ import ZIM
     
     @objc optional
     func onMediaMessageDownloadingProgressUpdated(_ message: ZIMKitMessage, isFinished: Bool)
+    
+    @objc optional
+    func onErrorToastCallback(_ errorCode: UInt, defaultMessage: String) -> String?
 }

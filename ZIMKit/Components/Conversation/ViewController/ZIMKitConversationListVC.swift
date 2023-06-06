@@ -72,7 +72,8 @@ open class ZIMKitConversationListVC: _ViewController {
             guard let self = self else { return }
             self.noDataView.setButtonTitle(L10n("conversation_reload"))
             self.noDataView.isHidden = false
-            HUDHelper.showMessage(error.message)
+            HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                               defaultMessage: error.message)
         }
     }
 
@@ -136,7 +137,8 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
             tableView.performBatchUpdates {
                 self.viewModel.deleteConversation(conversation) { error in
                     if error.code != .success {
-                        HUDHelper.showMessage(error.message)
+                        HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                                           defaultMessage: error.message)
                     }
                 }
                 tableView.deleteRows(at: [index], with: .none)
@@ -155,7 +157,8 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
             tableView.performBatchUpdates {
                 self.viewModel.deleteConversation(conversation) { error in
                     if error.code != .success {
-                        HUDHelper.showMessage(error.message)
+                        HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                                           defaultMessage: error.message)
                     }
                 }
                 tableView.deleteRows(at: [indexPath], with: .none)
