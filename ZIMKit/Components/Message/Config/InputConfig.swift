@@ -7,18 +7,18 @@
 
 import Foundation
 
-public class InputConfig {
-    public var showVoiceButton: Bool = true
-    public var showEmojiButton: Bool = true
-    public var showAddButton: Bool = true
+public class InputConfig: NSObject {
+    @objc public var showVoiceButton: Bool = true
+    @objc public var showEmojiButton: Bool = true
+    @objc public var showAddButton: Bool = true
     
-    public init(showVoiceButton: Bool, showEmojiButton: Bool, showAddButton: Bool) {
+    @objc public init(showVoiceButton: Bool, showEmojiButton: Bool, showAddButton: Bool) {
         self.showVoiceButton = showVoiceButton
         self.showEmojiButton = showEmojiButton
         self.showAddButton = showAddButton
     }
     
-    public init() {
+    @objc public override init() {
         
     }
 }

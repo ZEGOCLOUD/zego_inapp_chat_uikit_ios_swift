@@ -9,11 +9,11 @@ import Foundation
 
 extension ZIMKit {
     
-    public static var localUser: ZIMKitUser? {
+    @objc public static var localUser: ZIMKitUser? {
         ZIMKitCore.shared.localUser
     }
     
-    public static func connectUser(userID: String,
+    @objc public static func connectUser(userID: String,
                                    userName: String? = nil,
                                    avatarUrl: String? = nil,
                                    callback: ConnectUserCallback? = nil) {
@@ -23,15 +23,15 @@ extension ZIMKit {
                                       callback: callback)
     }
     
-    public static func disconnectUser() {
+    @objc public static func disconnectUser() {
         ZIMKitCore.shared.disconnectUser()
     }
     
-    public static func queryUserInfo(by userID: String, callback: QueryUserCallback? = nil) {
+    @objc public static func queryUserInfo(by userID: String, callback: QueryUserCallback? = nil) {
         ZIMKitCore.shared.queryUserInfo(by: userID, callback: callback)
     }
     
-    public static func updateUserAvatarUrl(_ avatarUrl: String,
+    @objc public static func updateUserAvatarUrl(_ avatarUrl: String,
                                            callback: UserAvatarUrlUpdateCallback? = nil) {
         ZIMKitCore.shared.updateUserAvatarUrl(avatarUrl, callback: callback)
     }

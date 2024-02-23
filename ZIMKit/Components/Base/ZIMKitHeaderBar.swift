@@ -9,9 +9,9 @@ import Foundation
 
 public class ZIMKitHeaderBar: _View {
     
-    public var titleView: UIView?
+    @objc public var titleView: UIView?
     
-    public var leftItems: [UIBarButtonItem]?
+    @objc public var leftItems: [UIBarButtonItem]?
     
-    public var rightItems: [UIBarButtonItem]?
+    @objc public var rightItems: [UIBarButtonItem]?
 }

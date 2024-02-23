@@ -8,21 +8,21 @@
 import Foundation
 import ZIM
 
-public enum GroupMemberRole {
+@objc public enum GroupMemberRole: UInt {
     case owner
     case member
 }
 
-public struct ZIMKitGroupMember {
-    public var id: String
+public class ZIMKitGroupMember: NSObject {
+    @objc public var id: String
 
-    public var name: String
+    @objc public var name: String
 
-    public var avatarUrl: String?
+    @objc public var avatarUrl: String?
     
-    public var nickName: String
+    @objc public var nickName: String
     
-    public var role: GroupMemberRole
+    @objc public var role: GroupMemberRole
     
     init(with member: ZIMGroupMemberInfo) {
         id = member.userID

@@ -14,12 +14,12 @@ open class ZIMKitMessagesListVC: _ViewController {
 
     lazy var viewModel = MessaeListViewModel(conversationID: conversationID, conversationType)
     
-    public weak var delegate: ZIMKitMessagesListVCDelegate?
+    @objc public weak var delegate: ZIMKitMessagesListVCDelegate?
 
-    public var conversationID: String = ""
-    public var conversationName: String = ""
-    public var conversationType: ZIMConversationType = .peer
-    public var inputConfig: InputConfig?
+    @objc public var conversationID: String = ""
+    @objc public var conversationName: String = ""
+    @objc public var conversationType: ZIMConversationType = .peer
+    @objc public var inputConfig: InputConfig?
     
     var firstHistoryMessageViewModel: MessageViewModel?
 
@@ -28,7 +28,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     ///   - conversationID: session ID.
     ///   - type: session type.
     ///   - conversationName: session name.
-    public convenience init(conversationID: String,
+    @objc public convenience init(conversationID: String,
                             type: ZIMConversationType,
                             conversationName: String = "",
                             inputConfig: InputConfig? = nil) {

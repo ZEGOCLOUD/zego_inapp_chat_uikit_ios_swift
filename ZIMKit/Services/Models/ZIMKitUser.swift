@@ -8,20 +8,20 @@
 import Foundation
 import ZIM
 
-public struct ZIMKitUser {
-    public var id: String
+public class ZIMKitUser: NSObject {
+    @objc public var id: String
 
-    public var name: String
+    @objc public var name: String
     
-    public var avatarUrl: String?
+    @objc public var avatarUrl: String?
 
-    public init(userID: String, userName: String, avatarUrl: String? = nil) {
+    @objc public init(userID: String, userName: String, avatarUrl: String? = nil) {
         self.id = userID
         self.name = userName
         self.avatarUrl = avatarUrl
     }
     
-    init(_ zimUserInfo: ZIMUserFullInfo) {
+    @objc init(_ zimUserInfo: ZIMUserFullInfo) {
         self.id = zimUserInfo.baseInfo.userID
         self.name = zimUserInfo.baseInfo.userName
         self.avatarUrl = zimUserInfo.userAvatarUrl

@@ -9,8 +9,8 @@ import UIKit
 
 open class ZIMKitConversationListVC: _ViewController {
     
-    public weak var delegate: ZIMKitConversationListVCDelegate?
-    public weak var messageDelegate: ZIMKitMessagesListVCDelegate?
+    @objc public weak var delegate: ZIMKitConversationListVCDelegate?
+    @objc public weak var messageDelegate: ZIMKitMessagesListVCDelegate?
 
     lazy var viewModel = ConversationListViewModel()
 

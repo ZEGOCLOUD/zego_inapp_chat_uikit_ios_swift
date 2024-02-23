@@ -9,14 +9,14 @@ import Foundation
 import ZIM
 
 
-public struct ZIMKitGroupInfo {
-    public let id: String
+public class ZIMKitGroupInfo: NSObject {
+    @objc public let id: String
 
-    public var name: String
+    @objc public var name: String
 
-    public var avatarUrl: String
+    @objc public var avatarUrl: String
 
-    public init(with info: ZIMGroupFullInfo) {
+    @objc public init(with info: ZIMGroupFullInfo) {
         id = info.baseInfo.groupID
         name = info.baseInfo.groupName
         avatarUrl = info.baseInfo.groupAvatarUrl

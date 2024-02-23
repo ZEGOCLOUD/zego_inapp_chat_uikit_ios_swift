@@ -9,14 +9,14 @@ import Foundation
 import ZIM
 
 public class ZIMKitConversation: NSObject {
-    public var id: String = ""
-    public var name: String = ""
-    public var avatarUrl: String = ""
-    public var type: ZIMConversationType = .peer
-    public var notificationStatus: ZIMConversationNotificationStatus = .notify
-    public var unreadMessageCount: UInt32 = 0
-    public var lastMessage: ZIMKitMessage?
-    public var orderKey: Int64 = 0
+    @objc public var id: String = ""
+    @objc public var name: String = ""
+    @objc public var avatarUrl: String = ""
+    @objc public var type: ZIMConversationType = .peer
+    @objc public var notificationStatus: ZIMConversationNotificationStatus = .notify
+    @objc public var unreadMessageCount: UInt32 = 0
+    @objc public var lastMessage: ZIMKitMessage?
+    @objc public var orderKey: Int64 = 0
     
     var zim: ZIMConversation
     

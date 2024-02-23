@@ -8,7 +8,7 @@
 import Foundation
 
 extension ZIMKit {
-    public static func createGroup(with groupName: String,
+    @objc public static func createGroup(with groupName: String,
                                    groupID: String = "",
                                    inviteUserIDs: [String],
                                    callback: CreateGroupCallback? = nil) {
@@ -18,15 +18,15 @@ extension ZIMKit {
                                       callback: callback)
     }
     
-    public static func joinGroup(by groupID: String, callback: JoinGroupCallback? = nil) {
+    @objc public static func joinGroup(by groupID: String, callback: JoinGroupCallback? = nil) {
         ZIMKitCore.shared.joinGroup(by: groupID, callback: callback)
     }
     
-    public static func leaveGroup(by groupID: String, callback: LeaveGroupCallback? = nil) {
+    @objc public static func leaveGroup(by groupID: String, callback: LeaveGroupCallback? = nil) {
         ZIMKitCore.shared.leaveGroup(by: groupID, callback: callback)
     }
     
-    public static func inviteUsersToJoinGroup(with userIDs: [String],
+    @objc public static func inviteUsersToJoinGroup(with userIDs: [String],
                                               groupID: String,
                                               callback: InviteUsersToJoinGroupCallback? = nil) {
         ZIMKitCore.shared.inviteUsersToJoinGroup(with: userIDs,
@@ -34,12 +34,12 @@ extension ZIMKit {
                                                  callback: callback)
     }
     
-    public static func queryGroupInfo(by groupID: String,
+    @objc public static func queryGroupInfo(by groupID: String,
                                       callback: QueryGroupInfoCallback? = nil) {
         ZIMKitCore.shared.queryGroupInfo(by: groupID, callback: callback)
     }
     
-    public static func queryGroupMemberInfo(by userID: String,
+    @objc public static func queryGroupMemberInfo(by userID: String,
                                             groupID: String,
                                             callback: QueryGroupMemberInfoCallback? = nil) {
         ZIMKitCore.shared.queryGroupMemberInfo(by: userID, groupID: groupID, callback: callback)
