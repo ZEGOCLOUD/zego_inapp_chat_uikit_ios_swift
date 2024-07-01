@@ -28,13 +28,16 @@ class ZIMKitCore: NSObject {
     
     var isLoadedAllConversations = false
     var isConversationInit = false
-    
+    var config : ZIMKitConfig?
     let delegates: NSHashTable<ZIMKitDelegate> = NSHashTable(options: .weakMemory)
     
-    func initWith(appID: UInt32, appSign: String) {
+    func initWith(appID: UInt32, appSign: String,config:ZIMKitConfig?) {
         ZegoUIKitSignalingPlugin.shared.initWith(appID: appID, appSign: appSign)
         zim = ZIM.shared()
         ZegoUIKitSignalingPlugin.shared.registerZIMEventHandler(self)
+        if config != nil {
+            self.config = config
+        }
     }
     
     func registerZIMKitDelegate(_ delegate: ZIMKitDelegate) {

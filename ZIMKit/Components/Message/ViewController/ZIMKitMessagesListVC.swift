@@ -261,7 +261,7 @@ open class ZIMKitMessagesListVC: _ViewController {
             guard let self  = self else { return }
             
             self.indicatorView.stopAnimating()
-            if error.code != .success {
+            if error.code != .ZIMErrorCodeSuccess {
                 HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
                                                    defaultMessage: error.message)
                 return
@@ -290,7 +290,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         
         viewModel.loadMoreMessages { [weak self] error in
             self?.indicatorView.stopAnimating()
-            if error.code != .success {
+            if error.code != .ZIMErrorCodeSuccess {
                 HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
                                                    defaultMessage: error.message)
                 return
@@ -301,14 +301,14 @@ open class ZIMKitMessagesListVC: _ViewController {
     func loadConversationInfo() {
         if conversationType == .peer {
             viewModel.queryOtherUserInfo { [weak self] otherUser, error in
-                if error.code == .success {
+                if error.code == .ZIMErrorCodeSuccess {
                     self?.navigationItem.title = otherUser?.name
                     self?.conversationName = otherUser?.name ?? ""
                 }
             }
         } else if conversationType == .group {
             viewModel.queryGroupInfo { [weak self] info, error in
-                if error.code == .success {
+                if error.code == .ZIMErrorCodeSuccess {
                     self?.navigationItem.title = info?.name
                 }
             }
@@ -433,17 +433,33 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             return
         }
         
-        ZIMKit.sendTextMessage(text, to: conversationID, type: conversationType) { [weak self] error in
-            if error.code != .success {
-                self?.showError(error)
+        if conversationType == .peer {
+            ZIMKit.sendTextMessage(text, to: conversationID, type: conversationType) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error)
+                }
+            }
+        } else if conversationType == .group {
+            ZIMKit.sendTextMessage(text, to: conversationID, type: conversationType,conversationName: conversationName) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error)
+                }
             }
         }
     }
 
     func chatBar(_ chatBar: ChatBar, didSendAudioWith path: String, duration: UInt32) {
-        ZIMKit.sendAudioMessage(path, duration: duration, to: conversationID, type: conversationType) { [weak self] error in
-            if error.code != .success {
-                self?.showError(error)
+        if conversationType == .peer {
+            ZIMKit.sendAudioMessage(path, duration: duration, to: conversationID, type: conversationType) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error)
+                }
+            }
+        } else if conversationType == .group {
+            ZIMKit.sendAudioMessage(path, duration: duration, to: conversationID, type: conversationType,conversationName: conversationName) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error)
+                }
             }
         }
     }
@@ -561,25 +577,49 @@ extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
 // MARK: - Send Messages
 extension ZIMKitMessagesListVC {
     func sendImageMessage(with url: URL) {
-        ZIMKit.sendImageMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
-            if error.code != .success {
-                self?.showError(error, .image)
+        if conversationType == .peer {
+            ZIMKit.sendImageMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .image)
+                }
+            }
+        } else if conversationType == .group {
+            ZIMKit.sendImageMessage(url.path, to: conversationID, type: conversationType,conversationName: conversationName) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .image)
+                }
             }
         }
     }
 
     func sendVideoMessage(with url: URL) {
-        ZIMKit.sendVideoMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
-            if error.code != .success {
-                self?.showError(error, .video)
+        if conversationType == .peer {
+            ZIMKit.sendVideoMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .video)
+                }
+            }
+        } else if conversationType == .group {
+            ZIMKit.sendVideoMessage(url.path, to: conversationID, type: conversationType, conversationName: conversationName) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .video)
+                }
             }
         }
     }
 
     func sendFileMessage(with url: URL) {
-        ZIMKit.sendFileMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
-            if error.code != .success {
-                self?.showError(error, .file)
+        if conversationType == .peer {
+            ZIMKit.sendFileMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .file)
+                }
+            }
+        } else if conversationType == .group {
+            ZIMKit.sendFileMessage(url.path, to: conversationID, type: conversationType, conversationName: conversationName) { [weak self] error in
+                if error.code != .ZIMErrorCodeSuccess {
+                    self?.showError(error, .file)
+                }
             }
         }
     }
@@ -595,11 +635,11 @@ extension ZIMKitMessagesListVC {
     }
 
     func showError(_ error: ZIMError, _ type: ZIMMessageType = .text) {
-        if error.code == .networkModuleNetworkError {
+        if error.code == .ZIMErrorCodeNetworkModuleNetworkError {
             HUDHelper.showErrorMessageIfNeeded(
                 error.code.rawValue,
                 defaultMessage: L10n("message_network_anomaly"))
-        } else if error.code == .messageModuleFileSizeInvalid {
+        } else if error.code == .ZIMErrorCodeMessageModuleFileSizeInvalid {
             if type == .image {
                 HUDHelper.showErrorMessageIfNeeded(
                     error.code.rawValue,

@@ -12,11 +12,11 @@ extension ZIMKitCore {
     func getConversationList(_ callback: GetConversationListCallback? = nil) {
         if conversations.count > 0 {
             let error = ZIMError()
-            error.code = .success
+            error.code = .ZIMErrorCodeSuccess
             callback?(conversations, error)
         } else {
             loadMoreConversation(false) { error in
-                if error.code == .success {
+                if error.code == .ZIMErrorCodeSuccess {
                     self.isConversationInit = true
                 }
                 callback?(self.conversations, error)
@@ -61,7 +61,7 @@ extension ZIMKitCore {
         quryConfig.count = 100
         quryConfig.nextConversation = conversations.last?.zim
         zim?.queryConversationList(with: quryConfig, callback: { zimConversations, error in
-            if error.code != .success {
+            if error.code != .ZIMErrorCodeSuccess {
                 callback?(error)
                 return
             }

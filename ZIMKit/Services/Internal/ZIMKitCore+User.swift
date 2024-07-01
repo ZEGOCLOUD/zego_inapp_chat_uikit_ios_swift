@@ -18,11 +18,11 @@ extension ZIMKitCore {
         zimUserInfo.userID = userID
         zimUserInfo.userName = userName ?? ""
         zim?.login(with: zimUserInfo) { [weak self] error in
-            if error.code == .networkModuleUserHasAlreadyLogged {
-                error.code = .success
+            if error.code == .ZIMErrorCodeNetworkModuleUserHasAlreadyLogged {
+                error.code = .ZIMErrorCodeSuccess
                 error.message = ""
             }
-            if error.code == .success {
+            if error.code == .ZIMErrorCodeSuccess {
                 self?.localUser = ZIMKitUser(userID: userID, userName: userName ?? "", avatarUrl: avatarUrl)
                 self?.userDict[userID] = self?.localUser
             }

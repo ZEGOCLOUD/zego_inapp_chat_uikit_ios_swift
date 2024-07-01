@@ -43,7 +43,7 @@ extension MessaeListViewModel {
     func getMessageList(_ callback: ((ZIMError) -> Void)?) {
         isLoadingData = true
         ZIMKit.getMessageList(with: conversationID, type: conversationType) { [weak self] messages, hasMoreHistoryMessage, error in
-            if error.code != .success {
+            if error.code != .ZIMErrorCodeSuccess {
                 callback?(error)
                 self?.isLoadingData = false
                 return
@@ -112,7 +112,7 @@ extension MessaeListViewModel {
         let message = viewModel.message
         ZIMKit.downloadMediaFile(with: message) { error in
             viewModel.isDownloading = false
-            if error.code == .success {
+            if error.code == .ZIMErrorCodeSuccess {
                 print("✅Download File Success: \(message.fileName), localID: \(message.info.localMessageID)")
             } else {
                 print("❌Download File Failed: \(message.fileName), localID: \(message.info.localMessageID)")
@@ -218,7 +218,7 @@ extension MessaeListViewModel {
 
         guard let viewModel = viewModel as? MediaMessageViewModel else { return }
         downloadMediaMessage(viewModel) { [weak self] error in
-            if error.code != .success {
+            if error.code != .ZIMErrorCodeSuccess {
                 //                #warning("The simple retry logic, will remove in future.")
                 /// redownload after 5s, if failed.
                 DispatchQueue.main.asyncAfter(deadline: .now()+5.0) {

@@ -58,14 +58,31 @@ public class LocalAPNS: NSObject {
     }
 
     private func addLocalNotice(_ message: ZIMKitMessage) {
-        let center = UNUserNotificationCenter.current()
-        let content = UNMutableNotificationContent()
-        content.body = message.getShortString()
-        content.sound = .default
+    
+        if message.info.conversationType == .peer {
+            ZIMKit.queryUserInfo(by: message.info.senderUserID) { userInfo, error in
+                let center = UNUserNotificationCenter.current()
+                let content = UNMutableNotificationContent()
+                content.body = message.getShortString()
+                content.sound = .default
+                content.title = userInfo?.name ?? ""
+                content.userInfo = ["conversationID": message.info.conversationID, "conversationType": message.info.conversationType.rawValue]
+                let request = UNNotificationRequest(identifier: LocalNotificationRequestId, content: content, trigger: nil)
+                center.add(request)
+            }
+        } else if message.info.conversationType == .group {
+            ZIMKit.queryGroupInfo(by: message.info.conversationID) { groupInfo, error in
+                let center = UNUserNotificationCenter.current()
+                let content = UNMutableNotificationContent()
+                content.body = message.getShortString()
+                content.sound = .default
+                content.title = groupInfo.name
+                content.userInfo = ["conversationID": message.info.conversationID, "conversationType": message.info.conversationType.rawValue]
+                let request = UNNotificationRequest(identifier: LocalNotificationRequestId, content: content, trigger: nil)
+                center.add(request)
+            }
+        }
 
-        content.userInfo = ["conversationID": message.info.conversationID, "conversationType": message.info.conversationType.rawValue]
-        let request = UNNotificationRequest(identifier: LocalNotificationRequestId, content: content, trigger: nil)
-        center.add(request)
     }
 }
 
