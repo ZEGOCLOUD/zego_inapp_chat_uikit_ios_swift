@@ -49,9 +49,14 @@ public extension UIColor {
     static let zim_backgroundGray3 = loadColorSafely("#E6E6E6")
     /// #C9CACC
     static let zim_backgroundGray4 = loadColorSafely("#C9CACC")
+    /// #EFF0F2
+    static let zim_backgroundGray5 = loadColorSafely("#EFF0F2")
     /// #FF4A50
     static let zim_backgroundRed = loadColorSafely("#FF4A50")
-
+    /// #0087F4
+    static let zim_backgroundBlue = loadColorSafely("#0087F4")
+    /// #9C9C9C
+    static let zim_backgroundLightGrey = loadColorSafely("#9C9C9C")
     // MARK: - Shadow Color
     /// #212329
     static let zim_shadowBlack = loadColorSafely("#212329")

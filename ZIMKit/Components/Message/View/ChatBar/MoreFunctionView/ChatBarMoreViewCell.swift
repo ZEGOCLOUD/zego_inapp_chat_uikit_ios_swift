@@ -39,7 +39,7 @@ class ChatBarMoreViewCell: _CollectionViewCell {
         imageBackgroundView.addSubview(imageView)
         contentView.addSubview(label)
 
-        imageBackgroundView.pin(to: 58.0)
+        imageBackgroundView.pin(to: 52.0)
         imageBackgroundView.pin(anchors: [.centerX], to: contentView)
         imageBackgroundView.topAnchor.pin(
             equalTo: contentView.topAnchor,
@@ -47,11 +47,11 @@ class ChatBarMoreViewCell: _CollectionViewCell {
             .isActive = true
 
         imageView.pin(anchors: [.centerX, .centerY], to: imageBackgroundView)
-        imageView.pin(to: 34.0)
+        imageView.pin(to: 24.0)
 
         NSLayoutConstraint.activate([
             label.centerXAnchor.pin(equalTo: contentView.centerXAnchor),
-            label.topAnchor.pin(equalTo: imageBackgroundView.bottomAnchor, constant: 8),
+            label.topAnchor.pin(equalTo: imageBackgroundView.bottomAnchor, constant: 4),
             label.heightAnchor.pin(equalToConstant: 15.0)
         ])
     }
@@ -60,6 +60,6 @@ class ChatBarMoreViewCell: _CollectionViewCell {
 extension ChatBarMoreViewCell {
     func fillData(_ data: ChatBarMoreModel) {
         label.text = data.title
-        imageView.image = loadImageSafely(with: data.icon)
+        imageView.image = loadImageSafely(with: (data.icon + "_more"))
     }
 }

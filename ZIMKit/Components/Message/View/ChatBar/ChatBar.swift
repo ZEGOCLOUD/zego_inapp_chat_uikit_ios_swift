@@ -6,100 +6,149 @@
 //
 
 import Foundation
+import ZegoPluginAdapter
 
-let chatTextViewTBMargin: CGFloat = 6
-let chatTextViewLRMargin: CGFloat = 12.0
+let textViewTopMargin: CGFloat = 5
+let textViewBottomMargin: CGFloat = 5.0
 let textViewHeightMin: CGFloat = 36
 let textViewHeightMax: CGFloat = 92.0
 
-protocol ChatBarDelegate: AnyObject {
-    /// trigger when chatbar status changed.
-    func chatBar(_ chatBar: ChatBar, didChangeStatus status: ChatBarStatus)
+let bottomBarHeight: CGFloat = 48.0
 
+let chatViewTopMargin: CGFloat = 8
+
+let bottomBarTopMargin: CGFloat = 6
+let bottomBarDictionary: [String: [String: String]] = [
+    "0": ["icon": "bottom_bar_audio_img", "title": "audio_title"],
+    "1": ["icon": "bottom_bar_emoji_img", "title": "emote_title"],
+    "2": ["icon": "bottom_bar_photo_img", "title": "message_album"],
+    "3": ["icon": "bottom_bar_camera_img", "title": "take_photo"],
+    "4": ["icon": "bottom_bar_call_img", "title": "audio_video_call"],
+    "5": ["icon": "bottom_bar_call_img", "title": "audio_video_call"],
+    "6": ["icon": "bottom_bar_file_img", "title": "message_file"]
+]
+
+protocol ChatBarDelegate: AnyObject {
+    /// trigger when chatBar status changed.
+    func chatBar(_ chatBar: ChatBar, didChangeStatus status: ChatBarStatus)
+    
     /// trigger when send button on keyboard clicked.
     func chatBar(_ chatBar: ChatBar, didSendText text: String)
-
+    
     /// trigger when audio will send.
     func chatBar(_ chatBar: ChatBar, didSendAudioWith path: String, duration: UInt32)
-
+    
     /// trigger when more function button clicked, photo or file.
-    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: MoreFuncitonType)
-
+    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: ZIMKitMenuBarButtonName)
+    
     /// trigger when audio recorder start.
     func chatBar(_ chatBar: ChatBar, didStartToRecord recorder: AudioRecorder)
-
+    
     /// when chat bar constraints changed, the message tableview should scroll to bottom.
     func chatBarDidUpdateConstraints(_ chatBar: ChatBar)
-
+    
     /// the delete button will appear when status is `select`
     func chatBarDidClickDeleteButton(_ chatBar: ChatBar)
+    
+    func chatBarDidClickFullScreenEnterButton(content:String)
 }
 
 enum KeyboardType {
     case keyboard
     case emotion
-    case funtion
+    case function
 }
 
-/// The status of chatbar.
+/// The status of chatBar.
 enum ChatBarStatus {
     /// The `normal` status, keyboard did hide.
     case normal
-
+    
     /// The `keyboard` status, keyboard did show.
-    case keybaord
-
+    case keyboard
+    
     /// The `emotion` status, emotion view did show, and can type emoji to textview.
     case emotion
-
+    
     /// The `function` status, function buttons did show, and can take photo or file.
     case function
-
+    
     /// The `voice` status, voice button did show, can hold on voice button to record.
     case voice
-
+    
     /// The `select`status, delete button did show, can delete selected messages.
     case select
 }
 
 class ChatBar: _View {
-
+    
     // MARK: - Top ContentView
-    lazy var topContentView: UIStackView = {
+    lazy var bottomBarView: UIStackView = {
         let view = UIStackView().withoutAutoresizingMaskConstraints
-        view.backgroundColor = .clear
-        view.distribution = .fill
-        view.alignment = .bottom
-        view.spacing = 12
-        view.layoutMargins = .init(top: 6, left: 12, bottom: 6, right: 12)
+        view.backgroundColor = UIColor(hex: 0xF5F6F7)
+        view.distribution = .equalSpacing
+        view.alignment = .center
+        view.layoutMargins = .init(top: 8, left: 36, bottom: 8, right: 36)
         view.isLayoutMarginsRelativeArrangement = true
         return view
     }()
-
+    
     lazy var emotionButton: UIButton = {
         let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
-        button.setImage(loadImageSafely(with: "chat_face"), for: .normal)
-        button.setImage(loadImageSafely(with: "chat_face_keybord"), for: .selected)
+        button.setImage(loadImageSafely(with: "bottom_bar_emoji_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_emoji_img_sel"), for: .selected)
         button.addTarget(self, action: #selector(emotionButtonClick(_:)), for: .touchUpInside)
         return button
     }()
-
+    
     lazy var addButton: UIButton = {
         let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
         button.setImage(loadImageSafely(with: "chat_face_function"), for: .normal)
-        button.setImage(loadImageSafely(with: "chat_face_function"), for: .selected)
+        button.setImage(loadImageSafely(with: "chat_face_function_selected"), for: .selected)
         button.addTarget(self, action: #selector(addButtonClick(_:)), for: .touchUpInside)
         return button
     }()
-
+    
     lazy var voiceButton: UIButton = {
         let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
-        button.setImage(loadImageSafely(with: "chat_face_voice"), for: .normal)
-        button.setImage(loadImageSafely(with: "chat_face_keybord"), for: .selected)
+        button.setImage(loadImageSafely(with: "bottom_bar_audio_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_audio_img_sel"), for: .selected)
         button.addTarget(self, action: #selector(voiceButtonClick(_:)), for: .touchUpInside)
         return button
     }()
-
+    
+    lazy var imageButton: UIButton = {
+        let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
+        button.setImage(loadImageSafely(with: "bottom_bar_photo_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_photo_img"), for: .selected)
+        button.addTarget(self, action: #selector(imageButtonClick(_:)), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var cameraButton: UIButton = {
+        let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
+        button.setImage(loadImageSafely(with: "bottom_bar_camera_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_camera_img"), for: .selected)
+        button.addTarget(self, action: #selector(cameraButtonClick(_:)), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var audioVideoButton: UIButton = {
+        let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
+        button.setImage(loadImageSafely(with: "bottom_bar_call_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_call_img"), for: .selected)
+        button.addTarget(self, action: #selector(audioVideoCallButtonClick(_:)), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var fileButton: UIButton = {
+        let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
+        button.setImage(loadImageSafely(with: "bottom_bar_file_img"), for: .normal)
+        button.setImage(loadImageSafely(with: "bottom_bar_file_img"), for: .selected)
+        button.addTarget(self, action: #selector(fileButtonClick(_:)), for: .touchUpInside)
+        return button
+    }()
+    
     lazy var recordButton: UIButton = {
         let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
         button.isHidden = true
@@ -111,7 +160,7 @@ class ChatBar: _View {
         button.backgroundColor = .zim_backgroundWhite
         button.setTitle(L10n("message_audio_record_normal"), for: .normal)
         button.setTitle(L10n("message_audio_record_release_to_send"), for: .highlighted)
-
+        
         // add targets
         button.addTarget(
             self, action: #selector(recordButton(started:)),
@@ -130,14 +179,15 @@ class ChatBar: _View {
             for: .touchDragExit)
         return button
     }()
-
+    
     lazy var chatTextView: ChatTextView = {
         let textView = ChatTextView().withoutAutoresizingMaskConstraints
         textView.textView.delegate = self
+        textView.delegate = self
         return textView
     }()
-
-
+    
+    var callList:[ZIMKitMenuBarButtonName] = []
     // MARK: - Function Views
     lazy var faceView: FaceManagerView = {
         let faceView = FaceManagerView().withoutAutoresizingMaskConstraints
@@ -145,21 +195,31 @@ class ChatBar: _View {
         faceView.delegate = self
         return faceView
     }()
-
+    
     lazy var moreView: ChatBarMoreView = {
         let moreView = ChatBarMoreView().withoutAutoresizingMaskConstraints
         moreView.delegate = self
         moreView.isHidden = true
         return moreView
     }()
-
-    var topContentHeightConstraint: NSLayoutConstraint!
+    
+    lazy var sendVoiceView: ZIMKitSendVoiceMessageView = {
+        let view = ZIMKitSendVoiceMessageView().withoutAutoresizingMaskConstraints
+        view.isHidden = true
+        view.delegate = self
+        return view
+    }()
+    
+    var chatViewHeightHeightConstraint: NSLayoutConstraint!
+    
+    var sendVoiceTopConstraint: NSLayoutConstraint!
+    
     lazy var heightConstraint: NSLayoutConstraint! = {
-        let heightConstraint = heightAnchor.pin(equalToConstant: height)
+        let heightConstraint = heightAnchor.pin(equalToConstant: contentViewHeight)
         heightConstraint.isActive = true
         return heightConstraint
     }()
-
+    
     lazy var recorder: AudioRecorder = AudioRecorder()
     lazy var recorderView: RecordView = {
         let view = RecordView().withoutAutoresizingMaskConstraints
@@ -169,12 +229,12 @@ class ChatBar: _View {
             view.bottomAnchor.pin(
                 equalTo: window.safeAreaLayoutGuide.bottomAnchor,
                 constant: -61.0)
-                .isActive = true
+            .isActive = true
         }
         view.isHidden = true
         return view
     }()
-
+    
     lazy var deleteButton: UIButton = {
         let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
         button.layer.cornerRadius = 12.0
@@ -188,70 +248,112 @@ class ChatBar: _View {
         return button
     }()
     
-    var config: InputConfig? = nil
+    lazy var audioVideoCallView: ZIMKitBottomPopView = {
+        let view: ZIMKitBottomPopView = ZIMKitBottomPopView(callList: callList)
+        view.delegate = self
+        return view
+    }()
+    var buttons: [ZIMKitMenuBarButtonName] = ZIMKit().imKitConfig.bottomConfig.smallButtons
     
-    convenience init(config: InputConfig? = nil) {
-        self.init()
-        self.config = config
+    
+    weak var delegate: ChatBarDelegate?
+    
+    var keyboardFrame: CGRect = CGRect(x: 0, y: 10000, width: 0, height: 0)
+    var keyboardAnimationDuration: Double = 0.25
+    
+    private var textViewHeight: CGFloat = textViewHeightMin
+    private var chatViewHeight: CGFloat {
+        return textViewHeight + textViewTopMargin + textViewBottomMargin
     }
-
+    private var contentViewHeight: CGFloat {
+        let contentHeight = chatViewHeight + chatViewTopMargin + bottomBarTopMargin + bottomBarHeight
+        var height = contentHeight
+        switch status {
+        case .normal, .select:
+            height += safeAreaInsets.bottom
+        case .keyboard:
+            height += keyboardFrame.height
+        case .emotion:
+            height += 250 + safeAreaInsets.bottom
+        case .function:
+            height += 246 + safeAreaInsets.bottom
+        case .voice :
+            height += 250 + safeAreaInsets.bottom
+        }
+        return height
+    }
+    
+    convenience init(peerConversation: Bool = true) {
+        self.init()
+        if peerConversation == false {
+            buttons.removeAll(where: { $0 == .voiceCall || $0 == .videoCall })
+        }
+        self.addCallListData()
+    }
+    
     override func setUp() {
         super.setUp()
-        backgroundColor = .zim_backgroundWhite
+        calculatedStackViewSpacing()
+        backgroundColor = UIColor(hex: 0xF5F6F7)
         layer.shadowOffset = CGSize(width: 0, height: -2.0)
         layer.shadowColor = UIColor.zim_shadowBlack.withAlphaComponent(0.04).cgColor
         layer.shadowOpacity = 1.0
         layer.shadowRadius = 8.0
         addNotifications()
-        recorder.delegate = self
+        //        recorder.delegate = self
+        
+        addMoreViewDataSource()
     }
-
+    
+    func calculatedStackViewSpacing() {
+        let maxCount: Int = ZIMKit().imKitConfig.bottomConfig.maxCount
+        let screenWidth: CGFloat = UIScreen.main.bounds.size.width
+        
+        let totalFixedWidth = CGFloat(72) + CGFloat(32) * CGFloat(maxCount)
+        let availableWidth = screenWidth - totalFixedWidth
+        let divider = CGFloat(maxCount - 1)
+        
+        bottomBarView.spacing = CGFloat(availableWidth / divider)
+    }
+    
     override func setUpLayout() {
         super.setUpLayout()
-
-        addSubview(topContentView)
-        topContentView.pin(anchors: [.leading, .trailing, .top], to: self)
-        topContentHeightConstraint = topContentView.heightAnchor.pin(equalToConstant: height)
-        topContentHeightConstraint.isActive = true
-
-        topContentView.setHStack([voiceButton, chatTextView, recordButton, emotionButton, addButton])
+        
+        addSubview(chatTextView)
+        addSubview(bottomBarView)
+        
+        chatViewHeightHeightConstraint = chatTextView.heightAnchor.pin(equalToConstant: 46)
+        NSLayoutConstraint.activate([
+            chatTextView.topAnchor.pin(equalTo: self.topAnchor, constant: chatViewTopMargin),
+            chatTextView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 8),
+            chatTextView.trailingAnchor.pin(equalTo: self.trailingAnchor, constant: -8),
+            chatViewHeightHeightConstraint
+        ])
+        chatViewHeightHeightConstraint.isActive = true
         
         NSLayoutConstraint.activate([
-            voiceButton.widthAnchor.pin(equalToConstant: 34),
-            voiceButton.heightAnchor.pin(equalToConstant: 48),
-            emotionButton.widthAnchor.pin(equalToConstant: 34),
-            emotionButton.heightAnchor.pin(equalToConstant: 48),
-            addButton.widthAnchor.pin(equalToConstant: 34),
-            addButton.heightAnchor.pin(equalToConstant: 48)
+            bottomBarView.topAnchor.pin(equalTo: chatTextView.bottomAnchor, constant: bottomBarTopMargin),
+            bottomBarView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 0),
+            bottomBarView.trailingAnchor.pin(equalTo: self.trailingAnchor, constant: 0),
+            bottomBarView.heightAnchor.pin(equalToConstant: bottomBarHeight)
         ])
         
-        NSLayoutConstraint.activate([
-            chatTextView.topAnchor.pin(
-                equalTo: topContentView.topAnchor,
-                constant: chatTextViewTBMargin),
-            chatTextView.bottomAnchor.pin(
-                equalTo: topContentView.bottomAnchor,
-                constant: chatTextViewTBMargin),
-            recordButton.topAnchor.pin(
-                equalTo: topContentView.topAnchor,
-                constant: chatTextViewTBMargin),
-            recordButton.bottomAnchor.pin(
-                equalTo: topContentView.bottomAnchor,
-                constant: chatTextViewTBMargin),
-        ])
+        addStackViewSubviews()
         
-        voiceButton.isHidden = config?.showVoiceButton == false
-        emotionButton.isHidden = config?.showEmojiButton == false
-        addButton.isHidden = config?.showAddButton == false
-
         addSubview(faceView)
         faceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
-        faceView.topAnchor.pin(equalTo: topContentView.bottomAnchor).isActive = true
-
+        faceView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
+        
         addSubview(moreView)
         moreView.pin(anchors: [.leading, .trailing, .bottom], to: self)
-        moreView.topAnchor.pin(equalTo: topContentView.bottomAnchor).isActive = true
-
+        moreView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
+        
+        addSubview(sendVoiceView)
+        sendVoiceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
+        
+        sendVoiceTopConstraint = sendVoiceView.topAnchor.pin(equalTo: topAnchor,constant: 108)
+        sendVoiceTopConstraint.isActive = true
+        
         addSubview(deleteButton)
         NSLayoutConstraint.activate([
             deleteButton.topAnchor.pin(equalTo: topAnchor, constant: 8.5),
@@ -260,44 +362,94 @@ class ChatBar: _View {
             deleteButton.heightAnchor.pin(equalToConstant: 44)
         ])
     }
-
+    
     deinit {
         removeNotifications()
     }
-
-
+    
+    func addCallListData() {
+        for (_, number) in ZIMKit().imKitConfig.bottomConfig.expandButtons.enumerated() {
+            if number == .voiceCall ||
+                number == .videoCall {
+                callList.append(number)
+            }
+        }
+    }
+    
+    func addStackViewSubviews() {
+        for (_, number) in buttons.enumerated() {
+            if number == .audio {
+                bottomBarView.addArrangedSubview(voiceButton)
+            }
+            if number == .emoji {
+                bottomBarView.addArrangedSubview(emotionButton)
+            }
+            if number == .picture {
+                bottomBarView.addArrangedSubview(imageButton)
+            }
+            if number == .takePhoto {
+                bottomBarView.addArrangedSubview(cameraButton)
+            }
+            if number == .voiceCall ||
+                number == .voiceCall {
+                bottomBarView.addArrangedSubview(audioVideoButton)
+            }
+            if number == .file {
+                bottomBarView.addArrangedSubview(fileButton)
+            }
+            
+            if number == .expand {
+                bottomBarView.addArrangedSubview(addButton)
+            }
+            // index = 3
+            if bottomBarView.arrangedSubviews.count == ZIMKit().imKitConfig.bottomConfig.maxCount
+                && buttons.count > ZIMKit().imKitConfig.bottomConfig.maxCount {
+                //                bottomBarView.addArrangedSubview(addButton)
+                //                addMoreViewDataSource()
+                break
+            }
+        }
+        
+    }
+    
+    func addMoreViewDataSource() {
+        
+        for (_, number) in ZIMKit().imKitConfig.bottomConfig.expandButtons.enumerated() {
+            if number == .expand {
+                continue
+            }
+            //            if  index >= (ZIMKit().imKitConfig.bottomConfig.maxCount - 1) {
+            let stringValue = String(describing: number.rawValue)
+            let dict:NSDictionary = bottomBarDictionary[stringValue]! as NSDictionary
+            let model: ChatBarMoreModel = ChatBarMoreModel(icon: dict["icon"] as! String,
+                                                           title: L10n(dict["title"] as! String),
+                                                           type: number)
+            
+            self.moreView.dataSource.append(model)
+            //            }
+        }
+        
+        var containCall = false
+        for (index, number) in self.moreView.dataSource.enumerated() {
+            if (number.type == .videoCall || number.type == .voiceCall) && containCall == false {
+                containCall = true
+                continue
+            }
+            
+            if (number.type == .videoCall ||
+                number.type == .voiceCall) &&
+                containCall == true {
+                self.moreView.dataSource.remove(at: index)
+            }
+        }
+    }
+    
     fileprivate(set) var status: ChatBarStatus = .normal {
         didSet {
             chatBarStatusDidChanged()
         }
     }
-
-    weak var delegate: ChatBarDelegate?
-
-    var keyboardFrame: CGRect = CGRect(x: 0, y: 10000, width: 0, height: 0)
-    var keyboardAnimationDuration: Double = 0.25
-
-    private var textViewHeight: CGFloat = textViewHeightMin
-    private var height: CGFloat {
-        let contentHeight = textViewHeight + (chatTextViewTBMargin + textViewTBMargin) * 2
-        var height = contentHeight
-        // use the default height, when status is `voice`
-        if status == .voice || status == .select {
-            height -= textViewHeight
-            height += textViewHeightMin
-        }
-        switch status {
-        case .normal, .voice, .select:
-            height += safeAreaInsets.bottom
-        case .keybaord:
-            height += keyboardFrame.height
-        case .emotion:
-            height += 250 + safeAreaInsets.bottom
-        case .function:
-            height += 109 + safeAreaInsets.bottom
-        }
-        return height
-    }
+    
 }
 
 // MARK: - UI
@@ -308,30 +460,37 @@ extension ChatBar {
     }
     func updateTextViewLayout() {
         /// the textView height will change, when text changed
-        /// and update the chatbar height.
+        /// and update the chatBar height.
         let textView = chatTextView.textView
         let size = textView.sizeThatFits(CGSize(width: textView.frame.width, height: textViewHeightMax))
         let oldHeight = textView.frame.height
         textViewHeight = size.height
-
+        
         if textViewHeight > textViewHeightMax {
             textViewHeight = textViewHeightMax
         }
-
+        
         if textViewHeight < textViewHeightMin {
             textViewHeight = textViewHeightMin
         }
-
+        
         if oldHeight == textViewHeight { return }
-
-        let topContentHeight = textViewHeight + (chatTextViewTBMargin + textViewTBMargin)  * 2
-        topContentHeightConstraint.constant = topContentHeight
+        
+        let topContentHeight = textViewHeight + textViewTBMargin + textViewTBMargin
+        NSLayoutConstraint.deactivate([chatViewHeightHeightConstraint!])
+        
+        chatViewHeightHeightConstraint = chatTextView.heightAnchor.constraint(equalToConstant:topContentHeight)
+        chatViewHeightHeightConstraint.isActive = true
+        chatTextView.layoutIfNeeded()
         updateChatBarConstraints()
     }
-
+    
     // update my self's constraints
     func updateChatBarConstraints(_ animated: Bool = true) {
-        self.heightConstraint.constant = self.height
+        self.heightConstraint.constant = self.contentViewHeight
+        if status == .normal {
+            self.addButton.isSelected = false
+        }
         let block = { [weak self] in
             guard let self = self else { return }
             self.superview?.layoutIfNeeded()
@@ -351,11 +510,11 @@ extension ChatBar {
     @discardableResult
     override func resignFirstResponder() -> Bool {
         let r = super.resignFirstResponder()
-        if status == .normal || status == .voice || status == .select { return r }
+        if status == .normal || status == .select { return r }
         status = .normal
         return r
     }
-
+    
     func enableMultiSelect(_ enable: Bool) {
         status = enable ? .select : .normal
     }
@@ -366,96 +525,135 @@ extension ChatBar {
     @objc func emotionButtonClick(_ sender: UIButton) {
         if recorder.isRecording { return }
         switch status {
-        case .normal, .keybaord, .function, .voice, .select:
+        case .normal, .keyboard, .function, .voice, .select:
             status = .emotion
         case .emotion:
-            status = .keybaord
+            status = .keyboard
         }
     }
-
+    
     @objc func addButtonClick(_ sender: UIButton) {
         if recorder.isRecording { return }
+        sender.isSelected = !sender.isSelected
         switch status {
-        case .normal, .emotion, .keybaord, .voice, .select:
+        case .normal, .emotion, .keyboard, .voice, .select:
             status = .function
         case .function:
-            status = .keybaord
+            status = .keyboard
         }
     }
-
+    
     @objc func voiceButtonClick(_ sender: UIButton) {
         if recorder.isRecording { return }
         switch status {
-        case .normal, .keybaord, .emotion, .function, .select:
+        case .normal, .keyboard, .emotion, .function, .select:
             status = .voice
         case .voice:
-            status = .keybaord
+            status = .keyboard
         }
     }
-
+    
     @objc func deleteButtonClick(_ sender: UIButton) {
         delegate?.chatBarDidClickDeleteButton(self)
+    }
+    
+    @objc func imageButtonClick(_ sender: UIButton) {
+        status = .normal
+        delegate?.chatBar(self, didSelectMoreViewWith: .picture)
+    }
+    
+    @objc func cameraButtonClick(_ sender: UIButton) {
+        status = .normal
+        delegate?.chatBar(self, didSelectMoreViewWith: .takePhoto)
+    }
+    
+    @objc func fileButtonClick(_ sender: UIButton) {
+        status = .normal
+        delegate?.chatBar(self, didSelectMoreViewWith: .file)
+    }
+    
+    @objc func audioVideoCallButtonClick(_ sender: UIButton) {
+        status = .normal
+        if ZegoPluginAdapter.callPlugin != nil {
+          audioVideoCallView.showView()
+        } else {
+          print("⚠️⚠️⚠️ callPlugin 不存在")
+        }
     }
 }
 
 extension ChatBar {
-
+    
     /// Update UI when status changed.
     func chatBarStatusDidChanged() {
         faceView.isHidden = status != .emotion
         moreView.isHidden = status != .function
         emotionButton.isSelected = status == .emotion
         voiceButton.isSelected = status == .voice
-        chatTextView.isHidden = status == .voice
-        recordButton.isHidden = status != .voice
+        sendVoiceView.isHidden = status != .voice
+        //        recordButton.isHidden = status != .voice
         backgroundColor = (status == .voice || status == .select)
-            ? .zim_backgroundGray1
-            : .zim_backgroundWhite
-        if status == .keybaord {
+        ? .zim_backgroundGray1
+        : UIColor(hex: 0xF5F6F7)
+        if status == .keyboard {
             chatTextView.textView.becomeFirstResponder()
         } else {
             chatTextView.textView.resignFirstResponder()
         }
-
+        
         deleteButton.isHidden = status != .select
-        topContentView.isHidden = status == .select
-
+        bottomBarView.isHidden = status == .select
+        addButton.isSelected = status == .function
         updateChatBarConstraints()
         delegate?.chatBar(self, didChangeStatus: status)
     }
-
+    
     func clearTextViewInput() {
         chatTextView.textView.text = ""
+    }
+}
+
+extension ChatBar : voiceAndVideoCallDelegate {
+    func didSelectedVoiceAndVideoCall(videoCall: Bool) {
+        delegate?.chatBar(self, didSelectMoreViewWith: videoCall ? .videoCall : .voiceCall)
     }
 }
 
 // MARK: - TextViewDelegate
 extension ChatBar: TextViewDelegate {
     func textViewDeleteBackward(_ textView: TextView) {
-
+        
     }
-
+    
     func textViewShouldBeginEditing(_ textView: UITextView) -> Bool {
         return true
     }
-
+    
     func textViewShouldEndEditing(_ textView: UITextView) -> Bool {
         return true
     }
-
+    
     func textViewDidBeginEditing(_ textView: UITextView) {
-        status = .keybaord
+        status = .keyboard
     }
-
+    
     func textViewDidEndEditing(_ textView: UITextView) {
-
+        
     }
-
+    
     func textViewDidChange(_ textView: UITextView) {
         updateTextViewLayout()
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 7.0  //行间距
+        let fontSize: CGFloat = 15.0
+        
+        let attributedString = NSAttributedString(string: textView.text, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        textView.attributedText = attributedString
         faceView.updateCurrentTextViewContent(textView.text)
+        chatTextView.placeholderLabel.isHidden = textView.text.count > 0 ? true : false
+        
     }
-
+    
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
             if textView.text.isEmpty { status = .normal }
@@ -465,9 +663,9 @@ extension ChatBar: TextViewDelegate {
         }
         return true
     }
-
+    
     func textViewDidChangeSelection(_ textView: UITextView) {
-
+        
     }
 }
 
@@ -483,19 +681,19 @@ extension ChatBar: FaceManagerViewDelegate {
             textView.textStorage.replaceCharacters(in: selectedRange, with: emoji)
             textViewDidChange(textView)
         }
-
+        
         // update the selectedRange
         // the emoji must use the utf16 to count the NSRange length
         selectedRange = NSRange(location: selectedRange.location+emoji.utf16.count, length: 0)
         textView.selectedRange = selectedRange
-
+        
         textView.scrollRangeToVisible(textView.selectedRange)
     }
-
+    
     func faceViewDidDeleteButtonClicked() {
         chatTextView.textView.deleteBackward()
     }
-
+    
     func faceViewDidSendButtonClicked() {
         delegate?.chatBar(self, didSendText: chatTextView.textView.text)
         clearTextViewInput()
@@ -503,7 +701,54 @@ extension ChatBar: FaceManagerViewDelegate {
 }
 
 extension ChatBar: ChatBarMoreViewDelegate {
-    func chatBarMoreView(_ moreView: ChatBarMoreView, didSelectItemWith type: MoreFuncitonType) {
-        delegate?.chatBar(self, didSelectMoreViewWith: type)
+    func chatBarMoreView(_ moreView: ChatBarMoreView, didSelectItemWith type: ZIMKitMenuBarButtonName) {
+        if type == .emoji {
+            self.emotionButtonClick(UIButton())
+        } else if type == .audio {
+            self.voiceButtonClick(UIButton())
+        } else if type == .voiceCall || type == .videoCall {
+          if let callPlugin = ZegoPluginAdapter.callPlugin {
+            self.audioVideoCallView.showView()
+          } else {
+            print("⚠️⚠️⚠️ callPlugin 不存在")
+          }
+        } else {
+            delegate?.chatBar(self, didSelectMoreViewWith: type)
+        }
+    }
+}
+
+extension ChatBar: textViewToolBarDelegate {
+    func didClickFullScreenEnter() {
+        status = .normal
+        delegate?.chatBarDidClickFullScreenEnterButton(content: chatTextView.textView.text)
+    }
+}
+
+
+extension ChatBar: SendVoiceMessageDelegate {
+    func chatBar(didStartToRecord recorder: AudioRecorder) {
+        print("\(#function)")
+        delegate?.chatBar(self, didStartToRecord: recorder)
+        
+        sendVoiceTopConstraint!.constant = 0
+        UIView.animate(withDuration: 0.3, animations: {
+            self.layoutIfNeeded()
+        })
+    }
+    
+    func chatBar(didCancelRecord recorder: AudioRecorder) {
+        sendVoiceTopConstraint!.constant = 108
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            self.layoutIfNeeded()
+        }
+    }
+    
+    func chatBar(didSendAudioWith path: String, duration: UInt32) {
+        sendVoiceTopConstraint!.constant = 108
+        UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
+            self.layoutIfNeeded()
+        }
+        delegate?.chatBar(self, didSendAudioWith: path, duration: duration)
     }
 }

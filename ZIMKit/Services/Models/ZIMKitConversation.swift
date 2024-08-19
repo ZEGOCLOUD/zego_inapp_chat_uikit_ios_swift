@@ -17,7 +17,7 @@ public class ZIMKitConversation: NSObject {
     @objc public var unreadMessageCount: UInt32 = 0
     @objc public var lastMessage: ZIMKitMessage?
     @objc public var orderKey: Int64 = 0
-    
+    @objc public var isPinned: Bool = false
     var zim: ZIMConversation
     
     init(with con: ZIMConversation) {
@@ -26,6 +26,7 @@ public class ZIMKitConversation: NSObject {
         name = con.conversationName
         avatarUrl = con.conversationAvatarUrl
         type = con.type
+        isPinned = con.isPinned
         notificationStatus = con.notificationStatus
         unreadMessageCount = con.unreadMessageCount
         orderKey = con.orderKey

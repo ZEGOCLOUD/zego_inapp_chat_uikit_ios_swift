@@ -12,11 +12,18 @@ class ConversationCell: _TableViewCell {
     static let reuseIdentifier = String(describing: ConversationCell.self)
 
     lazy var headImageView = UIImageView().withoutAutoresizingMaskConstraints
+    lazy var noDisturbingImageView:UIImageView = {
+      let imageView = UIImageView().withoutAutoresizingMaskConstraints
+      imageView.image = loadImageSafely(with: "icon_message_no_disturbing")
+      imageView.clipsToBounds = true
+      imageView.layer.cornerRadius = 7
+      return imageView
+    }()
 
     lazy var titleLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        label.font = UIFont.systemFont(ofSize: 17)
         label.textColor = .zim_textBlack1
         return label
     }()
@@ -24,7 +31,7 @@ class ConversationCell: _TableViewCell {
     lazy var subTitleLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textAlignment = .left
-        label.font = UIFont.systemFont(ofSize: 12, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: 14)
         label.textColor = .zim_textGray1
         return label
     }()
@@ -32,7 +39,7 @@ class ConversationCell: _TableViewCell {
     lazy var timeLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textAlignment = .right
-        label.font = UIFont.systemFont(ofSize: 10, weight: .regular)
+        label.font = UIFont.systemFont(ofSize: 12)
         label.textColor = .zim_textGray2
         return label
     }()
@@ -57,7 +64,7 @@ class ConversationCell: _TableViewCell {
             updateContentIfNeeded()
         }
     }
-
+    var messageTrailingConstraint: NSLayoutConstraint!
     var subtitleLeadingConstraint: NSLayoutConstraint!
 
     override func setUp() {
@@ -71,6 +78,7 @@ class ConversationCell: _TableViewCell {
         super.setUpLayout()
 
         contentView.addSubview(headImageView)
+        contentView.addSubview(noDisturbingImageView)
         contentView.addSubview(titleLabel)
         contentView.addSubview(subTitleLabel)
         contentView.addSubview(timeLabel)
@@ -81,7 +89,7 @@ class ConversationCell: _TableViewCell {
         headImageView.leadingAnchor.pin(
             equalTo: contentView.leadingAnchor,
             constant: 15).isActive = true
-        headImageView.pin(to: 44.0)
+        headImageView.pin(to: 48.0)
         headImageView.pin(anchors: [.centerY], to: contentView)
 
         NSLayoutConstraint.activate([
@@ -98,17 +106,25 @@ class ConversationCell: _TableViewCell {
         ])
 
         subtitleLeadingConstraint = subTitleLabel.leadingAnchor.pin(equalTo: titleLabel.leadingAnchor)
+        messageTrailingConstraint = subTitleLabel.trailingAnchor.pin(equalTo: contentView.trailingAnchor,constant: -28)
         NSLayoutConstraint.activate([
             subtitleLeadingConstraint,
             subTitleLabel.topAnchor.pin(equalTo: titleLabel.bottomAnchor, constant: 4),
-            subTitleLabel.trailingAnchor.pin(equalTo: contentView.trailingAnchor, constant: -16),
+            messageTrailingConstraint,
             subTitleLabel.heightAnchor.pin(equalToConstant: 16.5)
         ])
-
+      
         NSLayoutConstraint.activate([
             timeLabel.topAnchor.pin(equalTo: contentView.topAnchor, constant: 20),
             timeLabel.trailingAnchor.pin(equalTo: contentView.trailingAnchor, constant: -16),
             timeLabel.heightAnchor.pin(equalToConstant: 14.0)
+        ])
+      
+        NSLayoutConstraint.activate([
+            noDisturbingImageView.centerYAnchor.pin(equalTo: subTitleLabel.centerYAnchor, constant: 0),
+            noDisturbingImageView.trailingAnchor.pin(equalTo: contentView.trailingAnchor, constant: -16),
+            noDisturbingImageView.heightAnchor.pin(equalToConstant: 14.0),
+            noDisturbingImageView.widthAnchor.pin(equalToConstant: 14.0)
         ])
 
         NSLayoutConstraint.activate([
@@ -118,12 +134,12 @@ class ConversationCell: _TableViewCell {
         line.pin(anchors: [.trailing, .bottom], to: contentView)
 
         unReadBubble.leadingAnchor.pin(
-            equalTo: contentView.leadingAnchor,
-            constant: 46).isActive = true
+            equalTo: headImageView.trailingAnchor,
+            constant: -9).isActive = true
         unReadBubble.topAnchor.pin(
-            equalTo: contentView.topAnchor,
-            constant: 11).isActive = true
-        unReadBubble.pin(to: 20.0)
+            equalTo: headImageView.topAnchor,
+            constant: -9).isActive = true
+        unReadBubble.pin(to: 18.0)
 
         msgFailImageView.leadingAnchor.pin(equalTo: titleLabel.leadingAnchor).isActive = true
         msgFailImageView.topAnchor.pin(equalTo: titleLabel.bottomAnchor, constant: 3.5).isActive = true
@@ -156,9 +172,28 @@ class ConversationCell: _TableViewCell {
 
         // update subtitle
         subTitleLabel.text = model.lastMessage?.getShortString()
-
+        if model.type == .group {
+          if let sendUserName = model.lastMessage?.info.senderUserName,!sendUserName.isEmpty {
+            self.subTitleLabel.text = sendUserName  + ": " + (model.lastMessage?.getShortString() ?? "")
+          } else {
+            ZIMKit.queryUserInfo(by: model.lastMessage?.info.senderUserID ?? "") { [self] userInfo, error in
+              if error.code.rawValue == 0 {
+                model.lastMessage?.info.senderUserName = userInfo?.name ?? ""
+                self.subTitleLabel.text = (userInfo?.name ?? "")  + ": " + (model.lastMessage?.getShortString() ?? "")
+              }
+            }
+          }
+        }
+      
         unReadBubble.setNum(model.unreadMessageCount)
+        noDisturbingImageView.isHidden = (model.notificationStatus == .notify) ? true : false
+      
+        messageTrailingConstraint.constant = (model.notificationStatus == .notify) ? -28 : -54
+        let color = (model.notificationStatus == .doNotDisturb && model.unreadMessageCount > 0) ? UIColor(hex: 0xBABBC0) : .zim_backgroundRed
 
+        unReadBubble.setViewBackGroundColor(color)
+
+      
         msgFailImageView.isHidden = model.lastMessage?.info.sentStatus != .sendFailed
 
         if model.lastMessage?.info.sentStatus == .sendFailed {
@@ -166,5 +201,8 @@ class ConversationCell: _TableViewCell {
         } else {
             subtitleLeadingConstraint.constant = 0
         }
+        contentView.backgroundColor = (model.isPinned == true) ? UIColor(hex: 0xF8F8F8) : UIColor(hex: 0xFFFFFFF)
+
+        self.layoutIfNeeded()
     }
 }

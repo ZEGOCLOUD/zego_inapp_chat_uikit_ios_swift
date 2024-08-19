@@ -42,10 +42,17 @@ extension ConversationListViewModel {
             callback?(error)
         }
     }
+  
+  func updateConversationPinnedState(_ conversation: ZIMKitConversation, isPinned: Bool,  callback: ((ZIMError) -> Void)?) {
+        ZIMKit.updateConversationPinnedState(for: conversation.id, type: conversation.type, isPinned: isPinned) { error in
+          callback?(error)
+        }
+    }
 }
 
 extension ConversationListViewModel: ZIMKitDelegate {
     func onConversationListChanged(_ conversations: [ZIMKitConversation]) {
         self.conversations = conversations
     }
+  
 }

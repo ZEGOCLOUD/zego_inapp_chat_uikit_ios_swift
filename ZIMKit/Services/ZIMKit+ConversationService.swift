@@ -31,4 +31,26 @@ extension ZIMKit {
     @objc public static func loadMoreConversation(_ callback: LoadMoreConversationCallback? = nil) {
         ZIMKitCore.shared.loadMoreConversation(callback: callback)
     }
+  
+    @objc public static func updateConversationPinnedState(for conversationID: String,
+                                                           type: ZIMConversationType,
+                                                           isPinned: Bool,
+                                                           callback: UpdateConversationPinnedStateCallback? = nil) {
+        ZIMKitCore.shared.updateConversationPinnedState(for: conversationID, type: type, isPinned: isPinned, callback: callback)
+    }
+  
+    @objc public static func setConversationNotificationStatus(for conversationID: String,
+                                                           type: ZIMConversationType,
+                                                                    status:ZIMConversationNotificationStatus,
+                                                           callback: SetConversationNotificationStatusSetCallback? = nil) {
+        ZIMKitCore.shared.setConversationNotificationStatus(for: conversationID, type: type, status: status, callback: callback)
+    }
+  
+      @objc public static func queryConversation(for conversationID: String,
+                                                             type: ZIMConversationType,
+                                                             callback: QueryConversationQueriedCallback? = nil) {
+        ZIMKitCore.shared.queryConversation(conversationID: conversationID, type: type, callback: callback)
+    }
+  
+  
 }

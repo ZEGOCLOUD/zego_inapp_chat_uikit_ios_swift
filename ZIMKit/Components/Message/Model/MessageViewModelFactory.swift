@@ -21,6 +21,8 @@ class MessageViewModelFactory {
             return VideoMessageViewModel(with: msg)
         case .file:
             return FileMessageViewModel(with: msg)
+        case .revoke:
+            return RevokeMessageViewModel(with: msg)
         default:
             return UnknownMessageViewModel(with: msg)
         }

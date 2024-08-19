@@ -115,7 +115,8 @@ final public class ZIMKitMessage: NSObject {
     @objc public let audioContent: AudioMessageContent = .init()
     @objc public let videoContent: VideoMessageContent = .init()
     @objc public let fileContent: FileMessageContent = .init()
-    
+    @objc public var revokeExtendedData :String = ""
+  
     init(with zim: ZIMMessage) {
         self.zim = zim
         super.init()

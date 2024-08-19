@@ -11,6 +11,8 @@ protocol MessageOptionsViewDelegate: AnyObject {
     func messageOptionsView(
         _ optionsView: MessageOptionsView,
         didSelectItemWith type: MessageOptionsView.ContentType)
+
+
 }
 
 class MessageOptionsView: _View {
@@ -19,6 +21,9 @@ class MessageOptionsView: _View {
         case speaker
         case delete
         case select
+
+
+
     }
 
     struct Content {
@@ -26,6 +31,10 @@ class MessageOptionsView: _View {
         var title: String
         var type: ContentType
     }
+
+
+
+
 
     lazy var flowLayout: UICollectionViewFlowLayout = {
         let layout = UICollectionViewFlowLayout()
@@ -55,6 +64,38 @@ class MessageOptionsView: _View {
         view.layer.cornerRadius = 8.0
         return view
     }()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     lazy var indicator = UIImageView()
 
@@ -89,6 +130,10 @@ class MessageOptionsView: _View {
         return nil
     }
 
+
+
+
+
     func show(with targetView: UIView, messageVM: MessageViewModel) {
         self.messageVM = messageVM
         let message = messageVM.message
@@ -109,14 +154,35 @@ class MessageOptionsView: _View {
                                 title: L10n(title),
                                 type: .speaker))
         }
+
         dataSource.append(Content(
                             icon: "message_option_delete",
                             title: L10n("conversation_delete"),
                             type: .delete))
+
         dataSource.append(Content(
                             icon: "message_option_select",
                             title: L10n("message_multi_select"),
                             type: .select))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         collectionView.reloadData()
 
@@ -153,6 +219,18 @@ class MessageOptionsView: _View {
         contentView.frame = .init(x: x, y: y, width: w, height: h)
         indicator.frame = .init(x: indicatorX, y: indicatorY, width: indicatorW, height: indicatorH)
 
+
+
+
+
+
+
+
+
+
+
+
+
         contentView.alpha = 0.0
         indicator.alpha = 0.0
         Animate {
@@ -160,6 +238,7 @@ class MessageOptionsView: _View {
             self.indicator.alpha = 1.0
         }
     }
+
 
     func hide() {
         if superview == nil { return }
@@ -170,6 +249,16 @@ class MessageOptionsView: _View {
             self.removeFromSuperview()
         }
     }
+
+
+
+
+
+
+
+
+
+
 }
 
 extension MessageOptionsView: UICollectionViewDataSource,
@@ -192,3 +281,276 @@ extension MessageOptionsView: UICollectionViewDataSource,
         hide()
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

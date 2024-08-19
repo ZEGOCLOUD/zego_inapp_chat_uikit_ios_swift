@@ -44,7 +44,7 @@
 "message_create_chat" = "发起会话";
 
 "message_send" = "发送";
-"message_album" = "相册";
+"message_album" = "照片";
 "message_file" = "文件";
 "message_dialog_tips" = "提示";
 "message_btn_cancle" = "取消";
@@ -58,7 +58,7 @@
 "message_photo_no_mic_tip" = "麦克风权限未开启";
 "message_photo_no_mic_description" = "不开启麦克风权限，无法在聊天功能中使用";
 "message_access_later" = "以后再说";
-"message_audio_record_normal" = "按住 说话";
+"message_audio_record_normal" = "按住说话";
 "message_audio_record_release_to_send" = "松开 发送";
 "message_audio_record_release_to_cancel" = "松开 取消";
 "message_audio_record_tip1" = "松开发送，上划取消";
@@ -107,3 +107,36 @@
 "album_loading_txt" = "加载中...";
 "album_downloading_txt" = "下载中...";
 "album_over_size" = "文件大小超过限制";
+
+
+"conversation_pinned" = "置顶";
+"conversation_pinned_cancel" = "取消置顶";
+"conversation_chat_setting" = "聊天设置";
+"conversation_chat_top" = "聊天免打扰";
+"conversation_chat_not_disturb" = "聊天置顶";
+"group_chat_member" = "群聊成员";
+"look_member" = "查看%ld位成员";
+"group_member_list" = "群成员列表";
+"add_member_to_group" = "添加";
+"invite_member_join_group" = "邀请";
+"add_member_title" = "添加群成员";
+"enter_invite_member_placeholder" = "请输入要添加的用户ID";
+"user_not_register" = "用户不存在，请重新输入";
+"enter_new_message" = "请输入新消息";
+"take_photo" = "拍摄";
+"audio_video_call" = "音视频通话";
+"audio_call" = "音频通话";
+"video_call" = "视频通话";
+"emote_title" = "表情";
+"audio_title" = "语音";
+"send_message" = "发送给";
+"message_audio_cancel_tip" = "松开取消发送";
+"message_option_reply" = "回复";
+"message_option_forward" = "转发";
+"message_option_revoke" = "撤回";
+"message_delete_confirmation_desc_tip" = "确认要删除此消息？";
+"delete_message_title" = "消息删除";
+"revoke_message" = "%@ 撤回了一条消息";
+"common_message_revoked" = "[消息已撤回]";
+"invite_success" = "邀请成功";
+"already_belong" = "用户已经属于这个群";

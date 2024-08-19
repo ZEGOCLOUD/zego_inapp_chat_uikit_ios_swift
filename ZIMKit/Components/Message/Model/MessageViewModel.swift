@@ -24,7 +24,7 @@ class MessageViewModel: Equatable {
     var cellConfig: MessageCellConfig  = MessageCellConfig()
     var isShowTime: Bool = true
     var isShowName: Bool {
-        message.info.conversationType == .group && message.info.direction == .receive
+      message.info.conversationType == .group && message.info.direction == .receive && message.type != .revoke
     }
     var isShowCheckBox = false
     var isSelected = false
@@ -48,6 +48,8 @@ class MessageViewModel: Equatable {
             return VideoMessageCell.reuseId
         case .file:
             return FileMessageCell.reuseId
+        case .revoke:
+            return RevokeMessageCell.reuseId
         default:
             return UnknownMessageCell.reuseId
         }

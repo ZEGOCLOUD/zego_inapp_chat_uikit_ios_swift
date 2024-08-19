@@ -22,6 +22,8 @@ extension ZIMKitMessage {
             shortStr = L10n("common_message_video")
         case .file:
             shortStr = L10n("common_message_file")
+        case .revoke:
+            shortStr = L10n("common_message_revoked")
         default:
             shortStr = L10n("common_message_unknown")
         }

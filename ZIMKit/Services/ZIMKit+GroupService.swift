@@ -44,4 +44,18 @@ extension ZIMKit {
                                             callback: QueryGroupMemberInfoCallback? = nil) {
         ZIMKitCore.shared.queryGroupMemberInfo(by: userID, groupID: groupID, callback: callback)
     }
+  
+    @objc public static func queryGroupMemberList(by groupID: String,
+                                                  maxCount: Int = 100,
+                                                  nextFlag:Int,
+                                                  callback: QueryGroupMemberListInfoCallback? = nil) {
+        ZIMKitCore.shared.queryGroupMemberListByGroupID(by: groupID, maxCount: maxCount, nextFlag: nextFlag, callback: callback)
+    }
+  
+    @objc public static func inviteUsersIntoGroup(by groupID: String,
+                                                  userIDs: [String],
+                                                  callback: GroupUsersInvitedCallback? = nil) {
+        ZIMKitCore.shared.inviteUsersIntoGroup(by: groupID, userIDs: userIDs, callback: callback)
+    }
+  
 }

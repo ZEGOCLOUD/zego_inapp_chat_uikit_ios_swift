@@ -7,6 +7,7 @@
 
 import Foundation
 
+@available(*, deprecated, message: "This class is deprecated and will be removed in future versions.")
 public class InputConfig: NSObject {
     @objc public var showVoiceButton: Bool = true
     @objc public var showEmojiButton: Bool = true

@@ -23,7 +23,7 @@ class UnReadBubble: _View {
         super.setUp()
 
         backgroundColor = .zim_backgroundRed
-        layer.cornerRadius = 10.0
+        layer.cornerRadius = 9.0
         layer.masksToBounds = true
         isHidden = true
     }
@@ -41,6 +41,10 @@ class UnReadBubble: _View {
         }
         label.text = str
         self.isHidden = num == 0
+    }
+  
+    func setViewBackGroundColor(_ color: UIColor) {
+      self.backgroundColor = color
     }
 
 }

@@ -7,40 +7,40 @@
 
 import UIKit
 import ZIM
+import ZegoPluginAdapter
 
 let tableHeaderHeight = 40.0
 
 open class ZIMKitMessagesListVC: _ViewController {
-
-    lazy var viewModel = MessaeListViewModel(conversationID: conversationID, conversationType)
     
+    lazy var viewModel = MessageListViewModel(conversationID: conversationID, conversationType)
+    @available(*, deprecated, message: "This property is deprecated and will be removed in future versions.")
     @objc public weak var delegate: ZIMKitMessagesListVCDelegate?
-
+    
     @objc public var conversationID: String = ""
     @objc public var conversationName: String = ""
     @objc public var conversationType: ZIMConversationType = .peer
-    @objc public var inputConfig: InputConfig?
-    
+//    @objc public var inputConfig: InputConfig?
+    private var conversation: ZIMKitConversation?
     var firstHistoryMessageViewModel: MessageViewModel?
-
+    
     /// Create a session page VC first, then you can create a session page by pushing or presenting the VC.
     /// - Parameters:
     ///   - conversationID: session ID.
     ///   - type: session type.
     ///   - conversationName: session name.
     @objc public convenience init(conversationID: String,
-                            type: ZIMConversationType,
-                            conversationName: String = "",
-                            inputConfig: InputConfig? = nil) {
+                                  type: ZIMConversationType,
+                                  conversationName: String = "") {
         self.init()
         self.conversationID = conversationID
         self.conversationName = conversationName
         self.conversationType = type
-        self.inputConfig = inputConfig
+//        self.inputConfig = inputConfig
     }
-
+    
     lazy var zoomTransitionController = ZoomTransitionController()
-
+    
     lazy var indicatorView: UIActivityIndicatorView = {
         let indicatorView = UIActivityIndicatorView(frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: tableHeaderHeight))
         if #available(iOS 13.0, *) {
@@ -50,7 +50,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         }
         return indicatorView
     }()
-
+    
     lazy var tableView: UITableView = {
         let tableView = UITableView().withoutAutoresizingMaskConstraints
         tableView.separatorStyle = .none
@@ -63,7 +63,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.tableHeaderView = indicatorView
-
+        
         tableView.register(TextMessageCell.self, forCellReuseIdentifier: TextMessageCell.reuseId)
         tableView.register(SystemMessageCell.self, forCellReuseIdentifier: SystemMessageCell.reuseId)
         tableView.register(ImageMessageCell.self, forCellReuseIdentifier: ImageMessageCell.reuseId)
@@ -71,63 +71,65 @@ open class ZIMKitMessagesListVC: _ViewController {
         tableView.register(VideoMessageCell.self, forCellReuseIdentifier: VideoMessageCell.reuseId)
         tableView.register(FileMessageCell.self, forCellReuseIdentifier: FileMessageCell.reuseId)
         tableView.register(UnknownMessageCell.self, forCellReuseIdentifier: UnknownMessageCell.reuseId)
-
+        tableView.register(RevokeMessageCell.self, forCellReuseIdentifier: RevokeMessageCell.reuseId)
         let tap = UITapGestureRecognizer(target: self, action: #selector(tap(_:)))
         tableView.addGestureRecognizer(tap)
-
+        
         return tableView
     }()
-
+    
     lazy var chatBar: ChatBar = {
-        let chatBar = ChatBar(config: inputConfig).withoutAutoresizingMaskConstraints
+        let chatBar = ChatBar(peerConversation: conversationType == .peer).withoutAutoresizingMaskConstraints
         chatBar.delegate = self
         return chatBar
     }()
-
-    lazy var optionsView: MessageOptionsView = {
-        let optionsView = MessageOptionsView(frame: view.bounds)
-            .withoutAutoresizingMaskConstraints
-        optionsView.delegate = self
-        return optionsView
-    }()
-
+    
+    //  lazy var optionsView: MessageOptionsView = {
+    //    let optionsView = MessageOptionsView(frame: view.bounds)
+    //      .withoutAutoresizingMaskConstraints
+    //    optionsView.delegate = self
+    //    return optionsView
+    //  }()
+    
+    var optionsView: MessageOptionsView?
+    
     lazy var audioPlayer = MessageAudioPlayer(with: tableView)
     
     open override func setUp() {
         super.setUp()
-
-        view.backgroundColor = .zim_backgroundGray1
+        
+        view.backgroundColor = .zim_backgroundGray5
     }
-
+    
     open override func setUpLayout() {
         super.setUpLayout()
-
+        
         // we need add tableView first,
         // or the navigationbar will change to translucent on ios 15.
         view.addSubview(tableView)
         view.addSubview(chatBar)
-
+        
         chatBar.pin(anchors: [.left, .right, .bottom], to: view)
-
+        
         tableView.pin(anchors: [.left, .right, .top], to: view)
         tableView.bottomAnchor.pin(equalTo: chatBar.topAnchor).isActive = true
     }
-
+    
     open override func updateContent() {
         super.updateContent()
-
+        
     }
-
+    
     func setupNav() {
         if conversationName.count > 0 {
             navigationItem.title = conversationName
         } else {
             let name = conversationType == .peer ?
-                L10n("message_title_chat") :
-                L10n("message_title_group_chat")
+            L10n("message_title_chat") :
+            L10n("message_title_group_chat")
             navigationItem.title = name
         }
-
+        
         let leftButton = UIButton(type: .custom)
         if viewModel.isShowCheckBox {
             leftButton.setTitle(L10n("conversation_cancel"), for: .normal)
@@ -143,52 +145,53 @@ open class ZIMKitMessagesListVC: _ViewController {
         }
         let leftItem = UIBarButtonItem(customView: leftButton)
         self.navigationItem.leftBarButtonItem = leftItem
-
-        if conversationType == .group {
-            let rightButton = UIButton(type: .custom)
-            rightButton.setImage(loadImageSafely(with: "chat_nav_right"), for: .normal)
-            rightButton.addTarget(self, action: #selector(rightItemClick(_:)), for: .touchUpInside)
-            rightButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
-            rightButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
-            let rightItem = UIBarButtonItem(customView: rightButton)
-            navigationItem.rightBarButtonItem = viewModel.isShowCheckBox ? nil : rightItem
-        }
         
-        DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
-            guard let header = self.delegate?.getMessageListHeaderBar?(self) else { return }
-            
-            if let titleView = header.titleView {
-                self.navigationItem.titleView = titleView
-            }
-            
-            if let leftItems = header.leftItems {
-                self.navigationItem.leftBarButtonItems = leftItems
-            }
-            
-            if let rightItems = header.rightItems {
-                self.navigationItem.rightBarButtonItems = rightItems
-            }
-        }
+        let rightButton = UIButton(type: .custom)
+        rightButton.setImage(loadImageSafely(with: "chat_nav_right"), for: .normal)
+        rightButton.addTarget(self, action: #selector(rightItemClick(_:)), for: .touchUpInside)
+        rightButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        rightButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+        let rightItem = UIBarButtonItem(customView: rightButton)
+        navigationItem.rightBarButtonItem = viewModel.isShowCheckBox ? nil : rightItem
+        
+        
+        //        DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
+        //            guard let header = self.delegate?.getMessageListHeaderBar?(self) else { return }
+        //
+        //            if let titleView = header.titleView {
+        //                self.navigationItem.titleView = titleView
+        //            }
+        //
+        //            if let leftItems = header.leftItems {
+        //                self.navigationItem.leftBarButtonItems = leftItems
+        //            }
+        //
+        //            if let rightItems = header.rightItems {
+        //                self.navigationItem.rightBarButtonItems = rightItems
+        //            }
+        //        }
     }
-
+    
     open override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
     }
-
+    
     open override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         configViewModel()
         getMessageList()
         loadConversationInfo()
         addNotifications()
         setupNav()
+        getCurrentConversionInfo()
+        initCallConfig()
     }
-
+    
     deinit {
         removeNotifications()
     }
-
+    
     open override func willMove(toParent parent: UIViewController?) {
         super.willMove(toParent: parent)
         if parent == nil {
@@ -206,7 +209,19 @@ open class ZIMKitMessagesListVC: _ViewController {
         audioPlayer.stop()
         chatBar.resignFirstResponder()
     }
-
+    
+    func initCallConfig() {
+        
+        let appID = ZIMKit().imKitConfig.appID
+        let appSign = ZIMKit().imKitConfig.appSign
+        let userID = ZIMKit.localUser?.id ?? ""
+        let userName = ZIMKit.localUser?.name ?? ""
+        let callConfig = ZIMKit().imKitConfig.callPluginConfig
+        if (appID ?? 0 <= 0) || appSign.count <= 0  || callConfig == nil {return}
+        ZegoPluginAdapter.callPlugin?.initWith(appID: appID!, appSign: appSign, userID: userID, userName: userName, callPluginConfig: callConfig!)
+        
+    }
+    
     // observe viewmodel's properties
     func configViewModel() {
         viewModel.$isReceiveNewMessage.bind { [weak self] _ in
@@ -214,13 +229,23 @@ open class ZIMKitMessagesListVC: _ViewController {
             self?.scrollToBottom(true)
             self?.hideOptionsView()
         }
+        
+        viewModel.$isRevokeMessageIndexPath.bind { [weak self] _ in
+            
+            if let validIndexPath = self?.viewModel.isRevokeMessageIndexPath {
+                self?.tableView.reloadRows(at: [validIndexPath], with: UITableView.RowAnimation.none)
+                self?.scrollToBottom(true)
+                self?.hideOptionsView()
+            }
+        }
+        
         viewModel.$isSendingNewMessage.bind { [weak self] _ in
             self?.tableView.reloadData()
         }
-//        viewModel.$deleteMessages.bind { [weak self] messages in
-//            if messages.count == 0 { return }
-//            self?.deleteMessages(messages)
-//        }
+        //        viewModel.$deleteMessages.bind { [weak self] messages in
+        //            if messages.count == 0 { return }
+        //            self?.deleteMessages(messages)
+        //        }
         viewModel.$connectionEvent.bind { [weak self] event in
             if event == .kickedOut {
                 self?.chatBar.cancelRecord()
@@ -238,13 +263,13 @@ open class ZIMKitMessagesListVC: _ViewController {
             self.tableView.layoutIfNeeded()
             
             guard let lastMessageViewModel = self.firstHistoryMessageViewModel else { return }
-
+            
             var visibleHeight = 0.0
             for msgViewModel in self.viewModel.messageViewModels {
                 if msgViewModel === lastMessageViewModel { break }
                 visibleHeight += msgViewModel.cellHeight
             }
-
+            
             if self.viewModel.isNoMoreMsg {
                 visibleHeight -= tableHeaderHeight
             }
@@ -276,16 +301,16 @@ open class ZIMKitMessagesListVC: _ViewController {
             self.scrollToBottom(false)
         }
     }
-
+    
     func loadMoreMessages() {
-
+        
         if viewModel.isLoadingData { return }
-
+        
         if viewModel.isNoMoreMsg {
             indicatorView.stopAnimating()
             return
         }
-
+        
         firstHistoryMessageViewModel = viewModel.messageViewModels.first
         
         viewModel.loadMoreMessages { [weak self] error in
@@ -297,7 +322,7 @@ open class ZIMKitMessagesListVC: _ViewController {
             }
         }
     }
-
+    
     func loadConversationInfo() {
         if conversationType == .peer {
             viewModel.queryOtherUserInfo { [weak self] otherUser, error in
@@ -307,10 +332,65 @@ open class ZIMKitMessagesListVC: _ViewController {
                 }
             }
         } else if conversationType == .group {
-            viewModel.queryGroupInfo { [weak self] info, error in
-                if error.code == .ZIMErrorCodeSuccess {
-                    self?.navigationItem.title = info?.name
-                }
+            performLogicAfterBothInterfacesSucceed()
+        }
+    }
+    
+    func queryGroupInfo(completion: @escaping (Bool,String) -> Void) {
+        viewModel.queryGroupInfo { [weak self] info, error in
+            if error.code == .ZIMErrorCodeSuccess {
+                self?.navigationItem.title = info?.name
+                completion(true,info?.name ?? "")
+            } else {
+                completion(false,"")
+            }
+        }
+    }
+    
+    func queryGroupMemberList(completion: @escaping (Bool,Int) -> Void) {
+        ZIMKit.queryGroupMemberList(by: conversationID, maxCount: 100, nextFlag: 0) { memberList, nextFlag, error in
+            if error.code.rawValue == 0 {
+                completion(true,memberList.count)
+            } else {
+                print("[ERROR] queryGroupMemberList code = \(error.code)")
+                completion(false,0)
+            }
+        }
+    }
+    
+    func performLogicAfterBothInterfacesSucceed() {
+        var interface1Succeeded = false
+        var interface2Succeeded = false
+        var groupName = ""
+        var groupCount = 0
+        queryGroupInfo { [self] succeeded,name in
+            interface1Succeeded = succeeded
+            groupName = name
+            
+            if interface1Succeeded && interface2Succeeded {
+                self.navigationItem.title = name + "  " + "(\(groupCount))"
+                self.conversationName = name
+            }
+        }
+        
+        queryGroupMemberList { [self] succeeded,count in
+            interface2Succeeded = succeeded
+            groupCount = count
+            if interface1Succeeded && interface2Succeeded {
+                self.navigationItem.title = groupName + "  " + "(\(groupCount))"
+            }
+        }
+    }
+    
+    
+    func getCurrentConversionInfo() {
+        ZIMKit.queryConversation(for: conversationID, type: conversationType) { [weak self] conversation, error in
+            if error.code.rawValue == 0 {
+                self?.conversation = conversation
+            } else {
+                self?.conversation = ZIMKitConversation(with: ZIMConversation())
+                self?.conversation?.id = self?.conversationID ?? ""
+                self?.conversation?.name = self?.conversationName ?? ""
             }
         }
     }
@@ -325,12 +405,21 @@ extension ZIMKitMessagesListVC {
             navigationController?.popViewController(animated: true)
         }
     }
-
+    
     @objc func rightItemClick(_ btn: UIButton) {
-        let groupDetailVC = GroupDetailVC(conversationID, conversationName)
-        self.navigationController?.pushViewController(groupDetailVC, animated: true)
+        if conversationType == .group {
+            let groupDetailVC = GroupDetailVC(conversation: conversation!)
+            groupDetailVC.delegate = self
+            self.navigationController?.pushViewController(groupDetailVC, animated: true)
+            
+        } else {
+            let singleChatDetailVC = ZIMKitSingleDetailChatVC(conversation: conversation!)
+            singleChatDetailVC.delegate = self
+            self.navigationController?.pushViewController(singleChatDetailVC, animated: true)
+            
+        }
     }
-
+    
     @objc func tap(_ tap: UITapGestureRecognizer?) {
         chatBar.resignFirstResponder()
     }
@@ -341,21 +430,21 @@ extension ZIMKitMessagesListVC: UITableViewDataSource {
     public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.messageViewModels.count
     }
-
+    
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
+        
         if indexPath.row >= viewModel.messageViewModels.count {
             return MessageCell()
         }
-
+        
         let messageVM = viewModel.messageViewModels[indexPath.row]
         messageVM.isShowCheckBox = viewModel.isShowCheckBox
-
+        
         let cell = self.tableView.dequeueReusableCell(withIdentifier: messageVM.reuseIdentifier, for: indexPath) as! MessageCell
-
+        
         cell.messageVM = messageVM
         cell.delegate = self
-
+        
         return cell
     }
     
@@ -382,13 +471,13 @@ extension ZIMKitMessagesListVC: UITableViewDelegate {
             return 59.0
         }
         let messageVM = viewModel.messageViewModels[indexPath.row]
-        return messageVM.cellHeight
+        return messageVM.message.type == .revoke ? 30 : messageVM.cellHeight
     }
-
+    
     public func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
         chatBar.resignFirstResponder()
     }
-
+    
     public func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let minContentY = tableHeaderHeight - tableView.safeAreaInsets.top - tableView.contentInset.top
         if scrollView.contentOffset.y < minContentY && !viewModel.isNoMoreMsg {
@@ -412,16 +501,16 @@ extension ZIMKitMessagesListVC: UITableViewDelegate {
 
 extension ZIMKitMessagesListVC: ChatBarDelegate {
     func chatBar(_ chatBar: ChatBar, didChangeStatus status: ChatBarStatus) {
-
+        
     }
-
+    
     func chatBarDidUpdateConstraints(_ chatBar: ChatBar) {
         if chatBar.status == .select ||
             chatBar.status == .normal ||
             chatBar.status == .voice { return }
         scrollToBottom(false)
     }
-
+    
     func chatBar(_ chatBar: ChatBar, didSendText text: String) {
         hideOptionsView()
         if text.isEmpty {
@@ -447,7 +536,7 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             }
         }
     }
-
+    
     func chatBar(_ chatBar: ChatBar, didSendAudioWith path: String, duration: UInt32) {
         if conversationType == .peer {
             ZIMKit.sendAudioMessage(path, duration: duration, to: conversationID, type: conversationType) { [weak self] error in
@@ -463,19 +552,28 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             }
         }
     }
-
-    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: MoreFuncitonType) {
-        if type == .photo {
+    
+    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: ZIMKitMenuBarButtonName) {
+        if type == .picture {
             selectPhotoForSend()
         } else if type == .file {
             selectFileForSend()
+        } else if type == .takePhoto {
+            takeCameraPhoto()
+        } else if type == .voiceCall ||
+                    type == .videoCall {
+            
+          let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "")
+            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: "", timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? ""), callback: { data in
+            })
         }
+        //FIXME: 更多类型
     }
-
+    
     func chatBar(_ chatBar: ChatBar, didStartToRecord recorder: AudioRecorder) {
         audioPlayer.stop()
     }
-
+    
     func chatBarDidClickDeleteButton(_ chatBar: ChatBar) {
         let messages = viewModel.messageViewModels.filter({ $0.isSelected })
         if messages.count == 0 { return }
@@ -486,38 +584,57 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             }
         }
     }
+    func chatBarDidClickFullScreenEnterButton(content:String) {
+        let fullEnterView = ZIMKitFullScreenEnterView(content: content, conversationName: self.conversationName)
+        fullEnterView.delegate = self
+        fullEnterView.showView()
+    }
 }
 
+// MARK: - FullScreenViewDelegate
+extension ZIMKitMessagesListVC: FullScreenEnterDelegate {
+    func didClickExitFullScreenEnter(content: String) {
+        chatBar.chatTextView.textView.becomeFirstResponder()
+        chatBar.chatTextView.textView.text = content
+    }
+    
+    func didClickSendMessage(content: String) {
+        chatBar.chatTextView.textView.becomeFirstResponder()
+        chatBar(chatBar, didSendText: content)
+        chatBar.clearTextViewInput()
+    }
+    
+}
 // MARK: - MessageCellDelegate
 extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
-                          UIViewControllerTransitioningDelegate,
-                          AudioMessageCellDelegate,
-                          VideoMessageCellDelegate,
-                          FileMessageDelegate {
+                                UIViewControllerTransitioningDelegate,
+                                AudioMessageCellDelegate,
+                                VideoMessageCellDelegate,
+                                FileMessageDelegate {
     func imageMessageCell(_ cell: ImageMessageCell, didClickImageWith messageVM: ImageMessageViewModel) {
         let galleryVC = GalleryVC()
         galleryVC.modalPresentationStyle = .overFullScreen
         galleryVC.transitioningDelegate = self
-
+        
         let viewModels = viewModel.messageViewModels.filter { $0.message.type == .image }
         let index = viewModels.firstIndex(where: { $0.message === messageVM.message }) ?? 0
-
+        
         galleryVC.content = .init(messageViewModels: viewModels,
                                   currentMessageVM: messageVM,
                                   index: index)
-
+        
         galleryVC.transitionController = zoomTransitionController
-
+        
         zoomTransitionController.presentedVCImageView = { [weak galleryVC] in
             let imageView =  galleryVC?.imageViewToAnimateWhenDismissing
             return imageView
         }
-
+        
         zoomTransitionController.presentingImageView = { [weak self, weak galleryVC, weak cell] in
             guard let self = self else { return nil }
             guard let galleryVC = galleryVC else { return nil }
             guard let cell = cell else { return nil }
-
+            
             guard let cells = self.tableView.visibleCells as? [MessageCell] else { return nil }
             for cell in cells where cell.messageVM === galleryVC.content.currentMessageVM  {
                 guard let cell = cell as? ImageMessageCell else { return nil }
@@ -528,24 +645,24 @@ extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
         zoomTransitionController.fromImageView = cell.thumbnailImageView
         present(galleryVC, animated: true)
     }
-
+    
     public func animationController(forPresented presented: UIViewController, presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         zoomTransitionController.animationController(
             forPresented: presented,
             presenting: presenting,
             source: source)
     }
-
+    
     public func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
         zoomTransitionController.animationController(forDismissed: dismissed)
     }
-
+    
     public func interactionControllerForDismissal(using animator: UIViewControllerAnimatedTransitioning) -> UIViewControllerInteractiveTransitioning? {
         zoomTransitionController.interactionControllerForDismissal(using: animator)
     }
-
+    
     func audioMessageCell(_ cell: AudioMessageCell, didClickWith message: AudioMessageViewModel) {
-//        if FileManager.default.fileExists(atPath: message.fileLocalPath) {
+        //        if FileManager.default.fileExists(atPath: message.fileLocalPath) {
         if FileManager.default.fileExists(atPath: message.message.audioContent.fileLocalPath) {
             if !audioPlayer.play(with: message) {
                 // show play failed tips.
@@ -555,7 +672,7 @@ extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
             print("⚠️Audio File not exist: \(message.message.audioContent.fileLocalPath)")
         }
     }
-
+    
     func videoMessageCell(_ cell: VideoMessageCell, didClickImageWith messageVM: VideoMessageViewModel) {
         audioPlayer.stop()
         let playerViewController = MessageAVPlayerViewController()
@@ -564,11 +681,11 @@ extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
             playerViewController.play()
         }
     }
-
+    
     func fileMessageCell(_ cell: FileMessageCell, didClickImageWith message: FileMessageViewModel) {
         previewFile(with: message, cell: cell)
     }
-
+    
     func messageCell(_ cell: MessageCell, longPressWith message: MessageViewModel) {
         showOptionsView(cell, message)
     }
@@ -591,7 +708,7 @@ extension ZIMKitMessagesListVC {
             }
         }
     }
-
+    
     func sendVideoMessage(with url: URL) {
         if conversationType == .peer {
             ZIMKit.sendVideoMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
@@ -607,7 +724,7 @@ extension ZIMKitMessagesListVC {
             }
         }
     }
-
+    
     func sendFileMessage(with url: URL) {
         if conversationType == .peer {
             ZIMKit.sendFileMessage(url.path, to: conversationID, type: conversationType) { [weak self] error in
@@ -633,7 +750,7 @@ extension ZIMKitMessagesListVC {
             tableView.setContentOffset(offset, animated: animated)
         }
     }
-
+    
     func showError(_ error: ZIMError, _ type: ZIMMessageType = .text) {
         if error.code == .ZIMErrorCodeNetworkModuleNetworkError {
             HUDHelper.showErrorMessageIfNeeded(
@@ -658,5 +775,27 @@ extension ZIMKitMessagesListVC {
                 error.code.rawValue,
                 defaultMessage: error.message)
         }
+    }
+}
+
+extension ZIMKitMessagesListVC : messageConversationUpdateDelegate,groupConversationUpdateDelegate {
+    func messagePinned(isPinned: Bool) {
+        self.conversation?.isPinned = isPinned
+    }
+    
+    func messageNotDisturb(isDisturb: Bool) {
+        self.conversation?.notificationStatus = isDisturb ? .notify : .doNotDisturb
+    }
+    
+    func groupMessagePinned(isPinned: Bool) {
+        self.conversation?.isPinned = isPinned
+    }
+    
+    func groupMessageNotDisturb(isDisturb: Bool) {
+        self.conversation?.notificationStatus = isDisturb ? .notify : .doNotDisturb
+    }
+  
+    func groupMemberList(memberCount: Int) {
+      self.navigationItem.title = conversationName + "  " + "(\(memberCount))"
     }
 }

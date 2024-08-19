@@ -81,4 +81,30 @@ extension ZIMKitCore {
             }
         })
     }
+    
+    func updateConversationPinnedState(for conversationID: String,
+                                       type: ZIMConversationType,
+                                       isPinned: Bool,
+                                       callback: UpdateConversationPinnedStateCallback? = nil) {
+        zim?.updateConversationPinnedState(isPinned, conversationID: conversationID, conversationType: type, callback: { conversationID, conversationType, errorInfo in
+            callback?(errorInfo)
+        })
+    }
+    
+    func setConversationNotificationStatus(for conversationID: String,
+                                           type: ZIMConversationType,
+                                           status: ZIMConversationNotificationStatus,
+                                           callback: UpdateConversationPinnedStateCallback? = nil) {
+        zim?.setConversationNotificationStatus(status, conversationID: conversationID, conversationType: type, callback: { conversationID, conversationType, errorInfo in
+            callback?(errorInfo)
+        })
+    }
+    
+    func queryConversation(conversationID: String,
+                           type: ZIMConversationType,
+                           callback: QueryConversationQueriedCallback? = nil) {
+        zim?.queryConversation(by: conversationID, conversationType: type, callback: { conversion, errorInfo in
+            callback?(ZIMKitConversation(with: conversion),errorInfo)
+        })
+    }
 }

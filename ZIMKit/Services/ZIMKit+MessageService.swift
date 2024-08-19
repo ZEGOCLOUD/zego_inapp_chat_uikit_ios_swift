@@ -84,6 +84,13 @@ extension ZIMKit {
                                           conversationName:conversationName,
                                           callback: callback)
     }
+  
+  
+    @objc public static func revokeMessage(_ message: ZIMKitMessage,
+                                           config: ZIMMessageRevokeConfig = ZIMMessageRevokeConfig(),
+                                       callback: revokeMessageCallback? = nil) {
+        ZIMKitCore.shared.revokeMessage(message, config: config, callback: callback)
+    }
     
     @objc public static func downloadMediaFile(with message: ZIMKitMessage,
                                          callback: DownloadMediaFileCallback? = nil) {

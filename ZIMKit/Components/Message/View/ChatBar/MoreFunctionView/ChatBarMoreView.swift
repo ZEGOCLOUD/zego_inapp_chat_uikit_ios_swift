@@ -7,23 +7,23 @@
 
 import Foundation
 
-enum MoreFuncitonType {
-    case photo
-    case file
-}
+//enum MoreFunctionType {
+//    case photo
+//    case file
+//}
 
 struct ChatBarMoreModel{
     let icon: String
     let title: String
-    let type: MoreFuncitonType
+    let type: ZIMKitMenuBarButtonName
 }
 
 protocol ChatBarMoreViewDelegate: AnyObject {
-    func chatBarMoreView(_ moreView: ChatBarMoreView, didSelectItemWith type: MoreFuncitonType)
+    func chatBarMoreView(_ moreView: ChatBarMoreView, didSelectItemWith type: ZIMKitMenuBarButtonName)
 }
 
 class ChatBarMoreView: _View {
-
+    
     lazy var flowLayout: UICollectionViewFlowLayout = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
@@ -47,29 +47,34 @@ class ChatBarMoreView: _View {
                                 forCellWithReuseIdentifier: ChatBarMoreViewCell.reuseIdentifier)
         return collectionView
     }()
-
+    
     weak var delegate: ChatBarMoreViewDelegate?
-
-    lazy var dataSource: [ChatBarMoreModel] = [
-        ChatBarMoreModel(icon: "chat_face_photo",
-                         title: L10n("message_album"),
-                         type: .photo),
-        ChatBarMoreModel(icon: "chat_face_file",
-                         title: L10n("message_file"),
-                         type: .file)
-    ]
-
+    
+    //    lazy var dataSource: [ChatBarMoreModel] = [
+    //        ChatBarMoreModel(icon: "chat_face_photo",
+    //                         title: L10n("message_album"),
+    //                         type: .picture),
+    //        ChatBarMoreModel(icon: "chat_face_file",
+    //                         title: L10n("message_file"),
+    //                         type: .file)
+    //    ]
+    public var dataSource:[ChatBarMoreModel] = []
     override func setUp() {
         super.setUp()
         backgroundColor = .zim_backgroundGray2
     }
-
+    
     override func setUpLayout() {
         super.setUpLayout()
-
+        
         addSubview(collectionView)
-        collectionView.pin(anchors: [.left, .right, .top], to: self)
-        collectionView.pin(anchors: [.bottom], to: safeAreaLayoutGuide)
+        
+        NSLayoutConstraint.activate([
+            collectionView.topAnchor.pin(equalTo: topAnchor),
+            collectionView.leadingAnchor.pin(equalTo: leadingAnchor),
+            collectionView.trailingAnchor.pin(equalTo: trailingAnchor),
+            collectionView.heightAnchor.pin(equalToConstant:100)
+        ])
     }
 }
 
@@ -79,25 +84,25 @@ extension ChatBarMoreView: UICollectionViewDataSource,
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return dataSource.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChatBarMoreViewCell.reuseIdentifier, for: indexPath) as? ChatBarMoreViewCell else {
             return ChatBarMoreViewCell()
         }
-
+        
         if indexPath.row >= dataSource.count { return cell }
-
+        
         cell.fillData(dataSource[indexPath.row])
-
+        
         return cell
     }
-
-
+    
+    
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let width = (bounds.width - 5 * 30) / 4
         return CGSize(width: width, height: 91)
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.row >= dataSource.count { return }
         let data = dataSource[indexPath.row]

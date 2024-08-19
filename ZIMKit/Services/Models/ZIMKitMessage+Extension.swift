@@ -83,6 +83,12 @@ extension ZIMKitMessage {
             fileContent.fileName = f(fileContent.fileName, zim.fileName)
             fileContent.fileSize = f(fileContent.fileSize, zim.fileSize)
         }
+      
+        if type == .revoke {
+          if let revokeObject = zim as? ZIMRevokeMessage {
+            revokeExtendedData = revokeObject.revokeExtendedData
+          }
+        }
     }
     
     func updateUploadProgress(currentSize: UInt64, totalSize: UInt64) {

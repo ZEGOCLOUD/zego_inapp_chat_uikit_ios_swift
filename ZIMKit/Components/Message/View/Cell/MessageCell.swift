@@ -69,7 +69,16 @@ class MessageCell: _TableViewCell {
         button.backgroundColor = .clear
         return button
     }()
-
+  
+    lazy var revokeLabel: UILabel = {
+        let label :UILabel = UILabel().withoutAutoresizingMaskConstraints
+        label.textColor = .zim_textGray2
+        label.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        label.isHidden = true
+        label.textAlignment = .center
+        return label
+    }()
+    
     var messageVM: MessageViewModel? {
         didSet {
             updateContentIfNeeded()
@@ -271,7 +280,7 @@ class MessageCell: _TableViewCell {
             with: messageVM.isSelected
                 ? "message_multiSelect_selected"
                 : "message_multiSelect_normal")
-
+      
     }
     
     func updateSenderUserInfo() {

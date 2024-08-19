@@ -29,6 +29,12 @@ public typealias InviteUsersToJoinGroupCallback = (_ groupMembers: [ZIMKitGroupM
 
 public typealias DeleteConversationCallback = (_ error: ZIMError) -> Void
 
+public typealias UpdateConversationPinnedStateCallback = (_ error: ZIMError) -> Void
+
+public typealias QueryConversationQueriedCallback = (_ conversation: ZIMKitConversation, _ error: ZIMError) -> Void
+
+public typealias SetConversationNotificationStatusSetCallback = (_ error: ZIMError) -> Void
+
 public typealias ClearUnreadCountCallback = (_ error: ZIMError) -> Void
 
 public typealias GetConversationListCallback = (_ conversations: [ZIMKitConversation],
@@ -37,6 +43,8 @@ public typealias GetConversationListCallback = (_ conversations: [ZIMKitConversa
 public typealias LoadMoreConversationCallback = (_ error: ZIMError) -> Void
 
 public typealias MessageSentCallback = (_ error: ZIMError) -> Void
+
+public typealias revokeMessageCallback = (_ error: ZIMError) -> Void
 
 public typealias GetMessageListCallback = (_ conversations: [ZIMKitMessage],
                                            _ hasMoreHistoryMessage: Bool,
@@ -49,6 +57,15 @@ public typealias QueryGroupInfoCallback = (_ info: ZIMKitGroupInfo,
 
 public typealias QueryGroupMemberInfoCallback = (_ member: ZIMKitGroupMember,
                                                  _ error: ZIMError) -> Void
+
+public typealias QueryGroupMemberListInfoCallback = (_ memberList: [ZIMKitGroupMemberInfo],
+                                                     _ nextFlag: Int,
+                                                     _ error: ZIMError) -> Void
+
+public typealias GroupUsersInvitedCallback = (_ groupID:String,
+                                              _ userList: [ZIMKitGroupMemberInfo],
+                                              _ errorUserList: [ZIMKitErrorUserInfo],
+                                              _ error: ZIMError) -> Void
 
 public typealias DownloadMediaFileCallback = (_ error: ZIMError) -> Void
 

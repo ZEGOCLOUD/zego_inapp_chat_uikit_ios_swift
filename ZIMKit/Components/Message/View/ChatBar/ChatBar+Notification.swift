@@ -49,7 +49,7 @@ extension ChatBar {
         guard let superview = superview else { return }
         let isKeyboardHide = keyboardFrame.origin.y >= superview.frame.height
 
-        if isKeyboardHide == false && status == .keybaord {
+        if isKeyboardHide == false && status == .keyboard {
             updateChatBarConstraints()
         }
     }

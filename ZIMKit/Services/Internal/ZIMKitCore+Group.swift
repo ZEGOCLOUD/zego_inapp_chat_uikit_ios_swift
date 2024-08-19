@@ -61,4 +61,28 @@ extension ZIMKitCore {
             callback?(groupMember, error)
         })
     }
+  
+    func queryGroupMemberListByGroupID(by groupID: String, 
+                                       maxCount: Int = 100,
+                                       nextFlag: Int,
+                                       callback: QueryGroupMemberListInfoCallback? = nil) {
+      let config: ZIMGroupMemberQueryConfig = ZIMGroupMemberQueryConfig()
+      config.count = UInt32(maxCount)
+      config.nextFlag = UInt32(nextFlag)
+      zim?.queryGroupMemberList(by: groupID, config: config, callback: { groupID,userList, nextFlag, errorInfo  in
+        let memberList = userList.map { ZIMKitGroupMemberInfo(with: $0) }
+        callback?(memberList, Int(nextFlag),errorInfo)
+      })
+    }
+  
+    func inviteUsersIntoGroup(by groupID: String,
+                                 userIDs: [String],
+                                 callback: GroupUsersInvitedCallback? = nil) {
+
+      zim?.inviteUsersIntoGroup(with: userIDs, groupID: groupID, callback: { groupID, userList, errorList, errorInfo in
+        let memberList = userList.map { ZIMKitGroupMemberInfo(with: $0) }
+        let errorMemberList = errorList.map { ZIMKitErrorUserInfo(with: $0) }
+        callback?(groupID,memberList,errorMemberList,errorInfo)
+      })
+    }
 }

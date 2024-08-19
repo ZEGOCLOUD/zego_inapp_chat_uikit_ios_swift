@@ -38,6 +38,9 @@ import ZIM
                           messages: [ZIMKitMessage])
     
     @objc optional
+    func onMessageRevoked(_ messages: [ZIMRevokeMessage])
+  
+    @objc optional
     func onMessageSentStatusChanged(_ message: ZIMKitMessage)
     
     @objc optional
@@ -48,4 +51,8 @@ import ZIM
     
     @objc optional
     func onErrorToastCallback(_ errorCode: UInt, defaultMessage: String) -> String?
+    
+    @objc optional
+    func onGroupMemberStateChanged(_ state: ZIMGroupMemberState, event: ZIMGroupMemberEvent,groupID: String)
+
 }

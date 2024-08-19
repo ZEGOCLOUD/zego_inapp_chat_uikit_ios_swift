@@ -83,14 +83,14 @@ extension ZIMKitCore {
             let message = ZIMKitMessage(with: message)
             self.messageList.add([message])
             for delegate in self.delegates.allObjects {
-                delegate.onMessageSentStatusChanged?(message)
+                  delegate.onMessageSentStatusChanged?(message)
             }
         }
         let pushConfig: ZIMPushConfig = ZIMPushConfig()
         pushConfig.title = conversationName
         pushConfig.content = text
         pushConfig.payload = ""
-        pushConfig.resourcesID = self.config?.resourceID ?? ""
+        pushConfig.resourcesID = self.config?.callPluginConfig?.resourceID ?? ""
         
         let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
         
@@ -242,7 +242,7 @@ extension ZIMKitCore {
         pushConfig.title = conversationName
         pushConfig.content = message.fileLocalPath
         pushConfig.payload = ""
-        pushConfig.resourcesID = self.config?.resourceID ?? ""
+        pushConfig.resourcesID = self.config?.callPluginConfig?.resourceID ?? ""
         
         let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
 
@@ -296,6 +296,35 @@ extension ZIMKitCore {
             }
         })
     }
+  
+  
+     func revokeMessage(_ message: ZIMKitMessage,
+                          config: ZIMMessageRevokeConfig,
+                        callback: revokeMessageCallback? = nil) {
+       guard let zimMessage = message.zim else {
+           let error = ZIMError()
+           error.code = .ZIMErrorCodeFailed
+           callback?(error)
+           return
+       }
+//       config.revokeExtendedData = {"revokeUserName":""}
+       let revokeExtendedData:[String:String] = ["revokeUserName":self.localUser?.name ?? ""]
+       
+       let encoder = JSONEncoder()
+       encoder.outputFormatting = .prettyPrinted
+
+       do {
+           let jsonData = try encoder.encode(revokeExtendedData)
+           if let jsonString = String(data: jsonData, encoding: .utf8) {
+             config.revokeExtendedData = jsonString
+           }
+       } catch {
+           print("Error encoding dictionary to JSON")
+       }
+       zim?.revokeMessage(zimMessage, config: config, callback: { message, errorInfo in
+         callback?(errorInfo)
+       })
+     }
     
     func downloadMediaFile(with message: ZIMKitMessage,
                            callback: DownloadMediaFileCallback? = nil) {

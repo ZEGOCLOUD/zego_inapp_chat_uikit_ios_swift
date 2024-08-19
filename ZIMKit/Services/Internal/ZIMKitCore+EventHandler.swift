@@ -80,4 +80,18 @@ extension ZIMKitCore: ZIMEventHandler {
             }
         }
     }
+  
+    func zim(_ zim: ZIM, messageRevokeReceived messageList: [ZIMRevokeMessage]) {
+      for delegate in delegates.allObjects {
+//          let messages = messageList.compactMap({ ZIMKitMessage(with: $0) })
+          delegate.onMessageRevoked?(messageList)
+      }
+    }
+  
+    func zim(_ zim: ZIM, groupMemberStateChanged state: ZIMGroupMemberState, event: ZIMGroupMemberEvent, userList: [ZIMGroupMemberInfo], operatedInfo: ZIMGroupOperatedInfo, groupID: String) {
+      if isConversationInit == false { return }
+        for delegate in delegates.allObjects {
+          delegate.onGroupMemberStateChanged?(state, event: event, groupID: groupID)
+        }
+      }
 }
