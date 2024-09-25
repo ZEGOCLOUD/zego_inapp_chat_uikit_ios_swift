@@ -11,7 +11,7 @@ import ZIM
 class ConversationListViewModel: NSObject {
 
     /// conversations of current user.
-    @Observable var conversations: [ZIMKitConversation] = []
+    @ZIMKitObservable var conversations: [ZIMKitConversation] = []
 
     override init() {
         super.init()

@@ -17,13 +17,13 @@ class MessageListViewModel: NSObject {
     private(set) var conversationID: String
     private(set) var conversationType: ZIMConversationType
     
-    @Observable var messageViewModels: [MessageViewModel] = []
-    @Observable var isReceiveNewMessage: Bool = false
-    @Observable var isSendingNewMessage: Bool = false
-    @Observable var isHistoryMessageLoaded: Bool = false
-    @Observable var isRevokeMessageIndexPath: IndexPath?
-    @Observable var deleteMessages: [MessageViewModel] = []
-    @Observable var connectionEvent: ZIMConnectionEvent = .success
+    @ZIMKitObservable var messageViewModels: [MessageViewModel] = []
+    @ZIMKitObservable var isReceiveNewMessage: Bool = false
+    @ZIMKitObservable var isSendingNewMessage: Bool = false
+    @ZIMKitObservable var isHistoryMessageLoaded: Bool = false
+    @ZIMKitObservable var isRevokeMessageIndexPath: IndexPath?
+    @ZIMKitObservable var deleteMessages: [MessageViewModel] = []
+    @ZIMKitObservable var connectionEvent: ZIMConnectionEvent = .success
     
     var isFirstLoad: Bool = true
     var isLoadingData: Bool = false

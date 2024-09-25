@@ -10,7 +10,7 @@ import ZIM
 
 class MediaMessageViewModel: MessageViewModel {
     /// Returns `true` if the media message is downloading.
-    @Observable var isDownloading: Bool = false
+    @ZIMKitObservable var isDownloading: Bool = false
     
     override init(with msg: ZIMKitMessage) {
         super.init(with: msg)

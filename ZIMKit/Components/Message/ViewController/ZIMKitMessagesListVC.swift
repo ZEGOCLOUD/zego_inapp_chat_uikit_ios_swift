@@ -20,7 +20,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     @objc public var conversationID: String = ""
     @objc public var conversationName: String = ""
     @objc public var conversationType: ZIMConversationType = .peer
-//    @objc public var inputConfig: InputConfig?
+    //    @objc public var inputConfig: InputConfig?
     private var conversation: ZIMKitConversation?
     var firstHistoryMessageViewModel: MessageViewModel?
     
@@ -36,7 +36,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         self.conversationID = conversationID
         self.conversationName = conversationName
         self.conversationType = type
-//        self.inputConfig = inputConfig
+        //        self.inputConfig = inputConfig
     }
     
     lazy var zoomTransitionController = ZoomTransitionController()
@@ -106,6 +106,14 @@ open class ZIMKitMessagesListVC: _ViewController {
         
         // we need add tableView first,
         // or the navigationbar will change to translucent on ios 15.
+        
+        if #available(iOS 15.0, *) {
+            let appearance = UINavigationBarAppearance()
+            appearance.backgroundColor = UIColor.white 
+            navigationController?.navigationBar.standardAppearance = appearance
+            navigationController?.navigationBar.scrollEdgeAppearance = appearance
+        }
+        
         view.addSubview(tableView)
         view.addSubview(chatBar)
         
@@ -113,6 +121,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         
         tableView.pin(anchors: [.left, .right, .top], to: view)
         tableView.bottomAnchor.pin(equalTo: chatBar.topAnchor).isActive = true
+
     }
     
     open override func updateContent() {
@@ -563,7 +572,7 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
         } else if type == .voiceCall ||
                     type == .videoCall {
             
-          let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "")
+            let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "")
             ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: "", timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? ""), callback: { data in
             })
         }
@@ -794,8 +803,8 @@ extension ZIMKitMessagesListVC : messageConversationUpdateDelegate,groupConversa
     func groupMessageNotDisturb(isDisturb: Bool) {
         self.conversation?.notificationStatus = isDisturb ? .notify : .doNotDisturb
     }
-  
+    
     func groupMemberList(memberCount: Int) {
-      self.navigationItem.title = conversationName + "  " + "(\(memberCount))"
+        self.navigationItem.title = conversationName + "  " + "(\(memberCount))"
     }
 }

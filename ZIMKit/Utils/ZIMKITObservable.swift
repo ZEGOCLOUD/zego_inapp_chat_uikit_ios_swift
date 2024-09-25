@@ -8,7 +8,7 @@
 import Foundation
 
 @propertyWrapper
-public class Observable<T> {
+public class ZIMKitObservable<T> {
 
     private var listeners: [((T) -> Void)] = []
 
@@ -20,7 +20,7 @@ public class Observable<T> {
         }
     }
 
-    public var projectedValue: Observable<T> { return self }
+    public var projectedValue: ZIMKitObservable<T> { return self }
 
     public init(wrappedValue: T) {
         self.wrappedValue = wrappedValue
