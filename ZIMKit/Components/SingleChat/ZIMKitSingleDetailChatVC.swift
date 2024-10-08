@@ -12,7 +12,7 @@ protocol messageConversationUpdateDelegate: AnyObject {
     func messageNotDisturb(isDisturb: Bool)
     
 }
-class ZIMKitSingleDetailChatVC: UIViewController {
+class ZIMKitSingleDetailChatVC: _ViewController {
     public convenience init(conversation: ZIMKitConversation) {
         self.init()
         self.conversation = conversation
@@ -55,21 +55,15 @@ class ZIMKitSingleDetailChatVC: UIViewController {
         return label
     }()
   
-    lazy var contentViews: UIView = {
-        let view = UIView().withoutAutoresizingMaskConstraints
-        view.backgroundColor = .zim_backgroundGray5
-        return view
-    }()
-    
     override func viewDidLoad() {
         super.viewDidLoad()
-        setUp()
-        setUpLayout()
-        updateContent()
+        setUpUI()
+        setUpSubviewsLayoutConstraint()
+        updateSubviewsContent()
     }
     
-    func setUp() {
-        view.backgroundColor = .zim_backgroundWhite
+    func setUpUI() {
+        view.backgroundColor = .zim_backgroundGray5
         navigationItem.title = L10n("conversation_chat_setting")
         
         let leftButton = UIButton(type: .custom)
@@ -82,16 +76,8 @@ class ZIMKitSingleDetailChatVC: UIViewController {
         self.navigationItem.leftBarButtonItem = leftItem
     }
     
-    func setUpLayout() {
+    func setUpSubviewsLayoutConstraint() {
         
-        view.addSubview(contentViews)
-        NSLayoutConstraint.activate([
-          contentViews.topAnchor.pin(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
-          contentViews.leadingAnchor.pin(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 0),
-          contentViews.trailingAnchor.pin(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
-          contentViews.bottomAnchor.pin(equalTo: view.bottomAnchor, constant: 0),
-        ])
-      
         view.addSubview(userInfoView)
         NSLayoutConstraint.activate([
             userInfoView.topAnchor.pin(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
@@ -125,7 +111,7 @@ class ZIMKitSingleDetailChatVC: UIViewController {
         ])
     }
     
-    func updateContent() {
+    func updateSubviewsContent() {
         
         let itemArray:[String] = [L10n("conversation_chat_top"),L10n("conversation_chat_not_disturb")]
         for (index, title) in itemArray.enumerated() {

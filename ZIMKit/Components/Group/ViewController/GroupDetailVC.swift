@@ -95,12 +95,6 @@ class GroupDetailVC: _ViewController {
         return collectionView
     }()
   
-    lazy var contentViews: UIView = {
-        let view = UIView().withoutAutoresizingMaskConstraints
-        view.backgroundColor = .zim_backgroundGray5
-        return view
-    }()
-    
     var delegate: groupConversationUpdateDelegate?
     open override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,7 +103,7 @@ class GroupDetailVC: _ViewController {
     
     override func setUp() {
         super.setUp()
-        view.backgroundColor = .zim_backgroundWhite
+        view.backgroundColor = .zim_backgroundGray5
         setNavigationView()
 
     }
@@ -139,15 +133,6 @@ class GroupDetailVC: _ViewController {
     
     override func setUpLayout() {
         super.setUpLayout()
-        
-      
-        view.addSubview(contentViews)
-        NSLayoutConstraint.activate([
-          contentViews.topAnchor.pin(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
-          contentViews.leadingAnchor.pin(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 0),
-          contentViews.trailingAnchor.pin(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
-          contentViews.bottomAnchor.pin(equalTo: view.bottomAnchor, constant: 0),
-        ])
         
         view.addSubview(groupMemberView)
         heightConstraint = groupMemberView.heightAnchor.pin(equalToConstant: CGFloat(54 + 17))

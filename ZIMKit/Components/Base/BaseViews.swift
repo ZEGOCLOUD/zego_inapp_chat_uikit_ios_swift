@@ -313,6 +313,35 @@ open class _ViewController: UIViewController, Customizable {
         // To prevent responder chain from being cutoff during `ViewController` lifecycle we fallback to parent.
         super.next ?? parent
     }
+  
+    //视图将要显示
+    override open func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if ZIMKit().imKitConfig.navigationBarColor == UIColor.clear {
+            //设置导航栏背景透明
+            self.navigationController?.navigationBar.setBackgroundImage(UIImage(),
+                                                                        for: .default)
+            self.navigationController?.navigationBar.shadowImage = UIImage()
+        } else {
+            if #available(iOS 15.0, *) {
+                let appearance = UINavigationBarAppearance()
+                appearance.backgroundColor = ZIMKit().imKitConfig.navigationBarColor
+                navigationController?.navigationBar.standardAppearance = appearance
+                navigationController?.navigationBar.scrollEdgeAppearance = appearance
+            }
+            
+        }
+    }
+    
+    override open func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        if ZIMKit().imKitConfig.navigationBarColor == UIColor.clear {
+            //重置导航栏背景
+            self.navigationController?.navigationBar.setBackgroundImage(nil, for: .default)
+            self.navigationController?.navigationBar.shadowImage = nil
+        }
+    }
 
     override open func viewDidLoad() {
         super.viewDidLoad()
@@ -352,6 +381,7 @@ open class _ViewController: UIViewController, Customizable {
         TraitCollectionReloadStack.executePendingUpdates()
         super.viewWillLayoutSubviews()
     }
+
 }
 
 /// Closure stack, used to reverse order of appearance reloads on trait collection changes

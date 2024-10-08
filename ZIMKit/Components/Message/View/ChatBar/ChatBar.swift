@@ -643,12 +643,12 @@ extension ChatBar: TextViewDelegate {
     
     func textViewDidChange(_ textView: UITextView) {
         updateTextViewLayout()
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = 7.0  //行间距
-        let fontSize: CGFloat = 15.0
-        
-        let attributedString = NSAttributedString(string: textView.text, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), NSAttributedString.Key.paragraphStyle: paragraphStyle])
-        textView.attributedText = attributedString
+//        let paragraphStyle = NSMutableParagraphStyle()
+//        paragraphStyle.lineSpacing = 7.0  //行间距
+//        let fontSize: CGFloat = 15.0
+//        
+//        let attributedString = NSAttributedString(string: textView.text, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), NSAttributedString.Key.paragraphStyle: paragraphStyle])
+//        textView.attributedText = attributedString
         faceView.updateCurrentTextViewContent(textView.text)
         chatTextView.placeholderLabel.isHidden = textView.text.count > 0 ? true : false
         

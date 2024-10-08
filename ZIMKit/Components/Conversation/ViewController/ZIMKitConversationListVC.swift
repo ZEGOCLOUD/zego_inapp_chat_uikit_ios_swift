@@ -10,7 +10,6 @@ import UIKit
 open class ZIMKitConversationListVC: _ViewController {
     
     @objc public weak var delegate: ZIMKitConversationListVCDelegate?
-    @available(*, deprecated, message: "This property is deprecated and will be removed in future versions.")
     @objc public weak var messageDelegate: ZIMKitMessagesListVCDelegate?
     
     lazy var viewModel = ConversationListViewModel()
@@ -113,6 +112,7 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
         
         let defaultAction = {
             let messageListVC = ZIMKitMessagesListVC(conversationID: model.id, type: model.type, conversationName: model.name)
+           messageListVC.delegate = self.messageDelegate
             self.navigationController?.pushViewController(messageListVC, animated: true)
             // clear unread messages
             self.viewModel.clearConversationUnreadMessageCount(model.id, type: model.type)

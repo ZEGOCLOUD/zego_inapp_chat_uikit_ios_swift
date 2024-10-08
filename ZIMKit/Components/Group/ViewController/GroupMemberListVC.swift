@@ -7,7 +7,7 @@
 
 import UIKit
 
-class GroupMemberListVC: UIViewController {
+class GroupMemberListVC: _ViewController {
     
     public convenience init(conversationID: String , memberList:[ZIMKitGroupMemberInfo]) {
         self.init()
@@ -27,12 +27,6 @@ class GroupMemberListVC: UIViewController {
         return tableView
     }()
     
-    lazy var contentViews: UIView = {
-        let view = UIView().withoutAutoresizingMaskConstraints
-        view.backgroundColor = .zim_backgroundGray5
-        return view
-    }()
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         queryGroupMemberList()
@@ -41,9 +35,9 @@ class GroupMemberListVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .zim_backgroundWhite
+        view.backgroundColor = .zim_backgroundGray5
         setNavigationView()
-        setUpLayout()
+        setUpSubviewsLayout()
         tableView.reloadData()
     }
     
@@ -72,16 +66,8 @@ class GroupMemberListVC: UIViewController {
         self.navigationItem.rightBarButtonItem = rightItem
     }
     
-    func setUpLayout() {
-        
-        view.addSubview(contentViews)
-        NSLayoutConstraint.activate([
-          contentViews.topAnchor.pin(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
-          contentViews.leadingAnchor.pin(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 0),
-          contentViews.trailingAnchor.pin(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
-          contentViews.bottomAnchor.pin(equalTo: view.bottomAnchor, constant: 0),
-        ])
-        
+    func setUpSubviewsLayout() {
+
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),

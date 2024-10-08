@@ -48,14 +48,18 @@ public class ZIMKit: NSObject {
     }
 }
 
-public class ZIMKitConfig: NSObject {
-    public var callPluginConfig: ZegoCallPluginConfig?
+@objc public class ZIMKitConfig: NSObject {
+    @objc public var callPluginConfig: ZegoCallPluginConfig?
     public var bottomConfig = ZIMKitBottomConfig()
     public var conversationConfig = ZIMKitConversationConfig()
     public var messageConfig = ZIMKitMessageConfig()
   
     public var appID: UInt32?
     public var appSign :String = ""
+  
+    public var navigationBarColor: UIColor = UIColor.white
+    public var inputPlaceholder:NSAttributedString =  NSAttributedString(string: L10n("enter_new_message"), attributes: [NSAttributedString.Key.foregroundColor: UIColor(hex: 0x8E9093), NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15)])
+
 }
 
 public class ZIMKitBottomConfig {

@@ -14,7 +14,6 @@ let tableHeaderHeight = 40.0
 open class ZIMKitMessagesListVC: _ViewController {
     
     lazy var viewModel = MessageListViewModel(conversationID: conversationID, conversationType)
-    @available(*, deprecated, message: "This property is deprecated and will be removed in future versions.")
     @objc public weak var delegate: ZIMKitMessagesListVCDelegate?
     
     @objc public var conversationID: String = ""
@@ -84,15 +83,8 @@ open class ZIMKitMessagesListVC: _ViewController {
         return chatBar
     }()
     
-    //  lazy var optionsView: MessageOptionsView = {
-    //    let optionsView = MessageOptionsView(frame: view.bounds)
-    //      .withoutAutoresizingMaskConstraints
-    //    optionsView.delegate = self
-    //    return optionsView
-    //  }()
-    
     var optionsView: MessageOptionsView?
-    
+    var customerHeaderView: UIView?
     lazy var audioPlayer = MessageAudioPlayer(with: tableView)
     
     open override func setUp() {
@@ -104,16 +96,6 @@ open class ZIMKitMessagesListVC: _ViewController {
     open override func setUpLayout() {
         super.setUpLayout()
         
-        // we need add tableView first,
-        // or the navigationbar will change to translucent on ios 15.
-        
-        if #available(iOS 15.0, *) {
-            let appearance = UINavigationBarAppearance()
-            appearance.backgroundColor = UIColor.white 
-            navigationController?.navigationBar.standardAppearance = appearance
-            navigationController?.navigationBar.scrollEdgeAppearance = appearance
-        }
-        
         view.addSubview(tableView)
         view.addSubview(chatBar)
         
@@ -121,24 +103,49 @@ open class ZIMKitMessagesListVC: _ViewController {
         
         tableView.pin(anchors: [.left, .right, .top], to: view)
         tableView.bottomAnchor.pin(equalTo: chatBar.topAnchor).isActive = true
-
+        
     }
     
     open override func updateContent() {
         super.updateContent()
-        
     }
     
+    //MARK: 设置导航栏相关
     func setupNav() {
-        if conversationName.count > 0 {
-            navigationItem.title = conversationName
+        if let headerView = self.delegate?.getMessageListHeaderCustomerView?(self) {
+            self.navigationItem.leftBarButtonItems = [setNavigationBackItem()]
+            headerView.frame = CGRectMake(40, 0, UIScreen.main.bounds.width - 40, 44)
+            customerHeaderView = headerView
+            self.navigationController?.navigationBar.addSubview(customerHeaderView!)
+            self.setNavigationBarTitle(title: "")
+        } else if let header = self.delegate?.getMessageListHeaderBar?(self) {
+            if let titleView = header.titleView {
+                self.navigationItem.titleView = titleView
+            }
+            var leftNavigationItems: [UIBarButtonItem] = [setNavigationBackItem()]
+            
+            if let leftItems = header.leftItems {
+                leftNavigationItems.append(contentsOf: leftItems)
+            }
+            self.navigationItem.leftBarButtonItems = leftNavigationItems
+            
+            if let rightItems = header.rightItems {
+                self.navigationItem.rightBarButtonItems = rightItems
+            }
         } else {
-            let name = conversationType == .peer ?
-            L10n("message_title_chat") :
-            L10n("message_title_group_chat")
-            navigationItem.title = name
+            addDefaultNavigationBar()
         }
-        
+    }
+    
+    func setNavigationBarTitle(title:String) {
+        if self.customerHeaderView == nil {
+            self.navigationItem.title = title
+        } else {
+            self.navigationItem.title = ""
+        }
+    }
+    
+    func setNavigationBackItem() ->UIBarButtonItem {
         let leftButton = UIButton(type: .custom)
         if viewModel.isShowCheckBox {
             leftButton.setTitle(L10n("conversation_cancel"), for: .normal)
@@ -153,7 +160,20 @@ open class ZIMKitMessagesListVC: _ViewController {
             leftButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: -20, bottom: 0, right: 0)
         }
         let leftItem = UIBarButtonItem(customView: leftButton)
-        self.navigationItem.leftBarButtonItem = leftItem
+        return leftItem
+    }
+    
+    func addDefaultNavigationBar() {
+        if conversationName.count > 0 {
+            self.setNavigationBarTitle(title: conversationName)
+        } else {
+            let name = conversationType == .peer ?
+            L10n("message_title_chat") :
+            L10n("message_title_group_chat")
+            self.setNavigationBarTitle(title: name)
+        }
+        
+        self.navigationItem.leftBarButtonItem = setNavigationBackItem()
         
         let rightButton = UIButton(type: .custom)
         rightButton.setImage(loadImageSafely(with: "chat_nav_right"), for: .normal)
@@ -163,24 +183,9 @@ open class ZIMKitMessagesListVC: _ViewController {
         let rightItem = UIBarButtonItem(customView: rightButton)
         navigationItem.rightBarButtonItem = viewModel.isShowCheckBox ? nil : rightItem
         
-        
-        //        DispatchQueue.main.asyncAfter(deadline: .now()+0.2) {
-        //            guard let header = self.delegate?.getMessageListHeaderBar?(self) else { return }
-        //
-        //            if let titleView = header.titleView {
-        //                self.navigationItem.titleView = titleView
-        //            }
-        //
-        //            if let leftItems = header.leftItems {
-        //                self.navigationItem.leftBarButtonItems = leftItems
-        //            }
-        //
-        //            if let rightItems = header.rightItems {
-        //                self.navigationItem.rightBarButtonItems = rightItems
-        //            }
-        //        }
     }
     
+    //MARK: lifeCycle
     open override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
     }
@@ -210,7 +215,6 @@ open class ZIMKitMessagesListVC: _ViewController {
     
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        
     }
     
     open override func viewDidDisappear(_ animated: Bool) {
@@ -231,7 +235,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         
     }
     
-    // observe viewmodel's properties
+    // observe viewModel's properties
     func configViewModel() {
         viewModel.$isReceiveNewMessage.bind { [weak self] _ in
             self?.tableView.reloadData()
@@ -251,10 +255,6 @@ open class ZIMKitMessagesListVC: _ViewController {
         viewModel.$isSendingNewMessage.bind { [weak self] _ in
             self?.tableView.reloadData()
         }
-        //        viewModel.$deleteMessages.bind { [weak self] messages in
-        //            if messages.count == 0 { return }
-        //            self?.deleteMessages(messages)
-        //        }
         viewModel.$connectionEvent.bind { [weak self] event in
             if event == .kickedOut {
                 self?.chatBar.cancelRecord()
@@ -336,7 +336,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         if conversationType == .peer {
             viewModel.queryOtherUserInfo { [weak self] otherUser, error in
                 if error.code == .ZIMErrorCodeSuccess {
-                    self?.navigationItem.title = otherUser?.name
+                    self?.setNavigationBarTitle(title: otherUser?.name ?? "")
                     self?.conversationName = otherUser?.name ?? ""
                 }
             }
@@ -348,7 +348,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     func queryGroupInfo(completion: @escaping (Bool,String) -> Void) {
         viewModel.queryGroupInfo { [weak self] info, error in
             if error.code == .ZIMErrorCodeSuccess {
-                self?.navigationItem.title = info?.name
+                self?.setNavigationBarTitle(title: info?.name  ?? "")
                 completion(true,info?.name ?? "")
             } else {
                 completion(false,"")
@@ -377,7 +377,10 @@ open class ZIMKitMessagesListVC: _ViewController {
             groupName = name
             
             if interface1Succeeded && interface2Succeeded {
-                self.navigationItem.title = name + "  " + "(\(groupCount))"
+                if self.customerHeaderView == nil {
+                    let title:String = name + "  " + "(\(groupCount))"
+                    self.setNavigationBarTitle(title: title)
+                }
                 self.conversationName = name
             }
         }
@@ -386,7 +389,10 @@ open class ZIMKitMessagesListVC: _ViewController {
             interface2Succeeded = succeeded
             groupCount = count
             if interface1Succeeded && interface2Succeeded {
-                self.navigationItem.title = groupName + "  " + "(\(groupCount))"
+                if self.customerHeaderView == nil {
+                    let title:String = groupName + "  " + "(\(groupCount))"
+                    self.setNavigationBarTitle(title: title)
+                }
             }
         }
     }
@@ -411,6 +417,8 @@ extension ZIMKitMessagesListVC {
         if viewModel.isShowCheckBox {
             enableMultiSelect(false)
         } else {
+            self.customerHeaderView?.removeFromSuperview()
+            self.delegate?.messageListViewWillDisappear?()
             navigationController?.popViewController(animated: true)
         }
     }
@@ -509,6 +517,7 @@ extension ZIMKitMessagesListVC: UITableViewDelegate {
 }
 
 extension ZIMKitMessagesListVC: ChatBarDelegate {
+    
     func chatBar(_ chatBar: ChatBar, didChangeStatus status: ChatBarStatus) {
         
     }
@@ -572,11 +581,11 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
         } else if type == .voiceCall ||
                     type == .videoCall {
             
-            let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "")
-            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: "", timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? ""), callback: { data in
+            let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "", avatar: self.conversation?.avatarUrl ?? "")
+            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: "", timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? "", title: "", message: ""), callback: { data in
+                
             })
         }
-        //FIXME: 更多类型
     }
     
     func chatBar(_ chatBar: ChatBar, didStartToRecord recorder: AudioRecorder) {
@@ -754,7 +763,9 @@ extension ZIMKitMessagesListVC {
 // MARK: - Private
 extension ZIMKitMessagesListVC {
     func scrollToBottom(_ animated: Bool) {
-        if tableView.contentSize.height + view.safeAreaInsets.top > tableView.bounds.height {
+        let originHeight = tableView.bounds.height
+        let contentHeight = tableView.contentSize.height + view.safeAreaInsets.top
+        if contentHeight > originHeight {
             let offset: CGPoint = .init(x: 0, y: tableView.contentSize.height-tableView.frame.size.height)
             tableView.setContentOffset(offset, animated: animated)
         }
@@ -805,6 +816,7 @@ extension ZIMKitMessagesListVC : messageConversationUpdateDelegate,groupConversa
     }
     
     func groupMemberList(memberCount: Int) {
-        self.navigationItem.title = conversationName + "  " + "(\(memberCount))"
+        let title = conversationName + "  " + "(\(memberCount))"
+        self.setNavigationBarTitle(title: title)
     }
 }

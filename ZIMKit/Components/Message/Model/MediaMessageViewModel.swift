@@ -9,9 +9,10 @@ import Foundation
 import ZIM
 
 class MediaMessageViewModel: MessageViewModel {
-    /// Returns `true` if the media message is downloading.
+
     @ZIMKitObservable var isDownloading: Bool = false
-    
+    @ZIMKitObservable var uploadProgress: CGFloat = 0.0
+  
     override init(with msg: ZIMKitMessage) {
         super.init(with: msg)
         

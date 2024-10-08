@@ -36,12 +36,12 @@ class TextView: UITextView {
 }
 
 class ChatTextView: _View {
-   
+    
     lazy var placeholderLabel: UILabel = {
         let label:UILabel = UILabel().withoutAutoresizingMaskConstraints
-        label.text = L10n("enter_new_message")
-        label.textColor = UIColor(hex: 0x8E9093)
-        label.font = UIFont.systemFont(ofSize: 15)
+        label.attributedText = ZIMKit().imKitConfig.inputPlaceholder
+        //        label.textColor = UIColor(hex: 0x8E9093)
+        //        label.font = UIFont.systemFont(ofSize: 15)
         return label
     }()
     
@@ -52,6 +52,17 @@ class ChatTextView: _View {
         textView.backgroundColor = .zim_backgroundWhite
         textView.returnKeyType = .send
         textView.tintColor = UIColor(hex: 0x3478FC)
+        textView.autocapitalizationType = .none
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 7.0  //行间距
+        let fontSize: CGFloat = 15.0
+        
+        let attributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), // 字体大小
+            NSAttributedString.Key.paragraphStyle: paragraphStyle //段落格式
+        ]
+        
+        textView.typingAttributes = attributes
         return textView
     }()
     
