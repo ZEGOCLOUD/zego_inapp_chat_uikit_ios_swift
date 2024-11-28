@@ -138,8 +138,11 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
                     HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
                                                        defaultMessage: error.message)
                 } else {
-
                 }
+                //删除结果返回
+                self.delegate?.shouldDeleteItem!(self, didSelectWith: conversation,
+                                                withErrorCode: error.code.rawValue,
+                                                withErrorMsg: error.message)
             }
             
         }

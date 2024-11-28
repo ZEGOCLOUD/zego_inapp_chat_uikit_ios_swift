@@ -11,7 +11,13 @@ class ConversationCell: _TableViewCell {
 
     static let reuseIdentifier = String(describing: ConversationCell.self)
 
-    lazy var headImageView = UIImageView().withoutAutoresizingMaskConstraints
+    lazy var headImageView:UIImageView = {
+        let imageView = UIImageView().withoutAutoresizingMaskConstraints
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 7
+        return imageView
+    }()
+    
     lazy var noDisturbingImageView:UIImageView = {
       let imageView = UIImageView().withoutAutoresizingMaskConstraints
       imageView.image = loadImageSafely(with: "icon_message_no_disturbing")

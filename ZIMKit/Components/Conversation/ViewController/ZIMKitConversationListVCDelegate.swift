@@ -13,4 +13,9 @@ import Foundation
     func conversationList(_ conversationListVC: ZIMKitConversationListVC,
                           didSelectWith conversation: ZIMKitConversation,
                           defaultAction: ()-> ())
+    @objc optional
+    func shouldDeleteItem(_ conversationListVC: ZIMKitConversationListVC,
+                          didSelectWith conversation: ZIMKitConversation,
+                          withErrorCode code:UInt,
+                          withErrorMsg msg:String)
 }
