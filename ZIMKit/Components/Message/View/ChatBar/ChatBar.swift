@@ -266,7 +266,7 @@ class ChatBar: _View {
         return textViewHeight + textViewTopMargin + textViewBottomMargin
     }
     private var contentViewHeight: CGFloat {
-        let contentHeight = chatViewHeight + chatViewTopMargin + bottomBarTopMargin + bottomBarHeight
+        let contentHeight = chatViewHeight + chatViewTopMargin + (buttons.count > 0 ? (bottomBarTopMargin + bottomBarHeight) : 0)
         var height = contentHeight
         switch status {
         case .normal, .select:
@@ -320,7 +320,6 @@ class ChatBar: _View {
         super.setUpLayout()
         
         addSubview(chatTextView)
-        addSubview(bottomBarView)
         
         chatViewHeightHeightConstraint = chatTextView.heightAnchor.pin(equalToConstant: 46)
         NSLayoutConstraint.activate([
@@ -331,29 +330,30 @@ class ChatBar: _View {
         ])
         chatViewHeightHeightConstraint.isActive = true
         
-        NSLayoutConstraint.activate([
-            bottomBarView.topAnchor.pin(equalTo: chatTextView.bottomAnchor, constant: bottomBarTopMargin),
-            bottomBarView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 0),
-            bottomBarView.trailingAnchor.pin(equalTo: self.trailingAnchor, constant: 0),
-            bottomBarView.heightAnchor.pin(equalToConstant: bottomBarHeight)
-        ])
-        
-        addStackViewSubviews()
-        
-        addSubview(faceView)
-        faceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
-        faceView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
-        
-        addSubview(moreView)
-        moreView.pin(anchors: [.leading, .trailing, .bottom], to: self)
-        moreView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
-        
-        addSubview(sendVoiceView)
-        sendVoiceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
-        
-        sendVoiceTopConstraint = sendVoiceView.topAnchor.pin(equalTo: topAnchor,constant: 108)
-        sendVoiceTopConstraint.isActive = true
-        
+        if buttons.count > 0 {
+            NSLayoutConstraint.activate([
+                bottomBarView.topAnchor.pin(equalTo: chatTextView.bottomAnchor, constant: bottomBarTopMargin),
+                bottomBarView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 0),
+                bottomBarView.trailingAnchor.pin(equalTo: self.trailingAnchor, constant: 0),
+                bottomBarView.heightAnchor.pin(equalToConstant: bottomBarHeight)
+            ])
+            
+            addStackViewSubviews()
+            
+            addSubview(faceView)
+            faceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
+            faceView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
+            
+            addSubview(moreView)
+            moreView.pin(anchors: [.leading, .trailing, .bottom], to: self)
+            moreView.topAnchor.pin(equalTo: bottomBarView.bottomAnchor).isActive = true
+            
+            addSubview(sendVoiceView)
+            sendVoiceView.pin(anchors: [.leading, .trailing, .bottom], to: self)
+            
+            sendVoiceTopConstraint = sendVoiceView.topAnchor.pin(equalTo: topAnchor,constant: 108)
+            sendVoiceTopConstraint.isActive = true
+        }
         addSubview(deleteButton)
         NSLayoutConstraint.activate([
             deleteButton.topAnchor.pin(equalTo: topAnchor, constant: 8.5),

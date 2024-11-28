@@ -15,6 +15,7 @@ import ZegoPluginAdapter
     case revoke
     case reaction
     case delete
+    case multipleChoice
 }
 
 @objc public enum ZIMKitMenuBarButtonName: Int {
@@ -50,29 +51,24 @@ public class ZIMKit: NSObject {
 
 @objc public class ZIMKitConfig: NSObject {
     @objc public var callPluginConfig: ZegoCallPluginConfig?
-    public var bottomConfig = ZIMKitBottomConfig()
-    public var conversationConfig = ZIMKitConversationConfig()
-    public var messageConfig = ZIMKitMessageConfig()
+    @objc public var bottomConfig = ZIMKitBottomConfig()
+    @objc public var conversationConfig = ZIMKitConversationConfig()
+    @objc public var messageConfig = ZIMKitMessageConfig()
   
-    public var appID: UInt32?
-    public var appSign :String = ""
+    internal var appID: UInt32?
+    internal var appSign :String = ""
   
     @objc public var navigationBarColor: UIColor = UIColor.white
-    @objc public var inputPlaceholder:NSAttributedString =  NSAttributedString(string: L10n("enter_new_message"), attributes: [NSAttributedString.Key.foregroundColor: UIColor(hex: 0x8E9093), NSAttributedString.Key.font: UIFont.systemFont(ofSize: 15)])
+    @objc public var inputPlaceholder:NSAttributedString =  NSAttributedString(string: L10n("enter_new_message"), attributes: [NSAttributedString.Key.foregroundColor: UIColor(hex: 0x8E9093), NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)])
 
 }
 
-public class ZIMKitBottomConfig {
-    public var smallButtons: [ZIMKitMenuBarButtonName] = [.audio, .emoji, .picture, .expand] {
-      didSet {
-           if smallButtons.isEmpty {
-               smallButtons = [.audio,.emoji,.picture,.expand]
-           }
-       }
-    }
-    public let maxCount: Int = 4
+
+@objc public class ZIMKitBottomConfig : NSObject{
+    public var smallButtons: [ZIMKitMenuBarButtonName] = [.audio, .emoji, .picture, .expand]
+    @objc public let maxCount: Int = 4
     public var expandButtons: [ZIMKitMenuBarButtonName] = [.takePhoto, .file]
-    public var emojis: [String] = ["😀", "😃", "😄", "😁", "😆", "😅", "😂",
+    @objc public var emojis: [String] = ["😀", "😃", "😄", "😁", "😆", "😅", "😂",
                                    "😇", "😉", "😊", "😋", "😌", "😍", "😘",
                                    "😗", "😙", "😚", "😜", "😝", "😛", "😎",
                                    "😏", "😶", "😐", "😑", "😒", "😳", "😞",
@@ -92,39 +88,127 @@ public class ZIMKitBottomConfig {
                                    "👫", "👭", "👬", "💛", "💚", "💙", "💜",
                                    "💔", "💕", "💞", "💓", "💗", "💖", "💘",
                                    "💝", "💟"]
+    
+    //MARK: The following properties are provided solely by OC
+    @objc public var smallButtons_OC: NSArray {
+        get {
+            return smallButtons.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            smallButtons = newValue.compactMap { ZIMKitMenuBarButtonName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
+    
+    @objc public var expandButtons_OC: NSArray {
+        get {
+            return expandButtons.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            expandButtons = newValue.compactMap { ZIMKitMenuBarButtonName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
+    
+    @objc public var emojis_OC: NSArray {
+        get {
+            return emojis.map { $0 } as NSArray
+        }
+        set {
+            emojis = newValue.compactMap { ($0 as AnyObject).stringValue }
+        }
+    }
 }
 
-public class ZIMKitConversationConfig: NSObject {
+@objc public class ZIMKitConversationConfig: NSObject {
   
 }
 
-public class ZIMKitMessageConfig: NSObject {
-  public var textMessageConfig = ZIMKitTextMessageConfig()
-  public var audioMessageConfig = ZIMKitAudioMessageConfig()
-  public var videoMessageConfig = ZIMKitVideoMessageConfig()
-  public var imageMessageConfig = ZIMKitImageMessageConfig()
-  public var fileMessageConfig = ZIMKitFileMessageConfig()
-  
+@objc public class ZIMKitMessageConfig: NSObject {
+    @objc public var textMessageConfig = ZIMKitTextMessageConfig()
+    @objc public var audioMessageConfig = ZIMKitAudioMessageConfig()
+    @objc public var videoMessageConfig = ZIMKitVideoMessageConfig()
+    @objc public var imageMessageConfig = ZIMKitImageMessageConfig()
+    @objc public var fileMessageConfig = ZIMKitFileMessageConfig()
+    @objc public var combineMessageConfig = ZIMKitCombineMessageConfig()
+
   // 默认为空数组，则使用 ZIMKit 内部，否则使用客户提供的
   public var messageReactions: [String] = []
 }
 
-public class ZIMKitTextMessageConfig {
-    public var operations: [ZIMKitMessageOperationName] = [.copy, .reply, .forward, .delete, .revoke, .reaction]
+@objc public class ZIMKitTextMessageConfig : NSObject {
+     public var operations: [ZIMKitMessageOperationName] = [.copy, .reply, .forward, .delete, .revoke, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
 }
 
-public class ZIMKitAudioMessageConfig {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction]
+@objc public class ZIMKitAudioMessageConfig : NSObject {
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
 }
 
-public class ZIMKitVideoMessageConfig {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction]
+@objc public class ZIMKitVideoMessageConfig : NSObject {
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
 }
 
-public class ZIMKitImageMessageConfig {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction]
+@objc public class ZIMKitImageMessageConfig : NSObject {
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
 }
 
-public class ZIMKitFileMessageConfig {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction]
+@objc public class ZIMKitFileMessageConfig : NSObject {
+    var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
 }
+
+@objc public class ZIMKitCombineMessageConfig : NSObject {
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .delete, .revoke, .reaction, .multipleChoice]
+    
+    @objc public var operations_OC: NSArray {
+        get {
+            return operations.map { NSNumber(value: $0.rawValue) } as NSArray
+        }
+        set {
+            operations = newValue.compactMap { ZIMKitMessageOperationName(rawValue: ($0 as AnyObject).intValue) }
+        }
+    }
+}
+
