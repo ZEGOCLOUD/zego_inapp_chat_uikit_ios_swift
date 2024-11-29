@@ -582,7 +582,8 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
                     type == .videoCall {
             
             let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "", avatar: self.conversation?.avatarUrl ?? "")
-            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: "", timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? "", title: "", message: ""), callback: { data in
+            let customerData = zimKit_convertDictToString(dict: ["source": "zimkit"] as [String :AnyObject]) ?? ""
+            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: customerData, timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? "", title: "", message: ""), callback: { data in
                 
             })
         }

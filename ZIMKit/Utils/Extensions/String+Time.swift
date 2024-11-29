@@ -54,3 +54,26 @@ private func stringFromDate(_ date: Date, with format: String) -> String {
 
     return dateFormatter.string(from: date)
 }
+
+public func zimKit_convertStringToDictionary(json:String) -> [String:AnyObject]? {
+    if let data = json.data(using: String.Encoding.utf8) {
+        do {
+            return try JSONSerialization.jsonObject(with: data, options: [JSONSerialization.ReadingOptions.init(rawValue: 0)]) as? [String:AnyObject]
+        } catch let error as NSError {
+            print(error)
+        }
+    }
+    return nil
+}
+
+public func zimKit_convertDictToString(dict:[String:AnyObject]) -> String? {
+  do {
+      let jsonData = try JSONSerialization.data(withJSONObject: dict, options: [])
+      if let jsonString = String(data: jsonData, encoding:.utf8) {
+        return jsonString
+      }
+  } catch {
+      return nil
+  }
+  return nil
+}
