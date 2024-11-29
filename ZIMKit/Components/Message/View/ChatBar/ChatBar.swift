@@ -331,6 +331,7 @@ class ChatBar: _View {
         chatViewHeightHeightConstraint.isActive = true
         
         if buttons.count > 0 {
+            addSubview(bottomBarView)
             NSLayoutConstraint.activate([
                 bottomBarView.topAnchor.pin(equalTo: chatTextView.bottomAnchor, constant: bottomBarTopMargin),
                 bottomBarView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 0),
