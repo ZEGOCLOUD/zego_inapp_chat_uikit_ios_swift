@@ -39,6 +39,12 @@ extension ZIMKitCore {
     }
     
     func queryUserInfo(by userID: String, callback: QueryUserCallback? = nil) {
+        let userInfo:ZIMKitUser = self.userDict[userID] ?? ZIMKitUser(userID: "", userName: "")
+        if userInfo.name.count <= 0 || userInfo.avatarUrl?.count ?? 0 <= 0 {
+            callback?(userInfo, ZIMError())
+            return
+        }
+        
         let config = ZIMUsersInfoQueryConfig()
         config.isQueryFromServer = true
         zim?.queryUsersInfo(by: [userID], config: config, callback: { [weak self] fullInfos, errorUserInfos, error in
@@ -51,6 +57,20 @@ extension ZIMKitCore {
         })
     }
     
+      func queryUserInfoFromLocalCache(userID:String, groupID:String,callback: QueryUserInfoCallback? = nil)  {
+        var user: ZIMKitUser = ZIMKitUser(userID: userID, userName: "")
+          if let userInfo = userDict[userID] {
+                user = userInfo
+          } else {
+            let member = groupMemberDict.get(groupID,
+                                             userID)
+              user.name = member?.name ?? ""
+              user.id = userID
+              user.avatarUrl = member?.avatarUrl ?? ""
+          }
+          callback?(user)
+        }
+  
     func updateUserAvatarUrl(_ avatarUrl: String,
                              callback: UserAvatarUrlUpdateCallback? = nil) {
         zim?.updateUserAvatarUrl(avatarUrl, callback: { url, error in

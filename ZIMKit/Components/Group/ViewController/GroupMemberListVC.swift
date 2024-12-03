@@ -22,16 +22,20 @@ class GroupMemberListVC: _ViewController {
         let tableView: UITableView = UITableView(frame: .zero, style: .plain).withoutAutoresizingMaskConstraints
         tableView.dataSource = self
         tableView.delegate = self
-        tableView.backgroundColor = .zim_backgroundGray5
+        
         tableView.register(ZIMKitGroupMemberInfoTableViewCell.self, forCellReuseIdentifier: ZIMKitGroupMemberInfoTableViewCell.reuseId)
+        tableView.separatorStyle = .none
         return tableView
     }()
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        queryGroupMemberList()
+        navigationController?.navigationBar.backgroundColor = .zim_backgroundWhite
+        
+        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
+        statusBarView.backgroundColor = UIColor.white
+        view.addSubview(statusBarView)
     }
-    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,7 +57,6 @@ class GroupMemberListVC: _ViewController {
         let leftItem = UIBarButtonItem(customView: leftButton)
         self.navigationItem.leftBarButtonItem = leftItem
         
-        
         let rightButton = UIButton(type: .custom)
         rightButton.setTitle(L10n("add_member_to_group"), for: .normal)
         rightButton.setTitleColor(.zim_backgroundBlue1, for: .normal)
@@ -67,25 +70,13 @@ class GroupMemberListVC: _ViewController {
     }
     
     func setUpSubviewsLayout() {
-
         view.addSubview(tableView)
         NSLayoutConstraint.activate([
             tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         ])
-    }
-    
-    func queryGroupMemberList() {
-        ZIMKit.queryGroupMemberList(by: conversationID, maxCount: 100, nextFlag: 0) { [self] memberList, nextFlag, error in
-            if error.code.rawValue == 0 {
-                self.memberList = memberList
-                tableView.reloadData()
-            } else {
-                print("[ERROR] queryGroupMemberList code = \(error.code)")
-            }
-        }
     }
     
     @objc func backItemClick(_ button: UIButton) {
@@ -95,14 +86,7 @@ class GroupMemberListVC: _ViewController {
     @objc func addMemberToGroupClick(_ button: UIButton) {
         let popView: ZIMKitInviteUserInGroupView = ZIMKitInviteUserInGroupView.init(conversationID: conversationID)
         popView.showView()
-        popView.sureBlock = { [self] result in
-            if result {
-                queryGroupMemberList()
-                tableView.reloadData()
-            }
-        }
     }
-    
 }
 
 extension GroupMemberListVC :UITableViewDelegate,UITableViewDataSource {
@@ -115,8 +99,8 @@ extension GroupMemberListVC :UITableViewDelegate,UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: ZIMKitGroupMemberInfoTableViewCell.reuseId, for: indexPath) as! ZIMKitGroupMemberInfoTableViewCell
         let model:ZIMKitGroupMemberInfo = memberList[indexPath.row]
         cell.selectionStyle = .none
-        
         cell.configure(with: model.userName, avatarUrl: model.userAvatarUrl)
+        cell.lineView.isHidden = indexPath.row == (self.memberList.count - 1)
         return cell
     }
     

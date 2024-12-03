@@ -20,7 +20,7 @@ class MessageAVPlayerViewController: AVPlayerViewController, AVPlayerViewControl
         return button
     }()
 
-    private var messageVM: VideoMessageViewModel?
+    private var messageVM: MessageViewModel?
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -49,7 +49,7 @@ class MessageAVPlayerViewController: AVPlayerViewController, AVPlayerViewControl
         ])
     }
 
-    func setup(with messageVM: VideoMessageViewModel) {
+    func setup(with messageVM: MessageViewModel) {
         self.messageVM = messageVM
         var url: URL?
         if FileManager.default.fileExists(atPath: messageVM.message.fileLocalPath) {

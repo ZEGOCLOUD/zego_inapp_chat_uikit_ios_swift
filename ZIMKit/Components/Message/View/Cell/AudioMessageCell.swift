@@ -15,23 +15,23 @@ class AudioMessageCell: BubbleMessageCell {
     override class var reuseId: String {
         String(describing: AudioMessageCell.self)
     }
-
+    
     lazy var iconImageView: UIImageView = {
         let imageView = UIImageView().withoutAutoresizingMaskConstraints
         imageView.animationDuration = 1.0
         return imageView
     }()
-
+    
     lazy var durationLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.font = .systemFont(ofSize: 15, weight: .medium)
         label.textAlignment = .left
         return label
     }()
-
+    
     var imageViewConstraint: NSLayoutConstraint!
     var labelConstraint: NSLayoutConstraint!
-
+    
     override var messageVM: MessageViewModel? {
         didSet {
             guard let messageVM = messageVM as? AudioMessageViewModel else { return }
@@ -43,29 +43,29 @@ class AudioMessageCell: BubbleMessageCell {
             }
         }
     }
-
+    
     override func setUp() {
         super.setUp()
-
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
         containerView.addGestureRecognizer(tap)
     }
-
+    
     override func setUpLayout() {
         super.setUpLayout()
-
+        
         bubbleView.addSubview(iconImageView)
         bubbleView.addSubview(durationLabel)
-
+        
         iconImageView.pin(to: 22)
         iconImageView.pin(anchors: [.centerY], to: bubbleView)
-
+        
         durationLabel.pin(anchors: [.centerY], to: bubbleView)
         durationLabel.heightAnchor.pin(equalToConstant: 21).isActive = true
-
+        
         updateAllConstraints()
     }
-
+    
     private func updateAllConstraints() {
         if imageViewConstraint != nil {
             imageViewConstraint.isActive = false
@@ -73,7 +73,7 @@ class AudioMessageCell: BubbleMessageCell {
         if labelConstraint != nil {
             labelConstraint.isActive = false
         }
-
+        
         if messageVM?.message.info.direction == .send {
             imageViewConstraint = iconImageView.trailingAnchor.pin(
                 equalTo: bubbleView.trailingAnchor,
@@ -89,16 +89,16 @@ class AudioMessageCell: BubbleMessageCell {
                 equalTo: iconImageView.trailingAnchor,
                 constant: 4)
         }
-
+        
         NSLayoutConstraint.activate([
             imageViewConstraint,
             labelConstraint
         ])
     }
-
+    
     override func updateContent() {
         super.updateContent()
-
+        
         guard let messageVM = messageVM as? AudioMessageViewModel else { return }
         let message = messageVM.message
         
@@ -119,23 +119,49 @@ class AudioMessageCell: BubbleMessageCell {
         }
         durationLabel.textColor = messageVM.cellConfig.messageTextColor
         durationLabel.text = String(format: "%d\"", message.audioContent.duration)
-
+        
         if messageVM.isPlayingAudio {
             startAudioAnimation()
         } else {
             stopAudioAnimation()
         }
-
+        
         updateAllConstraints()
+        
+        if message.reactions.count > 0 {
+            let insets = UIEdgeInsets(top: 11, left: 12, bottom: 11, right: 12)
+            
+            if message.info.direction == .send {
+                containerView.backgroundColor = UIColor(hex: 0x3478FC)
+                if let image = generateImageWithColor(colorHex: "#1A63F1") {
+                    bubbleView.image = image.resizableImage(withCapInsets: insets, resizingMode: .stretch)
+                }
+            } else {
+                containerView.backgroundColor = UIColor(hex: 0xFFFFFF)
+                if let image = generateImageWithColor(colorHex: "#EFF0F2") {
+                    bubbleView.image = image.resizableImage(withCapInsets: insets, resizingMode: .stretch)
+                }
+            }
+            containerView.layer.cornerRadius = 12
+            
+            bubbleLeftConstraint.constant = 10
+            bubbleTopConstraint.constant = 12
+            bubbleRightConstraint.constant = -(containerWidthConstraint.constant - (10 + messageVM.contentMediaSize.width))
+            bubbleBottomConstraint.constant = -(messageVM.reactionHeight + 20)
+        } else {
+            bubbleLeftConstraint.constant = 0
+            bubbleTopConstraint.constant = 0
+            bubbleRightConstraint.constant = 0
+            bubbleBottomConstraint.constant = 0
+        }
     }
-
     @objc func tapAction(_ tap: UITapGestureRecognizer) {
         if let messageVM = messageVM as? AudioMessageViewModel {
             let delegate = delegate as? AudioMessageCellDelegate
             delegate?.audioMessageCell(self, didClickWith: messageVM)
         }
     }
-
+    
     private func updateBubbleAnimation(with messageVM: AudioMessageViewModel) {
         setupBubbleAnimations(with: messageVM)
         if !FileManager.default.fileExists(atPath: messageVM.message.fileLocalPath) {
@@ -146,11 +172,11 @@ class AudioMessageCell: BubbleMessageCell {
             bubbleView.stopAnimating()
         }
     }
-
+    
     private func setupBubbleAnimations(with messageVM: AudioMessageViewModel) {
         let message = messageVM.message
         var animationImages: [UIImage] = []
-
+        
         if message.info.direction == .receive {
             if let image = UIImage.image(with: .zim_backgroundWhite) {
                 animationImages.append(image)
@@ -175,7 +201,7 @@ extension AudioMessageCell {
     func startAudioAnimation() {
         iconImageView.startAnimating()
     }
-
+    
     func stopAudioAnimation() {
         iconImageView.stopAnimating()
     }

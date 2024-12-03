@@ -24,6 +24,12 @@ extension ZIMKitMessage {
             shortStr = L10n("common_message_file")
         case .revoke:
             shortStr = L10n("common_message_revoked")
+        case .combine:
+            shortStr = "[\(L10n("peer_message"))]"
+        case .tips:
+            shortStr = L10n("invite_group")
+        case .system:
+            shortStr = L10n("common_message_system")
         default:
             shortStr = L10n("common_message_unknown")
         }

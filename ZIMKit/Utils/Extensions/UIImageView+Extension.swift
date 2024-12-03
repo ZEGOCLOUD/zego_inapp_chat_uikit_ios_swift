@@ -8,12 +8,15 @@
 import Foundation
 import Kingfisher
 
+public typealias DownloadMediaProgressBlock = ((_ receivedSize: Int64, _ totalSize: Int64) -> Void)
+
 extension UIImageView {
     public func loadImage(
         with imageName: String?,
         placeholder: String?,
         maxSize: CGSize = UIScreen.main.bounds.size,
         isResize: Bool = false,
+        progressBlock: DownloadMediaProgressBlock? = nil,
         completionHandler: ((Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil
     ) {
         var defaultImage: UIImage?
@@ -25,6 +28,7 @@ extension UIImageView {
             placeholder: defaultImage,
             maxSize: maxSize,
             isResize: isResize,
+            progressBlock: progressBlock,
             completionHandler: completionHandler)
     }
 
@@ -33,6 +37,7 @@ extension UIImageView {
         placeholder: UIImage? = nil,
         maxSize: CGSize = UIScreen.main.bounds.size,
         isResize: Bool = false,
+        progressBlock: DownloadMediaProgressBlock? = nil,
         completionHandler: ((Result<RetrieveImageResult, KingfisherError>) -> Void)? = nil
     ) {
         let url: URL? = imageName != nil ? URL(string: imageName!) : nil
@@ -52,12 +57,14 @@ extension UIImageView {
                 with: provider,
                 placeholder: placeholder,
                 options: options,
+                progressBlock: progressBlock,
                 completionHandler: completionHandler)
         } else {
             self.kf.setImage(
                 with: url,
                 placeholder: placeholder,
                 options: options,
+                progressBlock: progressBlock,
                 completionHandler: completionHandler)
         }
     }

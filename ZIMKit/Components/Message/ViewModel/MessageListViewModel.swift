@@ -19,6 +19,7 @@ class MessageListViewModel: NSObject {
     
     @ZIMKitObservable var messageViewModels: [MessageViewModel] = []
     @ZIMKitObservable var isReceiveNewMessage: Bool = false
+    @ZIMKitObservable var isMessageNewReactionIndexPath: IndexPath?
     @ZIMKitObservable var isSendingNewMessage: Bool = false
     @ZIMKitObservable var isHistoryMessageLoaded: Bool = false
     @ZIMKitObservable var isRevokeMessageIndexPath: IndexPath?
@@ -29,7 +30,8 @@ class MessageListViewModel: NSObject {
     var isLoadingData: Bool = false
     var isNoMoreMsg: Bool = false
     var isShowCheckBox: Bool = false
-    
+    private let lock = NSLock()
+
     init(conversationID: String, _ conversationType: ZIMConversationType) {
         self.conversationID = conversationID
         self.conversationType = conversationType
@@ -144,6 +146,42 @@ extension MessageListViewModel {
             }
         }
     }
+    
+    func revokeMessage(_ messageModel: MessageViewModel, callback: ((ZIMError) -> Void)? = nil) {
+        ZIMKit.revokeMessage(messageModel.message) {[weak self] error in
+            if error.code.rawValue == 0 {
+                self?.modifyRevokeMessage(viewModels: [messageModel])
+            }
+            print("revokeMessage  code = \(error.code)")
+        }
+    }
+    
+    //MARK: Customer
+    func modifyRevokeMessage(viewModels:[MessageViewModel]) {
+        let indexPaths: [IndexPath] = viewModels.compactMap { viewModel in
+            guard let row = self.messageViewModels.firstIndex(of: viewModel) else { return nil }
+            return IndexPath(row: row, section: 0)
+        }
+        
+//        let revokeExtendedData:[String:String] = ["revokeUserName":ZIMKit.localUser?.name ?? "","revokeUserID" : ZIMKit.localUser?.id ?? ""]
+//        
+//        let jsonString: String = zimKit_convertDictToString(dict: revokeExtendedData as [String :AnyObject]) ?? ""
+//        
+        for (_,indexPath) in indexPaths.enumerated() {
+            let revokeMessage = ZIMKitMessage(with: ZIMRevokeMessage())
+            let revokeMessageModel = MessageViewModelFactory.createMessage(with: revokeMessage)
+            revokeMessageModel.message.type = .revoke
+            revokeMessageModel.message.zim = ZIMRevokeMessage()
+            revokeMessageModel.message.info.senderUserID = ZIMKit.localUser?.id ?? ""
+//            revokeMessageModel.message.revokeExtendedData = jsonString
+
+            self.messageViewModels[indexPath.row] = revokeMessageModel
+            DispatchQueue.main.async {
+                self.isRevokeMessageIndexPath = indexPath
+            }
+        }
+    }
+    
 }
 
 // MARK: - Private
@@ -166,21 +204,20 @@ extension MessageListViewModel {
                 // auto download files
                 self.autoDownloadFiles(with: model)
             }
-
             self.messageViewModels.append(contentsOf: newMessages)
-            self.messageViewModels = removeDuplicates(from: self.messageViewModels)
+//            self.messageViewModels = removeDuplicates(from: self.messageViewModels)
             DispatchQueue.main.async {
                 self.isReceiveNewMessage = true
             }
         }
-        
         clearConversationUnreadMessageCount()
     }
     
     func removeDuplicates(from models: [MessageViewModel]) -> [MessageViewModel] {
         var uniqueModels = [MessageViewModel]()
         for model in models {
-            if !uniqueModels.contains(where: { $0.message == model.message }) {
+            if
+                !uniqueModels.contains(where: { $0.message.zim?.messageID == model.message.zim?.messageID }) {
                 uniqueModels.append(model)
             }
         }
@@ -188,9 +225,11 @@ extension MessageListViewModel {
     }
     
     private func handleSentCallback(_ message: ZIMKitMessage) {
+        lock.lock()
         handleMessageQueue.async { [self] in
             guard let index = self.messageViewModels.firstIndex(where: { $0.message == message }) else {
                 handleReceiveNewMessages([message])
+                lock.unlock()
                 return
             }
             let viewModel = self.messageViewModels[index]
@@ -200,8 +239,9 @@ extension MessageListViewModel {
             }
             viewModel.reSetCellHeight()
             
-            DispatchQueue.main.async {
-                self.isSendingNewMessage = true
+            DispatchQueue.main.async { [self] in
+                lock.unlock()
+                isSendingNewMessage = (message.type == .image || message.type == .video) ? false : true
             }
         }
     }
@@ -220,6 +260,7 @@ extension MessageListViewModel {
             lastMessageVM.setCellHeight()
         }
         messageViewModels = newMessages + messageViewModels
+        messageViewModels = removeDuplicates(from: messageViewModels)
     }
     
     private func autoDownloadFiles(with viewModel: MessageViewModel) {
@@ -251,6 +292,7 @@ extension MessageListViewModel {
             msg.info.senderUserAvatarUrl = avatarUrl
         }
     }
+    
 }
 
 // MARK: - ZIMEventHandler
@@ -306,8 +348,13 @@ extension MessageListViewModel: ZIMKitDelegate {
         }
     }
     
-    func onMediaMessageUploadingProgressUpdated(_ message: ZIMKitMessage, isFinished: Bool) {
-        
+    func onMediaMessageUploadingProgressUpdated(_ message: ZIMKitMessage, uploadProgress: CGFloat) {
+        for (_,model) in messageViewModels.enumerated() {
+            if model.message.info.localMessageID == message.info.localMessageID {
+                guard let mediaViewModel = model as? MediaMessageViewModel else { return }
+                mediaViewModel.uploadProgress = uploadProgress
+            }
+        }
     }
     
     func onMediaMessageDownloadingProgressUpdated(_ message: ZIMKitMessage, isFinished: Bool) {
@@ -322,16 +369,62 @@ extension MessageListViewModel: ZIMKitDelegate {
             
             for(index,localMessage) in self.messageViewModels.enumerated() {
                 if revokedMessage.messageID == localMessage.message.zim?.messageID {
-                    let newMessage = localMessage
-                    newMessage.message.type = .revoke
-                    newMessage.message.revokeExtendedData = revokedMessage.revokeExtendedData
-                    self.messageViewModels[index] = newMessage
+                    let newMessage = ZIMKitMessage(with: revokedMessage)
+                    let newRevokeMessage = MessageViewModelFactory.createMessage(with: newMessage)
+                    self.messageViewModels[index] = newRevokeMessage
                     DispatchQueue.main.async {
                         self.isRevokeMessageIndexPath = IndexPath(row: index, section: 0)
                     }
                 }
             }
         }
-        
+    }
+    
+    func onMessageReactionsChanged(_ reactions: [ZIMMessageReaction]) {
+        var indexPath:IndexPath = IndexPath(row: 1, section: 0)
+        for(_,reaction) in reactions.enumerated() {
+            for(messageIndex,localMessage) in self.messageViewModels.enumerated() {
+                if reaction.messageID == localMessage.message.zim?.messageID && reaction.conversationID == localMessage.message.zim?.conversationID {
+                    var containReaction = false
+                    for (index,localReaction) in localMessage.message.reactions.enumerated() {
+                        
+                        for (_,userInfo) in localReaction.userList.enumerated() {
+                            updateUserName(userID: userInfo.userID)
+                        }
+                        if localReaction.reactionType == reaction.reactionType {
+                            containReaction = true
+                            localMessage.message.reactions[index] = reaction
+                            if reaction.totalCount == 0 {
+                                localMessage.message.reactions.remove(at: index)
+                            }
+//                            break
+                        }
+                    }
+                    if containReaction {
+                        
+                    } else {
+                        localMessage.message.reactions.append(reaction)
+                    }
+                    localMessage.message.zim?.reactions = localMessage.message.reactions
+                    indexPath = IndexPath(row: messageIndex, section: 0)
+//                    break
+                }
+            }
+        }
+        DispatchQueue.main.async {
+            self.isMessageNewReactionIndexPath = indexPath
+        }
+    }
+    
+    private func updateUserName(userID:String) {
+        ZIMKit.queryUserInfoFromLocalCache(userID: userID) { userInfo in
+            if userInfo!.name.count > 0 {
+               
+            } else {
+                ZIMKit.queryUserInfo(by: userID) { userInfo, error in
+                    
+                }
+            }
+        }
     }
 }

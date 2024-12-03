@@ -10,7 +10,7 @@ import AVFAudio
 import AVFoundation
 
 class MessageAudioPlayer: NSObject, AVAudioPlayerDelegate {
-    private(set) var currentMessageVM: AudioMessageViewModel?
+    private(set) var currentMessageVM: MediaMessageViewModel?
     private var player: AVAudioPlayer?
     weak var tableView: UITableView?
 
@@ -19,7 +19,7 @@ class MessageAudioPlayer: NSObject, AVAudioPlayerDelegate {
         self.tableView = tableView
     }
 
-    func play(with messageVM: AudioMessageViewModel) -> Bool {
+    func play(with messageVM: MediaMessageViewModel) -> Bool {
 
         stopAudioAnimation()
 
@@ -83,10 +83,19 @@ class MessageAudioPlayer: NSObject, AVAudioPlayerDelegate {
         currentMessageVM?.isPlayingAudio = true
         guard let cells = tableView?.visibleCells else { return }
         for cell in cells {
-            guard let cell = cell as? AudioMessageCell else { continue }
-            if cell.messageVM === currentMessageVM {
-                cell.startAudioAnimation()
-                currentMessageVM?.isPlayingAudio = true
+
+            for cell in cells {
+                if let audioCell = cell as? AudioMessageCell {
+                    if audioCell.messageVM === currentMessageVM {
+                        audioCell.startAudioAnimation()
+                        currentMessageVM?.isPlayingAudio = true
+                    }
+                } else if let replyCell = cell as? ReplyMessageCell {
+                    if let view = replyCell.audioMediaView as? MediaAudioReplyView? {
+                        view?.startAudioAnimation()
+                        currentMessageVM?.isPlayingAudio = true
+                    }
+                }
             }
         }
     }
@@ -95,8 +104,13 @@ class MessageAudioPlayer: NSObject, AVAudioPlayerDelegate {
         currentMessageVM?.isPlayingAudio = false
         guard let cells = tableView?.visibleCells else { return }
         for cell in cells {
-            guard let cell = cell as? AudioMessageCell else { continue }
-            cell.stopAudioAnimation()
+            if let audioCell = cell as? AudioMessageCell {
+                audioCell.stopAudioAnimation()
+            } else if let replyCell = cell as? ReplyMessageCell {
+                if let view = replyCell.audioMediaView as? MediaAudioReplyView? {
+                    view?.stopAudioAnimation()
+                }
+            }
         }
     }
 

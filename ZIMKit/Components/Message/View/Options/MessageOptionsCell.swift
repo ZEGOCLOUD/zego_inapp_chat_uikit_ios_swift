@@ -33,15 +33,15 @@ class MessageOptionsCell: _CollectionViewCell {
         contentView.addSubview(iconImageView)
         contentView.addSubview(titleLabel)
 
-        iconImageView.pin(to: 32)
-        iconImageView.topAnchor.pin(equalTo: contentView.topAnchor, constant: 6.5).isActive = true
+        iconImageView.pin(to: 28)
+        iconImageView.topAnchor.pin(equalTo: contentView.topAnchor, constant: 0).isActive = true
         iconImageView.centerXAnchor.pin(equalTo: contentView.centerXAnchor).isActive = true
 
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.pin(equalTo: iconImageView.bottomAnchor, constant: 1.0),
             titleLabel.centerXAnchor.pin(equalTo: contentView.centerXAnchor),
-            titleLabel.leadingAnchor.pin(equalTo: contentView.leadingAnchor, constant: 5.0),
-            titleLabel.trailingAnchor.pin(equalTo: contentView.trailingAnchor, constant: -5.0)
+            titleLabel.leadingAnchor.pin(equalTo: contentView.leadingAnchor, constant: 0),
+            titleLabel.trailingAnchor.pin(equalTo: contentView.trailingAnchor, constant: 0)
             //            titleLabel.heightAnchor.pin(equalToConstant: 14.0)
         ])
     }

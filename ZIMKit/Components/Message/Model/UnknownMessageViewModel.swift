@@ -11,13 +11,13 @@ import ZIM
 class UnknownMessageViewModel: MessageViewModel {
     
     var attributedContent = NSAttributedString(string: "")
-
+    
     override init(with msg: ZIMKitMessage) {
         super.init(with: msg)
         msg.textContent.content = L10n("common_message_unknown")
         setContent(msg.textContent.content)
     }
-
+    
     override var contentSize: CGSize {
         if _contentSize == .zero {
             var size = attributedContent
@@ -37,17 +37,17 @@ class UnknownMessageViewModel: MessageViewModel {
 extension UnknownMessageViewModel {
     func setContent(_ message: String) {
         let attributedStr = NSMutableAttributedString(string: message)
-
+        
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = .byCharWrapping
         paragraphStyle.minimumLineHeight = 21.0
-
+        
         let attributes: [NSAttributedString.Key : Any] = [.font : cellConfig.messageTextFont,
                                                           .paragraphStyle : paragraphStyle,
                                                           .foregroundColor: cellConfig.messageTextColor]
-
+        
         attributedStr.setAttributes(attributes, range: NSRange(location: 0, length: attributedStr.length))
-
+        
         attributedContent = attributedStr
     }
 }

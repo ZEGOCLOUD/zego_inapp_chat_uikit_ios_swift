@@ -8,12 +8,11 @@
 import UIKit
 
 class RevokeMessageViewModel: MessageViewModel {
-  override init(with msg: ZIMKitMessage) {
-      super.init(with: msg)
+    override init(with msg: ZIMKitMessage) {
+        super.init(with: msg)
+    }
     
-  }
-  
-  override var contentSize: CGSize {
-      return CGSize(width: MessageCell_System_Max_Width, height: 30)
-  }
+    override var contentSize: CGSize {
+        return CGSize(width: MessageCell_System_Max_Width, height: 35)
+    }
 }

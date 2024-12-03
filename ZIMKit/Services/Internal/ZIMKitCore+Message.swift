@@ -38,11 +38,13 @@ extension ZIMKitCore {
         config.nextMessage = messages.first?.zim
         config.reverse = true
         
-        zim?.queryHistoryMessage(by: conversationID, conversationType: type, config: config, callback: { _, _, zimMessages, error in
+        zim?.queryHistoryMessage(by: conversationID, conversationType: type, config: config, callback: { [self] _, _, zimMessages, error in
             let kitMessages = zimMessages.compactMap({ ZIMKitMessage(with: $0) })
             for kitMessage in kitMessages {
                 self.updateKitMessageProperties(kitMessage)
                 self.updateKitMessageMediaProperties(kitMessage)
+                kitMessage.info.senderUserName = userDict[kitMessage.info.senderUserID]?.name
+                kitMessage.info.senderUserAvatarUrl = userDict[kitMessage.info.senderUserID]?.avatarUrl
             }
             self.messageList.add(kitMessages, isNewMessage: false)
             
@@ -59,7 +61,7 @@ extension ZIMKitCore {
                          type: ZIMConversationType,
                          conversationName:String = "",
                          callback: MessageSentCallback? = nil) {
-    
+        
         var conversationName = conversationName
         if conversationName.isEmpty {
             conversationName = self.localUser?.name ?? ""
@@ -83,7 +85,7 @@ extension ZIMKitCore {
             let message = ZIMKitMessage(with: message)
             self.messageList.add([message])
             for delegate in self.delegates.allObjects {
-                  delegate.onMessageSentStatusChanged?(message)
+                delegate.onMessageSentStatusChanged?(message)
             }
         }
         let pushConfig: ZIMPushConfig = ZIMPushConfig()
@@ -94,16 +96,8 @@ extension ZIMKitCore {
         
         let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
         
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-
-        do {
-            let jsonData = try encoder.encode(dict)
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                pushConfig.payload = jsonString
-            }
-        } catch {
-            print("Error encoding dictionary to JSON")
+        if let jsonString = zimKit_convertDictToString(dict: dict as [String :AnyObject]) {
+            pushConfig.payload = jsonString
         }
         
         config.pushConfig = pushConfig
@@ -117,33 +111,64 @@ extension ZIMKitCore {
         })
     }
     
+    func sendCombineMessage(conversationID:String,
+                            type:ZIMConversationType,
+                            content:String,
+                            conversationName:String = "",
+                            combineTitle:String,
+                            messageList:[ZIMKitMessage],
+                            callback: sendCombineMessageCallback? = nil) {
+        
+        let conversationList = messageList.compactMap{ $0.zim }
+        
+        let config = ZIMMessageSendConfig()
+        
+        let notification = ZIMMessageSendNotification()
+        notification.onMessageAttached = { message in
+            let message = ZIMKitMessage(with: message)
+            self.messageList.add([message])
+            for delegate in self.delegates.allObjects {
+                delegate.onMessageSentStatusChanged?(message)
+            }
+        }
+        let pushConfig: ZIMPushConfig = ZIMPushConfig()
+        pushConfig.title = conversationName
+        pushConfig.content = content
+        pushConfig.payload = ""
+        pushConfig.resourcesID = self.config?.callPluginConfig?.resourceID ?? ""
+        
+        let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
+        
+        if let jsonString = zimKit_convertDictToString(dict: dict as [String :AnyObject]) {
+            pushConfig.payload = jsonString
+        }
+        
+        config.pushConfig = pushConfig
+        
+        let combineMessage:ZIMCombineMessage = ZIMCombineMessage()
+        combineMessage.title = combineTitle
+        combineMessage.summary = content
+        combineMessage.messageList = conversationList
+//        combineMessage.extendedData = extendedData
+        zim?.sendMessage(combineMessage, toConversationID: conversationID, conversationType: type, config: config, notification: notification, callback: { message, errorInfo in
+            let msg = self.messageList.get(with: message)
+            msg.update(with: message)
+            for delegate in self.delegates.allObjects {
+                delegate.onMessageSentStatusChanged?(msg)
+            }
+            callback?(errorInfo)
+        })
+    }
+    
     func sendImageMessage(_ imagePath: String,
                           to conversationID: String,
                           type: ZIMConversationType,
                           conversationName:String = "",
                           callback: MessageSentCallback? = nil) {
         
-        if !FileManager.default.fileExists(atPath: imagePath) {
-            assert(false, "Path doesn't exist.")
-            return
-        }
+        let imageMessage = createMessage(content: imagePath, messageType: .image, conversationID: conversationID, type: type)
         
-        // transform heic to jpg.
-        var imagePath = imagePath
-        let url = URL(fileURLWithPath: imagePath)
-        if url.pathExtension == "heic",
-            let data = try? Data(contentsOf: url) {
-            let image = UIImage(data: data)
-            let imageData = image?.jpegData(compressionQuality: 0.8)
-            imagePath = url.deletingPathExtension().path + ".jpg"
-            FileManager.default.createFile(atPath: imagePath, contents: imageData)
-        }
-        
-        let filePath = generateFilePath(imagePath, conversationID, type, .image)
-        try? FileManager.default.copyItem(atPath: imagePath, toPath: filePath)
-        
-        let imageMessage = ZIMImageMessage(fileLocalPath: filePath)
-        sendMediaMessage(imageMessage,
+        sendMediaMessage(imageMessage as! ZIMImageMessage,
                          to: conversationID,
                          type: type,
                          conversationName: conversationName,
@@ -156,22 +181,8 @@ extension ZIMKitCore {
                           type: ZIMConversationType,
                           conversationName:String = "",
                           callback: MessageSentCallback? = nil) {
-        
-        if !FileManager.default.fileExists(atPath: audioPath) {
-            assert(false, "Path doesn't exist.")
-            return
-        }
-        
-        let filePath = generateFilePath(audioPath, conversationID, type, .audio)
-        try? FileManager.default.copyItem(atPath: audioPath, toPath: filePath)
-        
-        var audioDuration: UInt32 = duration
-        if audioDuration == 0 {
-            audioDuration = UInt32(AVTool.getDurationOfMediaFile(audioPath))
-        }
-        
-        let audioMessage = ZIMAudioMessage(fileLocalPath: filePath, audioDuration: audioDuration)
-        sendMediaMessage(audioMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
+        let audioMessage = createMessage(content:audioPath, messageType: .audio, conversationID: conversationID, type: type, duration: duration)
+        sendMediaMessage(audioMessage as! ZIMAudioMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
     }
     
     func sendVideoMessage(_ videoPath: String,
@@ -179,40 +190,21 @@ extension ZIMKitCore {
                           to conversationID: String,
                           type: ZIMConversationType,
                           conversationName:String = "",
+                          firstFrameDownloadUrl:String = "",
                           callback: MessageSentCallback? = nil) {
-        if !FileManager.default.fileExists(atPath: videoPath) {
-            assert(false, "Path doesn't exist.")
-            return
-        }
-        
-        let filePath = generateFilePath(videoPath, conversationID, type, .video)
-        try? FileManager.default.copyItem(atPath: videoPath, toPath: filePath)
-        
-        var videoDuration: UInt32 = duration
-        if videoDuration == 0 {
-            videoDuration = UInt32(AVTool.getDurationOfMediaFile(videoPath))
-        }
-                
-        let videoMessage = ZIMVideoMessage(fileLocalPath: filePath, videoDuration: videoDuration)
-        sendMediaMessage(videoMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
+        let videoMessage = createMessage(content: videoPath, messageType: .video, conversationID: conversationID, type: type,firstFrameDownloadUrl: firstFrameDownloadUrl)
+        sendMediaMessage(videoMessage as! ZIMVideoMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
     }
     
     func sendFileMessage(_ filePath: String,
                          to conversationID: String,
                          type: ZIMConversationType,
                          conversationName:String = "",
+                         fileName:String = "",
                          callback: MessageSentCallback? = nil) {
         
-        if !FileManager.default.fileExists(atPath: filePath) {
-            assert(false, "Path doesn't exist.")
-            return
-        }
-        
-        let newFilePath = generateFilePath(filePath, conversationID, type, .file)
-        try? FileManager.default.copyItem(atPath: filePath, toPath: newFilePath)
-        
-        let fileMessage = ZIMFileMessage(fileLocalPath: newFilePath)
-        sendMediaMessage(fileMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
+        let fileMessage = createMessage(content: filePath, messageType: .file, conversationID: conversationID, type: type,fileName: fileName)
+        sendMediaMessage(fileMessage as! ZIMFileMessage, to: conversationID, type: type, conversationName: conversationName,callback: callback)
     }
     
     private func sendMediaMessage(_ message: ZIMMediaMessage,
@@ -245,17 +237,9 @@ extension ZIMKitCore {
         pushConfig.resourcesID = self.config?.callPluginConfig?.resourceID ?? ""
         
         let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
-
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-
-        do {
-            let jsonData = try encoder.encode(dict)
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                pushConfig.payload = jsonString
-            }
-        } catch {
-            print("Error encoding dictionary to JSON")
+        
+        if let jsonString = zimKit_convertDictToString(dict: dict as [String :AnyObject]) {
+            pushConfig.payload = jsonString
         }
         
         config.pushConfig = pushConfig
@@ -272,9 +256,9 @@ extension ZIMKitCore {
         notification.onMediaUploadingProgress = { message, currentSize, totalSize in
             let message = self.messageList.get(with: message)
             message.updateUploadProgress(currentSize: currentSize, totalSize: totalSize)
-            let isFinished: Bool = currentSize == totalSize
+            //      let isFinished: Bool = currentSize == totalSize
             for delegate in self.delegates.allObjects {
-                delegate.onMediaMessageUploadingProgressUpdated?(message, isFinished: isFinished)
+                delegate.onMediaMessageUploadingProgressUpdated?(message, uploadProgress: Double(currentSize) / Double(totalSize))
             }
         }
         zim?.sendMediaMessage(message,
@@ -292,41 +276,37 @@ extension ZIMKitCore {
             
             if error.code != .ZIMErrorCodeSuccess { return }
             if let message = msg.zim as? ZIMImageMessage {
-                try? FileManager.default.removeItem(atPath: message.fileLocalPath)
+                if message.fileLocalPath.count > 0 {
+                    try? FileManager.default.removeItem(atPath: message.fileLocalPath)
+                }
             }
         })
     }
-  
-  
-     func revokeMessage(_ message: ZIMKitMessage,
-                          config: ZIMMessageRevokeConfig,
-                        callback: revokeMessageCallback? = nil) {
-       guard let zimMessage = message.zim else {
-           let error = ZIMError()
-           error.code = .ZIMErrorCodeFailed
-           callback?(error)
-           return
-       }
-//       config.revokeExtendedData = {"revokeUserName":""}
-       let revokeExtendedData:[String:String] = ["revokeUserName":self.localUser?.name ?? ""]
-       
-       let encoder = JSONEncoder()
-       encoder.outputFormatting = .prettyPrinted
-
-       do {
-           let jsonData = try encoder.encode(revokeExtendedData)
-           if let jsonString = String(data: jsonData, encoding: .utf8) {
-             config.revokeExtendedData = jsonString
-           }
-       } catch {
-           print("Error encoding dictionary to JSON")
-       }
-       zim?.revokeMessage(zimMessage, config: config, callback: { message, errorInfo in
-         callback?(errorInfo)
-       })
-     }
+    
+    
+    func revokeMessage(_ message: ZIMKitMessage,
+                       config: ZIMMessageRevokeConfig,
+                       callback: revokeMessageCallback? = nil) {
+        guard let zimMessage = message.zim else {
+            let error = ZIMError()
+            error.code = .ZIMErrorCodeFailed
+            callback?(error)
+            return
+        }
+        
+        let revokeExtendedData:[String:String] = ["revokeUserName":self.localUser?.name ?? ""]
+        
+        if let jsonString = zimKit_convertDictToString(dict: revokeExtendedData as [String:AnyObject]){
+            config.revokeExtendedData = jsonString
+        }
+        self.messageList.delete(message.info.conversationID, type: message.info.conversationType)
+        zim?.revokeMessage(zimMessage, config: config, callback: { message, errorInfo in
+            callback?(errorInfo)
+        })
+    }
     
     func downloadMediaFile(with message: ZIMKitMessage,
+                           _ chatRecord:Bool = false,
                            callback: DownloadMediaFileCallback? = nil) {
         guard let zimMessage = message.zim as? ZIMMediaMessage else {
             let error = ZIMError()
@@ -335,20 +315,26 @@ extension ZIMKitCore {
             return
         }
         zim?.downloadMediaFile(with: zimMessage, fileType: .originalFile, progress: { msg, currentSize, totalSize in
-            
-            let message = self.messageList.get(with: msg)
-            message.updateDownloadProgress(currentSize: currentSize, totalSize: totalSize)
-            
-            for delegate in self.delegates.allObjects {
-                delegate.onMediaMessageDownloadingProgressUpdated?(message, isFinished:false)
+            if chatRecord == false {
+                let message = self.messageList.get(with: msg)
+                message.updateDownloadProgress(currentSize: currentSize, totalSize: totalSize)
+                
+                for delegate in self.delegates.allObjects {
+                    delegate.onMediaMessageDownloadingProgressUpdated?(message, isFinished:false)
+                }
             }
-
         }, callback: { message, error in
-            let msg = self.messageList.get(with: message)
-            msg.update(with: message)
             let isFinished: Bool = error.code == .ZIMErrorCodeSuccess
-            for delegate in self.delegates.allObjects {
-                delegate.onMediaMessageDownloadingProgressUpdated?(msg, isFinished: isFinished)
+            if chatRecord == false {
+                let msg = self.messageList.get(with: message)
+                msg.update(with: message)
+                for delegate in self.delegates.allObjects {
+                    delegate.onMediaMessageDownloadingProgressUpdated?(msg, isFinished: isFinished)
+                }
+            } else {
+                for delegate in self.delegates.allObjects {
+                    delegate.onMediaMessageDownloadCompleteUpdated?(ZIMKitMessage(with: message), isFinished: isFinished)
+                }
             }
             callback?(error)
         })
@@ -398,7 +384,77 @@ extension ZIMKitCore {
             }
         })
     }
+    
+    func insertMessageToLocalDB(_ message: ZIMKitMessage,
+                                from senderUserID: String?,
+                                to conversationID: String,
+                                type: ZIMConversationType,
+                                callback: InsertMessageCallback? = nil) {
+        var userID:String = senderUserID ?? ""
+        if userID.count  <= 0 {
+            userID = self.localUser?.id ?? ""
+        }
+        zim?.insertMessageToLocalDB(message.zim!, conversationID: conversationID, conversationType: type, senderUserID: userID, callback: { zimMessage, errorInfo in
+            callback?(ZIMKitMessage(with: zimMessage),errorInfo)
+        })
+    }
+    
+    func replyMessage(_ messageType:ZIMMessageType,
+                      originMessage:ZIMKitMessage,
+                      conversationName:String,
+                      content:String,
+                      conversationID:String,
+                      type: ZIMConversationType,
+                      duration: UInt32 = 0,
+                      firstFrameDownloadUrl:String = "",
+                      fileName:String = "",
+                      callback: replyMessageCallback? = nil) {
         
+        let config = ZIMMessageSendConfig()
+        let notification = ZIMMessageSendNotification()
+        notification.onMessageAttached = { message in
+            let message = ZIMKitMessage(with: message)
+            message.info.senderUserName = self.localUser?.name
+            self.messageList.add([message])
+            for delegate in self.delegates.allObjects {
+                delegate.onMessageSentStatusChanged?(message)
+            }
+        }
+        
+        notification.onMediaUploadingProgress = { message, currentSize, totalSize in
+            let message = self.messageList.get(with: message)
+            message.updateUploadProgress(currentSize: currentSize, totalSize: totalSize)
+            //      let isFinished: Bool = currentSize == totalSize
+            for delegate in self.delegates.allObjects {
+                delegate.onMediaMessageUploadingProgressUpdated?(message, uploadProgress: Double(currentSize) / Double(totalSize))
+            }
+        }
+        
+        let pushConfig: ZIMPushConfig = ZIMPushConfig()
+        pushConfig.title = conversationName
+        pushConfig.content = content
+        pushConfig.payload = ""
+        pushConfig.resourcesID = self.config?.callPluginConfig?.resourceID ?? ""
+        
+        let dict:[String:String] = ["conversationID":(type == .peer) ?  localUser?.id ?? "": conversationID,"conversationType":String(describing: type.rawValue)]
+        
+        if let jsonString = zimKit_convertDictToString(dict: dict as [String :AnyObject]) {
+            pushConfig.payload = jsonString
+        }
+        config.pushConfig = pushConfig
+        
+        let zimMessage = createMessage(content: content, messageType: messageType, conversationID: conversationID, type: type,duration: duration,firstFrameDownloadUrl: firstFrameDownloadUrl,fileName: fileName)
+        
+        zim!.replyMessage(zimMessage, toOriginalMessage: originMessage.zim!, config: config, notification: notification, callback: { message, errorInfo in
+            let msg = self.messageList.get(with: message)
+            msg.update(with: message)
+            for delegate in self.delegates.allObjects {
+                delegate.onMessageSentStatusChanged?(msg)
+            }
+            callback?(errorInfo)
+        })
+    }
+    
     private func generateFilePath(_ oldPath: String,
                                   _ conversationID: String,
                                   _ conversationType: ZIMConversationType,
@@ -494,7 +550,7 @@ extension ZIMKitCore {
             if message.videoContent.firstFrameSize != .zero && FileManager.default.fileExists(atPath: firstFrameLocalPath) {
                 return
             }
-                        
+            
             let url = URL(fileURLWithPath: message.videoContent.fileLocalPath)
             let videoInfo = AVTool.getFirstFrameImageAndDuration(with: url)
             message.videoContent.firstFrameSize = videoInfo.image?.size ?? .zero
@@ -504,5 +560,132 @@ extension ZIMKitCore {
                 try? data?.write(to: URL(fileURLWithPath: message.videoContent.firstFrameLocalPath))
             }
         }
+    }
+    
+    func queryCombineMessageDetailByMessage(message: ZIMCombineMessage,
+                                            callback: QueryCombineMessageDetailCallback? = nil) {
+        zim?.queryCombineMessageDetail(by: message, callback: { combineMessage, errorInfo in
+            let kitMessages = combineMessage.messageList.compactMap({ ZIMKitMessage(with: $0) })
+            callback?(kitMessages,errorInfo)
+        })
+    }
+    
+    func addMessageReaction(message: ZIMKitMessage,
+                            reactionType:String,
+                            callback: MessageReactionAddedCallback? = nil) {
+        
+        zim?.addMessageReaction(reactionType, message: message.zim!, callback: { reaction, errorInfo in
+            callback?(reaction,errorInfo)
+        })
+    }
+    
+    func deleteMessageReaction(message: ZIMKitMessage,
+                               reactionType:String,
+                               callback: MessageReactionDeletedCallback? = nil) {
+        
+        zim?.deleteMessageReaction(reactionType, message: message.zim!, callback: { reaction, errorInfo in
+            callback?(reaction,errorInfo)
+        })
+    }
+    
+    private func createMessage(content: String,messageType: ZIMMessageType,conversationID: String, type: ZIMConversationType,duration: UInt32 = 0,firstFrameDownloadUrl:String = "",fileName:String = "") -> ZIMMessage {
+        var zimMessage = ZIMMessage()
+        if messageType == .text {
+            zimMessage = ZIMTextMessage()
+            (zimMessage as! ZIMTextMessage).message = content
+        } else if messageType == .image {
+            zimMessage = ZIMImageMessage()
+            if !content.hasPrefix("http") {
+                if !FileManager.default.fileExists(atPath: content) {
+                    assert(false, "Path doesn't exist.")
+                    return zimMessage
+                }
+                
+                // transform heic to jpg.
+                var imagePath = content
+                let url = URL(fileURLWithPath: imagePath)
+                if url.pathExtension == "heic",
+                   let data = try? Data(contentsOf: url) {
+                    let image = UIImage(data: data)
+                    let imageData = image?.jpegData(compressionQuality: 0.8)
+                    imagePath = url.deletingPathExtension().path + ".jpg"
+                    FileManager.default.createFile(atPath: imagePath, contents: imageData)
+                }
+                
+                let filePath = generateFilePath(content, conversationID, type, .image)
+                try? FileManager.default.copyItem(atPath: imagePath, toPath: filePath)
+                zimMessage = ZIMImageMessage(fileLocalPath: filePath)
+            } else {
+                (zimMessage as! ZIMImageMessage).fileDownloadUrl = content
+                (zimMessage as! ZIMImageMessage).thumbnailDownloadUrl = content
+            }
+        } else if messageType == .audio {
+            var filePath = content
+            if !content.hasPrefix("http") {
+                if !FileManager.default.fileExists(atPath: content) {
+                    assert(false, "Path doesn't exist.")
+                    return zimMessage
+                }
+                
+                filePath = generateFilePath(content, conversationID, type, .audio)
+                try? FileManager.default.copyItem(atPath: content, toPath: filePath)
+            }
+            
+            
+            var audioDuration: UInt32 = duration
+            if audioDuration == 0 {
+                audioDuration = UInt32(AVTool.getDurationOfMediaFile(content))
+            }
+            
+            var audioMessage = ZIMAudioMessage(fileLocalPath: filePath, audioDuration: audioDuration)
+            if content.hasPrefix("http") {
+                audioMessage = ZIMAudioMessage()
+                audioMessage.fileDownloadUrl = content
+                audioMessage.audioDuration = audioDuration
+            }
+            zimMessage = audioMessage
+        } else if messageType == .video {
+            var videoMessage = ZIMVideoMessage()
+            if !content.hasPrefix("http") {
+                if !FileManager.default.fileExists(atPath: content) {
+                    assert(false, "Path doesn't exist.")
+                    return zimMessage
+                }
+                
+                let filePath = generateFilePath(content, conversationID, type, .video)
+                try? FileManager.default.copyItem(atPath: content, toPath: filePath)
+                
+                var videoDuration: UInt32 = duration
+                if videoDuration == 0 {
+                    videoDuration = UInt32(AVTool.getDurationOfMediaFile(content))
+                }
+                videoMessage = ZIMVideoMessage(fileLocalPath: filePath, videoDuration: videoDuration)
+            } else {
+                videoMessage.fileDownloadUrl = content
+                videoMessage.videoFirstFrameDownloadUrl = firstFrameDownloadUrl
+                videoMessage.videoDuration = duration
+            }
+            zimMessage = videoMessage
+        } else if messageType == .file {
+            var fileMessage = ZIMFileMessage()
+            if !content.hasPrefix("http") {
+                if !FileManager.default.fileExists(atPath: content) {
+                    assert(false, "Path doesn't exist.")
+                    return zimMessage
+                }
+                
+                let newFilePath = generateFilePath(content, conversationID, type, .file)
+                try? FileManager.default.copyItem(atPath: content, toPath: newFilePath)
+                
+                fileMessage = ZIMFileMessage(fileLocalPath: newFilePath)
+            } else {
+                fileMessage.fileDownloadUrl = content
+                fileMessage.fileName = fileName
+            }
+            zimMessage = fileMessage
+        } else {
+            
+        }
+        return zimMessage
     }
 }

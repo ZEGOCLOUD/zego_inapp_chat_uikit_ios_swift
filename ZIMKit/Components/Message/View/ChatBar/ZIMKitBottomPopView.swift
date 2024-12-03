@@ -9,8 +9,8 @@ import UIKit
 import ZegoPluginAdapter
 
 protocol voiceAndVideoCallDelegate: AnyObject {
-
-  func didSelectedVoiceAndVideoCall(videoCall:Bool)
+    
+    func didSelectedVoiceAndVideoCall(videoCall:Bool)
 }
 
 class ZIMKitBottomPopView: UIView {
@@ -105,8 +105,8 @@ class ZIMKitBottomPopView: UIView {
     }
     
     @objc func videoCallClick() {
-      hideView()
-      delegate?.didSelectedVoiceAndVideoCall(videoCall: true)
+        hideView()
+        delegate?.didSelectedVoiceAndVideoCall(videoCall: true)
     }
     
     @objc func cancelItemClick(_ sender: UIButton) {
@@ -123,14 +123,11 @@ class ZIMKitBottomPopView: UIView {
         label.textColor = .zim_textBlack1
         label.font = UIFont.systemFont(ofSize: 15, weight: .medium)
         
-        
         let imageView = UIImageView().withoutAutoresizingMaskConstraints
         imageView.image = loadImageSafely(with: imageName)
         
-      
         let lineView: UIView = UIView().withoutAutoresizingMaskConstraints
         lineView.backgroundColor = UIColor(hex: 0xE6E6E6)
-
         
         view.addSubview(label)
         view.addSubview(imageView)
@@ -171,6 +168,7 @@ class ZIMKitBottomPopView: UIView {
         maskLayer.path = maskPath.cgPath
         containerView.layer.mask = maskLayer
     }
+    
     @objc func tapClick() {
         hideView()
     }

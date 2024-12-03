@@ -25,8 +25,6 @@ class ImageGalleryCell: GalleryCollectionViewCell {
         super.setUpLayout()
 
         scrollView.addSubview(imageView)
-        //        imageView.pin(to: scrollView)
-
         imageWithConstraint = imageView.widthAnchor.pin(equalTo: contentView.widthAnchor)
         imageHeightConstraint = imageView.heightAnchor.pin(equalTo: contentView.heightAnchor)
         NSLayoutConstraint.activate([imageWithConstraint, imageHeightConstraint])
@@ -35,12 +33,18 @@ class ImageGalleryCell: GalleryCollectionViewCell {
     override func updateContent() {
         super.updateContent()
 
-        guard let messageVM = messageVM as? ImageMessageViewModel else { return }
-        let message = messageVM.message
-        
+        if let messageVM = messageVM as? ImageMessageViewModel {
+            updateSubviews(messageVM: messageVM, isResize: !messageVM.isGif && messageVM.message.fileSize > 5 * 1024 * 1024)
+        } else if let messageVM = messageVM as? ReplyMessageViewModel {
+            updateSubviews(messageVM: messageVM, isResize: !messageVM.isGif && messageVM.message.fileSize > 5 * 1024 * 1024)
+        }
+    }
+    
+    func updateSubviews(messageVM: MediaMessageViewModel,isResize: Bool) {
         imageWithConstraint.isActive = false
         imageHeightConstraint.isActive = false
-
+        let message = messageVM.message
+        
         let width = contentView.bounds.width
         var height = width * message.imageContent.originalSize.height / message.imageContent.originalSize.width
         if height < contentView.bounds.height {
@@ -50,15 +54,13 @@ class ImageGalleryCell: GalleryCollectionViewCell {
             height = contentView.bounds.height
         }
 
-        if height > contentView.bounds.height+1.0 {
+        if height > contentView.bounds.height + 1.0 {
             imageView.contentMode = .scaleAspectFill
         } else {
             imageView.contentMode = .scaleAspectFit
         }
 
         updateImageViewConstraints(width: width, height: height)
-
-        let isResize = !messageVM.isGif && message.fileSize > 5 * 1024 * 1024
 
         ImageCache.cachedImage(
             for: message.imageContent.thumbnailDownloadUrl,

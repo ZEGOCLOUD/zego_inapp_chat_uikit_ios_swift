@@ -44,15 +44,21 @@ import ZIM
     func onMessageSentStatusChanged(_ message: ZIMKitMessage)
     
     @objc optional
-    func onMediaMessageUploadingProgressUpdated(_ message: ZIMKitMessage, isFinished: Bool)
+    func onMediaMessageUploadingProgressUpdated(_ message: ZIMKitMessage, uploadProgress: CGFloat)
     
     @objc optional
     func onMediaMessageDownloadingProgressUpdated(_ message: ZIMKitMessage, isFinished: Bool)
+    
+    @objc optional
+    func onMediaMessageDownloadCompleteUpdated(_ message: ZIMKitMessage, isFinished: Bool)
     
     @objc optional
     func onErrorToastCallback(_ errorCode: UInt, defaultMessage: String) -> String?
     
     @objc optional
     func onGroupMemberStateChanged(_ state: ZIMGroupMemberState, event: ZIMGroupMemberEvent,groupID: String)
+  
+    @objc optional
+    func onMessageReactionsChanged(_ reactions: [ZIMMessageReaction])
 
 }

@@ -22,6 +22,7 @@
 "common_message_audio" = "[语音]";
 "common_message_video" = "[视频]";
 "common_message_file" = "[文件]";
+"common_message_system" = "[系统消息]";
 "common_open_file_tips" = "选择要打开此文件的应用";
 "common_title_cancel" = "取消";
 "common_sure" = "确定";
@@ -97,8 +98,6 @@
 "group_group_id_not_exit" = "群ID %@ 不存在，请返回";
 "group_group_id" = "群聊ID";
 "group_copy" = "复制";
-"group_copy_success" = "复制成功";
-
 "album_download_image" = "下载图片";
 "album_redownload_image" = "重新加载";
 "album_save_success" = "已保存到系统相册";
@@ -137,6 +136,26 @@
 "message_delete_confirmation_desc_tip" = "确认要删除此消息？";
 "delete_message_title" = "消息删除";
 "revoke_message" = "%@ 撤回了一条消息";
-"common_message_revoked" = "[消息已撤回]";
+"common_message_revoked" = "撤回了一条消息";
 "invite_success" = "邀请成功";
 "already_belong" = "用户已经属于这个群";
+"you" = "你";
+"forward_part" = "逐条转发";
+"forward_merge" = "合并转发";
+"chat_list" = "聊天列表";
+"merge_forward_group" = "[合并转发] ";
+"merge_forward_peer" = "[逐条转发] ";
+"group_message" = "群聊会话记录";
+"peer_message" = "会话记录";
+"forward_message_peer" = "%@与%@的";
+"combine_message" = "转发消息";
+"combine_success" = "转发成功";
+"combine_failed" = "转发失败";
+"invite_group_tips_title" = "邀请";
+"invite_group_tips_des" = "加入此群";
+"invite_group" = "[邀请入群]";
+"revoke_message_title" = "消息撤回";
+"revoke_message_des" = "确定要撤回此消息么?";
+"forward_msg_least_one"= "请至少选择一条消息";
+"reaction_reply_failed" = "回复表态消息失败";
+"history_message_no_support_reaction" = "历史消息不支持表态回复";

@@ -15,6 +15,7 @@ import ZegoPluginAdapter
     case revoke
     case reaction
     case delete
+    case speaker
     case multipleChoice
 }
 
@@ -47,6 +48,19 @@ public class ZIMKit: NSObject {
     @objc public static func registerCallKitDelegate(_ delegate: AnyObject) {
       ZegoPluginAdapter.callPlugin?.registerCallKitDelegate(delegate: delegate)
     }
+    
+    @objc public static func insertSystemMessage(_ content: String ,conversationID: String ,groupConversation: Bool = true) {
+        ZIMKit.insertSystemMessageToLocalDB(content,to: conversationID,groupConversationType:groupConversation) { message, error in
+            print("insertSystemMessage errorCode:\(error.code)")
+        }
+    }
+    
+    static internal var currentIndex = 0
+    static internal var timer: Timer?
+    static internal var conversationList: [ZIMKitMessage]?
+    static internal var targetConversation: ZIMKitConversation?
+    
+    static internal var oneByOneCallBack:sendMessageOneByOneCallback?
 }
 
 @objc public class ZIMKitConfig: NSObject {
@@ -135,7 +149,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitTextMessageConfig : NSObject {
-     public var operations: [ZIMKitMessageOperationName] = [.copy, .reply, .forward, .delete, .revoke, .reaction, .multipleChoice]
+     public var operations: [ZIMKitMessageOperationName] = [.copy, .reply, .forward, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -148,7 +162,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitAudioMessageConfig : NSObject {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    public var operations: [ZIMKitMessageOperationName] = [.speaker, .reply, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -161,7 +175,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitVideoMessageConfig : NSObject {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -174,7 +188,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitImageMessageConfig : NSObject {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -187,7 +201,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitFileMessageConfig : NSObject {
-    var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .revoke, .delete, .reaction, .multipleChoice]
+    var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -200,7 +214,7 @@ public class ZIMKit: NSObject {
 }
 
 @objc public class ZIMKitCombineMessageConfig : NSObject {
-    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .delete, .revoke, .reaction, .multipleChoice]
+    public var operations: [ZIMKitMessageOperationName] = [.reply, .forward, .multipleChoice, .delete, .revoke, .reaction]
     
     @objc public var operations_OC: NSArray {
         get {
@@ -211,4 +225,3 @@ public class ZIMKit: NSObject {
         }
     }
 }
-

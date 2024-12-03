@@ -16,77 +16,85 @@ class ImageMessageCell: MessageCell {
     override class var reuseId: String {
         String(describing: ImageMessageCell.self)
     }
-
-    lazy var thumbnailImageView: AnimatedImageView = {
-        let imageView = AnimatedImageView().withoutAutoresizingMaskConstraints
+    
+    lazy var imageMediaView: MediaImageReplyView = {
+        let imageView = MediaImageReplyView().withoutAutoresizingMaskConstraints
         imageView.isUserInteractionEnabled = true
-        imageView.layer.cornerRadius = 5.0
-        imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        imageView.backgroundColor = .white
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
         imageView.addGestureRecognizer(tap)
-        containerView.addSubview(imageView)
+        
         return imageView
     }()
-
+    
+    var imageTopConstraint: NSLayoutConstraint!
+    var imageLeftConstraint: NSLayoutConstraint!
+    var imageWidthConstraint: NSLayoutConstraint!
+    var imageHeightConstraint: NSLayoutConstraint!
     override func setUp() {
         super.setUp()
+        imageLeftConstraint = imageMediaView.leadingAnchor.pin(equalTo: containerView.leadingAnchor,constant: 0)
+        imageTopConstraint = imageMediaView.topAnchor.pin(equalTo: containerView.topAnchor, constant: 0)
+        imageWidthConstraint = imageMediaView.widthAnchor.pin(equalToConstant: 0)
+        imageHeightConstraint = imageMediaView.heightAnchor.pin(equalToConstant: 0)
+        
     }
-
+    
     override func setUpLayout() {
         super.setUpLayout()
         updateImageConstraint()
     }
-
+    
     private func updateImageConstraint() {
-        let insets = messageVM?.cellConfig.contentInsets ?? UIEdgeInsets()
-        let directionInsets = NSDirectionalEdgeInsets(
-            top: insets.top,
-            leading: insets.left,
-            bottom: insets.bottom,
-            trailing: insets.right)
-        thumbnailImageView.removeFromSuperview()
-        containerView.embed(thumbnailImageView, insets: directionInsets)
+        //        let insets = messageVM?.cellConfig.contentInsets ?? UIEdgeInsets()
+        guard let messageModel = messageVM as? ImageMessageViewModel else { return }
+        
+        containerView.addSubview(imageMediaView)
+        
+        NSLayoutConstraint.activate([
+            imageLeftConstraint,
+            imageTopConstraint,
+            imageWidthConstraint,
+            imageHeightConstraint
+        ])
+        
+        containerView.embed(progressView)
+        
+        imageLeftConstraint.isActive = true
+        imageTopConstraint.isActive = true
+        imageWidthConstraint.isActive = true
+        imageHeightConstraint.isActive = true
     }
-
+    
     override func updateContent() {
         super.updateContent()
-
+        
         guard let messageVM = messageVM as? ImageMessageViewModel else { return }
         let message = messageVM.message
         
         updateImageConstraint()
-
-        let placeHolder = "chat_image_fail_bg"
-        let path = message.imageContent.thumbnailDownloadUrl.count > 0
-        ? message.imageContent.thumbnailDownloadUrl
-            : message.fileLocalPath
-
-        // if image size max than 5MB, will resize to avoiding memory issue.
+        
         let isResize = !messageVM.isGif && message.fileSize > 5 * 1024 * 1024
-        let maxSize = CGSize(
-            width: messageVM.contentSize.width * 3,
-            height: messageVM.contentSize.height * 3)
-
-        thumbnailImageView.loadImage(
-            with: path,
-            placeholder: placeHolder,
-            maxSize: maxSize,
-            isResize: isResize
-        ) { [weak message] value in
-            switch value {
-            case .success:
-                // remove the other caches.
-                if path != message?.fileLocalPath,
-                   let fileLocalPath = message?.fileLocalPath {
-                    ImageCache.removeCache(for: fileLocalPath)
-                }
-            case .failure:
-                break
+        imageMediaView.updateContent(messageVM: messageVM,isResize: isResize)
+        
+        if message.reactions.count > 0 {
+            if message.info.direction == .send {
+                containerView.backgroundColor = UIColor(hex: 0x3478FC)
+            } else {
+                containerView.backgroundColor = UIColor(hex: 0xFFFFFF)
             }
+            containerView.layer.cornerRadius = 12
+            
+            imageTopConstraint.constant = 10
+            imageLeftConstraint.constant = 12
+            
+        } else {
+            imageTopConstraint.constant = 0
+            imageLeftConstraint.constant = 0
         }
+        imageWidthConstraint.constant = messageVM.contentMediaSize.width
+        imageHeightConstraint.constant = messageVM.contentMediaSize.height
     }
+    
 }
 
 extension ImageMessageCell {

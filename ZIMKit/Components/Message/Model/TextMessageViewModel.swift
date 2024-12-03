@@ -12,21 +12,21 @@ import UIKit
 let MessageCell_Text_Max_Width = UIScreen.main.bounds.width - 150.0
 
 class TextMessageViewModel: MessageViewModel {
-
+    
     /// The attributed text of the text message.
     var attributedContent = NSAttributedString(string: "")
-
+    
     override init(with msg: ZIMKitMessage) {
         super.init(with: msg)
         setContent(msg.textContent.content)
     }
-
+    
     convenience init(with content: String) {
         let msg = ZIMKitMessage()
         msg.textContent.content = content
         self.init(with: msg)
     }
-
+    
     override var contentSize: CGSize {
         if _contentSize == .zero {
             var size = attributedContent.boundingRect(with: CGSize(width: MessageCell_Text_Max_Width,
@@ -45,17 +45,17 @@ class TextMessageViewModel: MessageViewModel {
 extension TextMessageViewModel {
     func setContent(_ message: String) {
         let attributedStr = NSMutableAttributedString(string: message)
-
+        
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = .byWordWrapping
         paragraphStyle.minimumLineHeight = 21.0
-
+        
         let attributes: [NSAttributedString.Key : Any] = [.font : cellConfig.messageTextFont,
                                                           .paragraphStyle : paragraphStyle,
                                                           .foregroundColor : cellConfig.messageTextColor]
-
+        
         attributedStr.setAttributes(attributes, range: NSRange(location: 0, length: attributedStr.length))
-
+        
         attributedContent = attributedStr
     }
 }

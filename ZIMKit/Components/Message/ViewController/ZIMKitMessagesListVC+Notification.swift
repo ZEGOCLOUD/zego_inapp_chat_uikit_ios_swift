@@ -15,11 +15,11 @@ extension ZIMKitMessagesListVC {
             name: UIApplication.willResignActiveNotification,
             object: nil)
     }
-
+    
     func removeNotifications() {
         NotificationCenter.default.removeObserver(self, name: UIApplication.willResignActiveNotification, object: nil)
     }
-
+    
     @objc private func application(willResignActive notification: Notification) {
         audioPlayer.stop()
         hideOptionsView()

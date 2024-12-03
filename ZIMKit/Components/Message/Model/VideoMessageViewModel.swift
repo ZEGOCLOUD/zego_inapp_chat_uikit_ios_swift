@@ -17,7 +17,9 @@ class VideoMessageViewModel: MediaMessageViewModel {
             !FileManager.default.fileExists(atPath: firstFrameLocalPath) {
             
             let home = NSHomeDirectory()
-            msg.videoContent.firstFrameLocalPath = home + firstFrameLocalPath[home.endIndex..<firstFrameLocalPath.endIndex]
+            if home.endIndex <= firstFrameLocalPath.endIndex {
+                msg.videoContent.firstFrameLocalPath = home + firstFrameLocalPath[home.endIndex..<firstFrameLocalPath.endIndex]
+            }
         }
         
         if msg.info.sentStatus != .sendSuccess {
@@ -26,7 +28,7 @@ class VideoMessageViewModel: MediaMessageViewModel {
             if msg.videoContent.firstFrameSize != .zero && FileManager.default.fileExists(atPath: firstFrameLocalPath) {
                 return
             }
-                        
+            
             let url = URL(fileURLWithPath: msg.videoContent.fileLocalPath)
             let videoInfo = AVTool.getFirstFrameImageAndDuration(with: url)
             msg.videoContent.firstFrameSize = videoInfo.image?.size ?? .zero
@@ -37,7 +39,7 @@ class VideoMessageViewModel: MediaMessageViewModel {
             }
         }
     }
-
+    
     convenience init(with fileLocalPath: String, duration: UInt32, firstFrameLocalPath: String) {
         let msg = ZIMKitMessage()
         msg.videoContent.fileLocalPath = fileLocalPath
@@ -45,26 +47,32 @@ class VideoMessageViewModel: MediaMessageViewModel {
         msg.videoContent.firstFrameLocalPath = firstFrameLocalPath
         self.init(with: msg)
     }
-
+    
     override var contentSize: CGSize {
-        if _contentSize == .zero {
-            _contentSize = getScaleImageSize(message.videoContent.firstFrameSize.width, message.videoContent.firstFrameSize.height)
+        contentMediaSize = getScaleImageSize(message.videoContent.firstFrameSize.width, message.videoContent.firstFrameSize.height)
+        _contentSize = contentMediaSize
+        
+        if message.reactions.count.isEmpty {
+            
+        } else {
+            _contentSize.width += 24
+            _contentSize.height += 20
         }
         return _contentSize
     }
-
+    
     func getScaleImageSize(_ w: CGFloat, _ h: CGFloat) -> CGSize {
-
+        
         var w = w
         var h = h
-
+        
         let maxWH = UIScreen.main.bounds.width / 2.0
         let minWH = UIScreen.main.bounds.width / 4.0
-
+        
         if w == 0 && h == 0 {
             return CGSize(width: maxWH, height: maxWH)
         }
-
+        
         if w > h {
             h = h / w * maxWH
             h = max(h, minWH)
@@ -74,7 +82,7 @@ class VideoMessageViewModel: MediaMessageViewModel {
             w = max(w, minWH)
             h = maxWH
         }
-
+        
         return CGSize(width: w, height: h)
     }
 }

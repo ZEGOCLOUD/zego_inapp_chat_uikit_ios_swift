@@ -106,7 +106,6 @@ class GalleryVC: _ViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
         collectionView.reloadData()
         view.layoutIfNeeded()
         DispatchQueue.main.async {

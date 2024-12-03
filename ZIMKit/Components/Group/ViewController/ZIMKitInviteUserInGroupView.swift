@@ -36,7 +36,6 @@ class ZIMKitInviteUserInGroupView: UIView {
         return label
     }()
     
-    
     let inputTextField: UITextField = {
         let textField = UITextField().withoutAutoresizingMaskConstraints
         textField.clipsToBounds = true
@@ -98,13 +97,13 @@ class ZIMKitInviteUserInGroupView: UIView {
     var cancelBlock: (() -> Void)?
     var sureBlock: ((Bool) -> Void)?
     
-  
+    
     public init(conversationID: String) {
         super.init(frame:UIScreen.main.bounds)
         groupID = conversationID
         addSubviews()
     }
-  
+    
     func addSubviews() {
         backgroundColor = UIColor(hex: 0x000000, a: 0.4)
         addSubview(containerView)
@@ -207,7 +206,7 @@ class ZIMKitInviteUserInGroupView: UIView {
     }
     
     @objc func sureItemClick(_ button: UIButton) {
-      
+        
         let userString:String = inputTextField.text ?? ""
         guard let nonNilGroupID = groupID else {
             return
@@ -220,24 +219,18 @@ class ZIMKitInviteUserInGroupView: UIView {
             if error.code.rawValue == 0 {
                 self?.hideView()
                 HUDHelper.showMessage(L10n("invite_success"))
-            } else if (error.code.rawValue == 6000502) {
+            } else if (error.code.rawValue == 6000011) {
                 print("[ERROR] inviteUsersIntoGroup error: code = \(error.code)")
-                //用户未注册
-                //FIXME: 错误码需要 2.17 版本 SDK 发布更新
-                //                let toastView = ZIMKitToast(message: L10n("user_not_register"))
-                //                if let keyWindow = UIApplication.shared.windows.first(where: { $0.isKeyWindow }) {
-                //                    keyWindow.addSubview(toastView)
-                //                }
                 HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
                                                    defaultMessage: L10n("user_not_register"))
                 
             } else if error.code.rawValue == 6000522 {
-              HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
-                                                 defaultMessage: L10n("already_belong"))
+                HUDHelper.showErrorMessageIfNeeded(error.code.rawValue,
+                                                   defaultMessage: L10n("already_belong"))
             }
-          self?.sureBlock?(error.code.rawValue == 0)
+            self?.sureBlock?(error.code.rawValue == 0)
         }
-      
+        
     }
     
     @objc func textFieldDidChange(_ textField: UITextField) {

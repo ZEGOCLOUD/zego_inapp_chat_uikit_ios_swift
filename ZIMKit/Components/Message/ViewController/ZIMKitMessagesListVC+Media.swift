@@ -12,8 +12,8 @@ import MobileCoreServices
 import AssetsLibrary
 import QuickLook
 
-private var _currentFileMessageVM: FileMessageViewModel?
-private var _currentFileCell: FileMessageCell?
+private var _currentFileMessageVM: MediaMessageViewModel?
+private var _currentFileCell: MessageCell?
 
 extension ZIMKitMessagesListVC {
     
@@ -71,7 +71,7 @@ extension ZIMKitMessagesListVC {
         }
     }
     
-    func previewFile(with messageVM: FileMessageViewModel, cell: FileMessageCell) {
+    func previewFile(with messageVM: MediaMessageViewModel, cell: MessageCell) {
         _currentFileMessageVM = messageVM
         _currentFileCell = cell
         if FileManager.default.fileExists(atPath: messageVM.message.fileLocalPath) {
@@ -114,6 +114,21 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
             if itemProvider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
                 itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.image.identifier) { [weak self] url, _ in
                     guard let url = url else { return }
+                    
+                    let fileManager = FileManager.default
+                    do {
+                        let attributes = try fileManager.attributesOfItem(atPath: url.path)
+                        if let fileSize = attributes[FileAttributeKey.size] as? UInt64 {
+                            let sizeInMB = Double(fileSize) / (1024.0 * 1024.0)
+                            print("图片大小为\(sizeInMB) MB")
+                            // 在这里可以添加是否超过某个大小的判断，比如是否超过100MB
+                            if sizeInMB > 100 {
+                                return
+                            }
+                        }
+                    } catch {
+                        print("获取文件属性出错: \(error)")
+                    }
                     self?.sendImageMessage(with: url)
                 }
             } else if itemProvider.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
@@ -124,6 +139,17 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
                 // Ref: https://developer.apple.com/forums/thread/652695
                 itemProvider.loadFileRepresentation(forTypeIdentifier: UTType.movie.identifier) { [weak self] url, _ in
                     guard let url = url else { return }
+                    
+                    do {
+                        // 使用 try? 来处理可能的抛出错误，并将其结果转换为可选值
+                        let fileSize = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+                        let isLargerThan100MB = fileSize! > 100 * 1024 * 1024 // 100MB
+                        if isLargerThan100MB {// 100MB
+                            HUDHelper.showMessage(L10n("message_file_size_err_tips"))
+                            return
+                        }
+                    }
+                    
                     self?.sendVideoMessage(with: url)
                 }
             }
@@ -135,6 +161,15 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
         picker.dismiss(animated: true) { [weak self] in
             guard let mediaType = info[.mediaType] as? String else { return }
             if mediaType as CFString == kUTTypeImage {
+                
+                if let pickedImage = info[.originalImage] as? UIImage {
+                    // 在这里调用函数判断图片大小是否超过100MB
+                    if let sizeInMB = self?.getImageSizeInMB(image: pickedImage), sizeInMB > 100 {
+                        HUDHelper.showMessage(L10n("message_photo_size_err_tips"))
+                        return
+                    }
+                }
+                
                 if picker.sourceType == .camera {
                     if let image = info[.originalImage] as? UIImage {
                         let imageData = image.jpegData(compressionQuality: 1.0)!
@@ -149,6 +184,15 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
             } else if mediaType as CFString == kUTTypeMovie {
                 print("Pick a video.")
                 if let url = info[.mediaURL] as? URL {
+                    do {
+                        // 使用 try? 来处理可能的抛出错误，并将其结果转换为可选值
+                        let fileSize = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize ?? 0
+                        let isLargerThan100MB = fileSize! > 100 * 1024 * 1024 // 100MB
+                        if isLargerThan100MB {// 100MB
+                            HUDHelper.showMessage(L10n("message_file_size_err_tips"))
+                            return
+                        }
+                    }
                     self?.sendVideoMessage(with: url)
                     return
                 }
@@ -159,6 +203,18 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
     
     public func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismiss(animated: true, completion: nil)
+    }
+    
+    
+    func getImageSizeInMB(image: UIImage) -> Double? {
+        if let imageData = image.pngData() {
+            let sizeInMB = Double(imageData.count) / (1024.0 * 1024.0)
+            return sizeInMB
+        } else if let imageData = image.jpegData(compressionQuality: 1.0) {
+            let sizeInMB = Double(imageData.count) / (1024.0 * 1024.0)
+            return sizeInMB
+        }
+        return nil
     }
 }
 

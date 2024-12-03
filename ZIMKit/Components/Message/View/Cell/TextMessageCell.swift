@@ -11,7 +11,7 @@ class TextMessageCell: BubbleMessageCell {
     override class var reuseId: String {
         String(describing: TextMessageCell.self)
     }
-
+    
     lazy var messageLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textAlignment = .left
@@ -19,33 +19,39 @@ class TextMessageCell: BubbleMessageCell {
         label.numberOfLines = 0
         return label
     }()
-
+    
     override func setUp() {
         super.setUp()
     }
-
+    
     override func setUpLayout() {
         super.setUpLayout()
         updateMessageLabelConstraint()
     }
-
+    
     private func updateMessageLabelConstraint() {
-        let insets = messageVM?.cellConfig.contentInsets ?? UIEdgeInsets()
-        let directionInsets = NSDirectionalEdgeInsets(
-            top: insets.top,
-            leading: insets.left,
-            bottom: insets.bottom,
-            trailing: insets.right)
-        messageLabel.removeFromSuperview()
-        bubbleView.embed(messageLabel, insets: directionInsets)
+        //        let insets = messageVM?.cellConfig.contentInsets ?? UIEdgeInsets()
+        //        let directionInsets = NSDirectionalEdgeInsets(
+        //            top: insets.top,
+        //            leading: insets.left,
+        //            bottom: insets.bottom,
+        //            trailing: insets.right)
+        //        messageLabel.removeFromSuperview()
+        //        bubbleView.embed(messageLabel, insets: directionInsets)
+        bubbleView.addSubview(messageLabel)
+        NSLayoutConstraint.activate([
+            messageLabel.leadingAnchor.pin(equalTo: bubbleView.leadingAnchor,constant: 12),
+            messageLabel.topAnchor.pin(equalTo: bubbleView.topAnchor, constant: 10),
+            messageLabel.trailingAnchor.pin(equalTo: bubbleView.trailingAnchor,constant: -12),
+        ])
     }
-
+    
     override func updateContent() {
         super.updateContent()
-
+        
         guard let messageVM = messageVM as? TextMessageViewModel else { return }
         updateMessageLabelConstraint()
-
+        
         messageLabel.attributedText = messageVM.attributedContent
         messageLabel.textColor = messageVM.cellConfig.messageTextColor
         messageLabel.font = messageVM.cellConfig.messageTextFont

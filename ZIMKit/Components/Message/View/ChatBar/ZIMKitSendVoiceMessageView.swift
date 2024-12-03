@@ -119,18 +119,14 @@ class ZIMKitSendVoiceMessageView: UIView {
     
     func setupLayoutConstraint() {
         
-        
         NSLayoutConstraint.activate([
-            
             titleLB.centerXAnchor.pin(equalTo: centerXAnchor, constant: 0),
             titleLB.heightAnchor.pin(equalToConstant: 22),
             titleLB.leadingAnchor.pin(equalTo: leadingAnchor, constant: 0),
             titleLB.trailingAnchor.pin(equalTo: trailingAnchor, constant: 0),
         ])
         topConstraint = titleLB.topAnchor.pin(equalTo: topAnchor, constant: 32)
-        
         topConstraint?.isActive = true
-        
         
         NSLayoutConstraint.activate([
             sendVoiceButton.topAnchor.pin(equalTo: titleLB.bottomAnchor, constant: 15),
@@ -301,6 +297,7 @@ class ZIMKitSendVoiceMessageView: UIView {
             guard let path = recorder.path else { return }
             let duration = UInt32(round(recorder.timeInterval))
             recorder.stopRecord()
+            timeLabel.text = ""
             delegate?.chatBar(didSendAudioWith: path, duration: duration)
         }
     }
@@ -318,7 +315,6 @@ class ZIMKitSendVoiceMessageView: UIView {
         if !recorder.isRecording { return }
         recorder.cancelRecord()
         delegate?.chatBar(didCancelRecord: recorder)
-        
     }
     
     @objc func dragEnter(_ sender: UIButton) {
@@ -327,7 +323,6 @@ class ZIMKitSendVoiceMessageView: UIView {
         sendVoiceButton.backgroundColor = UIColor.clear
         sendVoiceButton.layer.insertSublayer(gradientLayer, at: 0)
         sendVoiceButton.layer.borderWidth = 3
-        
         recordingView.isHidden = false
         titleLB.isHidden = false
         dragExitView.isHidden = true

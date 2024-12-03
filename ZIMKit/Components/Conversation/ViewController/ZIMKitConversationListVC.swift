@@ -127,7 +127,7 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
     public func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         return true
     }
-
+  
     public func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         if indexPath.row >= viewModel.conversations.count { return nil }
         
@@ -140,7 +140,7 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
                 } else {
                 }
                 //删除结果返回
-                self.delegate?.shouldDeleteItem!(self, didSelectWith: conversation,
+                self.delegate?.shouldDeleteItem?(self, didSelectWith: conversation,
                                                 withErrorCode: error.code.rawValue,
                                                 withErrorMsg: error.message)
             }

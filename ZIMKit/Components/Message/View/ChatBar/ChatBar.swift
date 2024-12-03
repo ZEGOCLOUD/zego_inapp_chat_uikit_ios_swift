@@ -28,6 +28,9 @@ let bottomBarDictionary: [String: [String: String]] = [
     "6": ["icon": "bottom_bar_file_img", "title": "message_file"]
 ]
 
+let chatViewReplyMessageHeight: CGFloat = 30
+let chatViewDefaultHeight:CGFloat = 46
+
 protocol ChatBarDelegate: AnyObject {
     /// trigger when chatBar status changed.
     func chatBar(_ chatBar: ChatBar, didChangeStatus status: ChatBarStatus)
@@ -39,7 +42,7 @@ protocol ChatBarDelegate: AnyObject {
     func chatBar(_ chatBar: ChatBar, didSendAudioWith path: String, duration: UInt32)
     
     /// trigger when more function button clicked, photo or file.
-    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: ZIMKitMenuBarButtonName)
+    func chatBar(_ chatBar: ChatBar, didSelectMoreViewWith type: ZIMKitMenuBarButtonName,originMessage: ZIMKitMessage?)
     
     /// trigger when audio recorder start.
     func chatBar(_ chatBar: ChatBar, didStartToRecord recorder: AudioRecorder)
@@ -50,7 +53,16 @@ protocol ChatBarDelegate: AnyObject {
     /// the delete button will appear when status is `select`
     func chatBarDidClickDeleteButton(_ chatBar: ChatBar)
     
-    func chatBarDidClickFullScreenEnterButton(content:String)
+    func chatBarDidClickPartForward(_ chatBar: ChatBar)
+    
+    func chatBarDidClickMergeForward(_ chatBar: ChatBar)
+    
+    func chatBarDidClickFullScreenEnterButton(content:String,replyContent:String?,cursorPosition:Int?)
+    
+    func chatBar(_ chatBar: ChatBar, didReplyText text: String,originMessage: ZIMKitMessage)
+    
+    func chatBar(_ chatBar: ChatBar, didReplyAudio audioPath: String,originMessage: ZIMKitMessage,duration: UInt32)
+    
 }
 
 enum KeyboardType {
@@ -184,6 +196,7 @@ class ChatBar: _View {
         let textView = ChatTextView().withoutAutoresizingMaskConstraints
         textView.textView.delegate = self
         textView.delegate = self
+        textView.replyDelegate = self
         return textView
     }()
     
@@ -213,6 +226,8 @@ class ChatBar: _View {
     var chatViewHeightHeightConstraint: NSLayoutConstraint!
     
     var sendVoiceTopConstraint: NSLayoutConstraint!
+    var replyMessage:ZIMKitMessage?
+    
     
     lazy var heightConstraint: NSLayoutConstraint! = {
         let heightConstraint = heightAnchor.pin(equalToConstant: contentViewHeight)
@@ -235,17 +250,11 @@ class ChatBar: _View {
         return view
     }()
     
-    lazy var deleteButton: UIButton = {
-        let button = UIButton(type: .custom).withoutAutoresizingMaskConstraints
-        button.layer.cornerRadius = 12.0
-        button.setTitle(L10n("conversation_delete"), for: .normal)
-        button.setTitleColor(.zim_textRed, for: .normal)
-        button.setImage(loadImageSafely(with: "message_multiSelect_delete"), for: .normal)
-        button.setImage(loadImageSafely(with: "message_multiSelect_delete"), for: .highlighted)
-        button.backgroundColor = .zim_backgroundWhite
-        button.isHidden = true
-        button.addTarget(self, action: #selector(deleteButtonClick), for: .touchUpInside)
-        return button
+    lazy var multipleView: ZIMKitMultipleChoiceView = {
+        let view: ZIMKitMultipleChoiceView = ZIMKitMultipleChoiceView().withoutAutoresizingMaskConstraints
+        view.isHidden = true
+        view.delegate = self
+        return view
     }()
     
     lazy var audioVideoCallView: ZIMKitBottomPopView = {
@@ -321,7 +330,7 @@ class ChatBar: _View {
         
         addSubview(chatTextView)
         
-        chatViewHeightHeightConstraint = chatTextView.heightAnchor.pin(equalToConstant: 46)
+        chatViewHeightHeightConstraint = chatTextView.heightAnchor.pin(equalToConstant: chatViewDefaultHeight)
         NSLayoutConstraint.activate([
             chatTextView.topAnchor.pin(equalTo: self.topAnchor, constant: chatViewTopMargin),
             chatTextView.leadingAnchor.pin(equalTo: self.leadingAnchor, constant: 8),
@@ -355,12 +364,13 @@ class ChatBar: _View {
             sendVoiceTopConstraint = sendVoiceView.topAnchor.pin(equalTo: topAnchor,constant: 108)
             sendVoiceTopConstraint.isActive = true
         }
-        addSubview(deleteButton)
+        
+        addSubview(multipleView)
         NSLayoutConstraint.activate([
-            deleteButton.topAnchor.pin(equalTo: topAnchor, constant: 8.5),
-            deleteButton.leadingAnchor.pin(equalTo: leadingAnchor, constant: 16),
-            deleteButton.trailingAnchor.pin(equalTo: trailingAnchor, constant: -16),
-            deleteButton.heightAnchor.pin(equalToConstant: 44)
+            multipleView.topAnchor.pin(equalTo: topAnchor, constant: 0),
+            multipleView.leadingAnchor.pin(equalTo: leadingAnchor, constant: 0),
+            multipleView.trailingAnchor.pin(equalTo: trailingAnchor, constant: 0),
+            multipleView.bottomAnchor.pin(equalTo: bottomAnchor, constant: 0)
         ])
     }
     
@@ -451,6 +461,14 @@ class ChatBar: _View {
         }
     }
     
+    func replyMessage(fromUserName:String,content:String,originMessage: ZIMKitMessage) {
+        replyMessage = originMessage
+        chatTextView.replyingMessage = true
+        updateTextViewLayout()
+        chatTextView.didBeginReplyMessage(fromUserName: fromUserName, content: content)
+        chatTextView.layoutSubviews()
+    }
+    
 }
 
 // MARK: - UI
@@ -465,7 +483,7 @@ extension ChatBar {
         let textView = chatTextView.textView
         let size = textView.sizeThatFits(CGSize(width: textView.frame.width, height: textViewHeightMax))
         let oldHeight = textView.frame.height
-        textViewHeight = size.height
+        textViewHeight =  (textView.text.count > 0) ? size.height : textViewHeightMin
         
         if textViewHeight > textViewHeightMax {
             textViewHeight = textViewHeightMax
@@ -474,10 +492,13 @@ extension ChatBar {
         if textViewHeight < textViewHeightMin {
             textViewHeight = textViewHeightMin
         }
-        
+        if replyMessage != nil {
+            textViewHeight += chatViewReplyMessageHeight + 12
+        }
         if oldHeight == textViewHeight { return }
         
         let topContentHeight = textViewHeight + textViewTBMargin + textViewTBMargin
+        
         NSLayoutConstraint.deactivate([chatViewHeightHeightConstraint!])
         
         chatViewHeightHeightConstraint = chatTextView.heightAnchor.constraint(equalToConstant:topContentHeight)
@@ -504,6 +525,12 @@ extension ChatBar {
         UIView.animate(withDuration: keyboardAnimationDuration) {
             block()
         }
+    }
+    
+    func replyMessageEnd() {
+        replyMessage = nil
+        chatTextView.cancelReplyState()
+        clearTextViewInput()
     }
 }
 
@@ -554,32 +581,38 @@ extension ChatBar {
         }
     }
     
-    @objc func deleteButtonClick(_ sender: UIButton) {
-        delegate?.chatBarDidClickDeleteButton(self)
-    }
-    
     @objc func imageButtonClick(_ sender: UIButton) {
         status = .normal
-        delegate?.chatBar(self, didSelectMoreViewWith: .picture)
+        delegate?.chatBar(self, didSelectMoreViewWith: .picture,originMessage: replyMessage)
     }
     
     @objc func cameraButtonClick(_ sender: UIButton) {
         status = .normal
-        delegate?.chatBar(self, didSelectMoreViewWith: .takePhoto)
+        delegate?.chatBar(self, didSelectMoreViewWith: .takePhoto,originMessage: replyMessage)
     }
     
     @objc func fileButtonClick(_ sender: UIButton) {
         status = .normal
-        delegate?.chatBar(self, didSelectMoreViewWith: .file)
+        delegate?.chatBar(self, didSelectMoreViewWith: .file,originMessage: replyMessage)
     }
     
     @objc func audioVideoCallButtonClick(_ sender: UIButton) {
         status = .normal
         if ZegoPluginAdapter.callPlugin != nil {
-          audioVideoCallView.showView()
+            audioVideoCallView.showView()
         } else {
-          print("⚠️⚠️⚠️ callPlugin 不存在")
+            print("⚠️⚠️⚠️ callPlugin 不存在")
         }
+    }
+    
+    func sendMessage() {
+        if chatTextView.textView.text.isEmpty { status = .normal }
+        if replyMessage == nil {
+            delegate?.chatBar(self, didSendText: chatTextView.textView.text)
+        } else {
+            delegate?.chatBar(self, didReplyText: chatTextView.textView.text,originMessage: replyMessage ?? ZIMKitMessage())
+        }
+        clearTextViewInput()
     }
 }
 
@@ -602,8 +635,9 @@ extension ChatBar {
             chatTextView.textView.resignFirstResponder()
         }
         
-        deleteButton.isHidden = status != .select
+        multipleView.isHidden = status != .select
         bottomBarView.isHidden = status == .select
+        chatTextView.isHidden = status == .select
         addButton.isSelected = status == .function
         updateChatBarConstraints()
         delegate?.chatBar(self, didChangeStatus: status)
@@ -612,11 +646,22 @@ extension ChatBar {
     func clearTextViewInput() {
         chatTextView.textView.text = ""
     }
+    
+    func insertTextAfterCursor(_ newCursorPosition:Int) {
+        // 获取光标位置
+        let selectedRange = chatTextView.textView.selectedRange
+        let beginning = chatTextView.textView.beginningOfDocument
+        let cursorPosition = chatTextView.textView.position(from: beginning, offset: selectedRange.location)
+        
+        let newPosition = chatTextView.textView.position(from: beginning, offset: newCursorPosition)
+        chatTextView.textView.selectedTextRange = chatTextView.textView.textRange(from: newPosition!, to: newPosition!)
+        chatTextView.textView.selectedRange = NSRange(location: newCursorPosition, length: 0)
+    }
 }
 
 extension ChatBar : voiceAndVideoCallDelegate {
     func didSelectedVoiceAndVideoCall(videoCall: Bool) {
-        delegate?.chatBar(self, didSelectMoreViewWith: videoCall ? .videoCall : .voiceCall)
+        delegate?.chatBar(self, didSelectMoreViewWith: videoCall ? .videoCall : .voiceCall, originMessage: replyMessage)
     }
 }
 
@@ -643,30 +688,49 @@ extension ChatBar: TextViewDelegate {
     }
     
     func textViewDidChange(_ textView: UITextView) {
+        let newCursorPosition = textView.selectedRange.location
+        
         updateTextViewLayout()
-//        let paragraphStyle = NSMutableParagraphStyle()
-//        paragraphStyle.lineSpacing = 7.0  //行间距
-//        let fontSize: CGFloat = 15.0
-//        
-//        let attributedString = NSAttributedString(string: textView.text, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), NSAttributedString.Key.paragraphStyle: paragraphStyle])
-//        textView.attributedText = attributedString
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineSpacing = 7.0  //行间距
+        let fontSize: CGFloat = 15.0
+        
+        let attributedString = NSAttributedString(string: textView.text, attributes: [NSAttributedString.Key.font: UIFont.systemFont(ofSize: fontSize), NSAttributedString.Key.paragraphStyle: paragraphStyle])
+        
+        if let lang = textView.textInputMode?.primaryLanguage, lang == "zh-Hans" {
+            if textView.markedTextRange == nil {
+                textView.attributedText = attributedString
+            } else {
+                
+            }
+        } else {
+            textView.attributedText = attributedString
+        }
+        
         faceView.updateCurrentTextViewContent(textView.text)
         chatTextView.placeholderLabel.isHidden = textView.text.count > 0 ? true : false
-        
+        chatTextView.sendButton?.isEnabled = textView.text.count > 0 ? true : false
+        insertTextAfterCursor(newCursorPosition)
     }
     
     func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
-            if textView.text.isEmpty { status = .normal }
-            delegate?.chatBar(self, didSendText: textView.text)
-            clearTextViewInput()
-            return false
+            return true
         }
         return true
     }
     
     func textViewDidChangeSelection(_ textView: UITextView) {
         
+    }
+}
+
+extension ChatBar: TextViewCancelReplyMessageDelegate {
+    func chatTextCancelReplyMessage() {
+        replyMessage = nil
+        chatTextView.replyingMessage = false
+        updateTextViewLayout()
+        chatTextView.layoutSubviews()
     }
 }
 
@@ -696,7 +760,12 @@ extension ChatBar: FaceManagerViewDelegate {
     }
     
     func faceViewDidSendButtonClicked() {
-        delegate?.chatBar(self, didSendText: chatTextView.textView.text)
+        
+        if replyMessage != nil {
+            delegate?.chatBar(self, didReplyText: chatTextView.textView.text,originMessage: replyMessage!)
+        } else {
+            delegate?.chatBar(self, didSendText: chatTextView.textView.text)
+        }
         clearTextViewInput()
     }
 }
@@ -708,21 +777,25 @@ extension ChatBar: ChatBarMoreViewDelegate {
         } else if type == .audio {
             self.voiceButtonClick(UIButton())
         } else if type == .voiceCall || type == .videoCall {
-          if let callPlugin = ZegoPluginAdapter.callPlugin {
-            self.audioVideoCallView.showView()
-          } else {
-            print("⚠️⚠️⚠️ callPlugin 不存在")
-          }
+            if ZegoPluginAdapter.callPlugin != nil {
+                self.audioVideoCallView.showView()
+            } else {
+                print("⚠️⚠️⚠️ callPlugin 不存在")
+            }
         } else {
-            delegate?.chatBar(self, didSelectMoreViewWith: type)
+            delegate?.chatBar(self, didSelectMoreViewWith: type,originMessage: replyMessage)
         }
     }
 }
 
 extension ChatBar: textViewToolBarDelegate {
+    func didClicksendMessage() {
+        sendMessage()
+    }
+    
     func didClickFullScreenEnter() {
         status = .normal
-        delegate?.chatBarDidClickFullScreenEnterButton(content: chatTextView.textView.text)
+        delegate?.chatBarDidClickFullScreenEnterButton(content: chatTextView.textView.text,replyContent: self.replyMessage != nil ? chatTextView.replyBriefView.replyBriefLabel.text : "",cursorPosition: chatTextView.textView.selectedRange.location)
     }
 }
 
@@ -750,6 +823,24 @@ extension ChatBar: SendVoiceMessageDelegate {
         UIView.animate(withDuration: 0.3, delay: 0, options: .curveEaseInOut) {
             self.layoutIfNeeded()
         }
-        delegate?.chatBar(self, didSendAudioWith: path, duration: duration)
+        if replyMessage != nil {
+            delegate?.chatBar(self, didReplyAudio: path,originMessage: replyMessage!,duration: duration)
+        } else {
+            delegate?.chatBar(self, didSendAudioWith: path, duration: duration)
+        }
+    }
+}
+
+extension ChatBar:conversationMultipleOperationDelegate {
+    func didClickDeleteConversation() {
+        delegate?.chatBarDidClickDeleteButton(self)
+    }
+    
+    func didClickPartForwardConversation() {
+        delegate?.chatBarDidClickPartForward(self)
+    }
+    
+    func didClickMergeForwardConversation() {
+        delegate?.chatBarDidClickMergeForward(self)
     }
 }

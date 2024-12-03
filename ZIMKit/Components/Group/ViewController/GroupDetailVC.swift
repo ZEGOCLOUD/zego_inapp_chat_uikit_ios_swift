@@ -8,9 +8,10 @@
 import UIKit
 
 protocol groupConversationUpdateDelegate: AnyObject {
-  func groupMessagePinned(isPinned: Bool)
-  func groupMessageNotDisturb(isDisturb: Bool)
-  func groupMemberList(memberCount: Int)
+    func groupMessagePinned(isPinned: Bool)
+    func groupMessageNotDisturb(isDisturb: Bool)
+    func groupMemberList(memberCount: Int)
+    
 }
 
 class GroupDetailVC: _ViewController {
@@ -22,7 +23,7 @@ class GroupDetailVC: _ViewController {
     var conversation: ZIMKitConversation!
     let groupCount: Int = 10
     var memberList = [ZIMKitGroupMemberInfo]()
-    var heightConstraint:NSLayoutConstraint!
+    
     lazy var groupMemberView: UIView = {
         let view = UIView().withoutAutoresizingMaskConstraints
         view.backgroundColor = .zim_backgroundWhite
@@ -39,7 +40,6 @@ class GroupDetailVC: _ViewController {
         label.textAlignment = .left
         return label
     }()
-    
     
     lazy var tapView: UIView = {
         let view = UIView().withoutAutoresizingMaskConstraints
@@ -94,30 +94,36 @@ class GroupDetailVC: _ViewController {
         collectionView.register(ZIMKitGroupMemberInfoCell.self, forCellWithReuseIdentifier: ZIMKitGroupMemberInfoCell.reuseId)
         return collectionView
     }()
-  
+    
     var delegate: groupConversationUpdateDelegate?
+    
     open override func viewDidLoad() {
         super.viewDidLoad()
-        
+        queryGroupMemberList()
     }
     
     override func setUp() {
         super.setUp()
         view.backgroundColor = .zim_backgroundGray5
         setNavigationView()
-
+        
+        //        let tap = UITapGestureRecognizer(target: self, action: #selector(tap(_:)))
+        //        groupMemberView.addGestureRecognizer(tap)
     }
     
     override func viewWillAppear(_ animated: Bool) {
-      super.viewWillAppear(animated)
-      queryGroupMemberList()
-
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.backgroundColor = .zim_backgroundWhite
+        
+        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
+        statusBarView.backgroundColor = UIColor.white
+        view.addSubview(statusBarView)
     }
-  
+    
     open override func viewSafeAreaInsetsDidChange() {
         super.viewSafeAreaInsetsDidChange()
     }
-  
+    
     func setNavigationView() {
         navigationItem.title = L10n("conversation_chat_setting")
         
@@ -129,18 +135,18 @@ class GroupDetailVC: _ViewController {
         leftButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: -20, bottom: 0, right: 0)
         let leftItem = UIBarButtonItem(customView: leftButton)
         self.navigationItem.leftBarButtonItem = leftItem
+        
     }
     
     override func setUpLayout() {
         super.setUpLayout()
         
         view.addSubview(groupMemberView)
-        heightConstraint = groupMemberView.heightAnchor.pin(equalToConstant: CGFloat(54 + 17))
         NSLayoutConstraint.activate([
             groupMemberView.topAnchor.pin(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             groupMemberView.leadingAnchor.pin(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16),
             groupMemberView.trailingAnchor.pin(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -16.0),
-            heightConstraint
+            groupMemberView.heightAnchor.pin(equalToConstant: CGFloat(54 + 17))
         ])
         
         groupMemberView.addSubview(memberTitleLabel)
@@ -219,7 +225,7 @@ class GroupDetailVC: _ViewController {
             label.heightAnchor.pin(equalToConstant: 21.0)
         ])
         
-      
+        
         let switchButton: UISwitch = UISwitch().withoutAutoresizingMaskConstraints
         switchButton.addTarget(self, action: #selector(didItemClick(_:)), for: .touchUpInside)
         switchButton.onTintColor = .zim_backgroundBlue1
@@ -236,29 +242,29 @@ class GroupDetailVC: _ViewController {
             switchButton.heightAnchor.pin(equalToConstant: 31.0),
             switchButton.widthAnchor.pin(equalToConstant: 51.0)
         ])
-      
-
-      if indexTag == 1 {
-        let lineView: UIView = UIView().withoutAutoresizingMaskConstraints
-        lineView.backgroundColor = UIColor(hex: 0xE6E6E6)
-        view.addSubview(lineView)
         
-        NSLayoutConstraint.activate([
-            lineView.heightAnchor.constraint(equalToConstant: 0.5),
-            lineView.bottomAnchor.constraint(equalTo: view.bottomAnchor,constant: -2),
-            lineView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
-            lineView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: 0)
-        ])
-      }
+        
+        if indexTag == 1 {
+            let lineView: UIView = UIView().withoutAutoresizingMaskConstraints
+            lineView.backgroundColor = UIColor(hex: 0xE6E6E6)
+            view.addSubview(lineView)
+            
+            NSLayoutConstraint.activate([
+                lineView.heightAnchor.constraint(equalToConstant: 0.5),
+                lineView.bottomAnchor.constraint(equalTo: view.bottomAnchor,constant: -2),
+                lineView.leadingAnchor.constraint(equalTo: view.leadingAnchor,constant: 16),
+                lineView.trailingAnchor.constraint(equalTo: view.trailingAnchor,constant: 0)
+            ])
+        }
         return view
     }
     
     
     func queryGroupMemberList() {
-        ZIMKit.queryGroupMemberList(by: conversation.id, maxCount: 100, nextFlag: 0) { [self] memberList, nextFlag, error in
+        ZIMKit.queryGroupMemberList(by: conversation.id, maxCount: 100, nextFlag: 0) { [weak self] memberList, nextFlag, error in
             if error.code.rawValue == 0 {
-                self.memberList = memberList
-                updateUI()
+                self?.memberList = memberList
+                self?.updateUI()
             } else {
                 print("[ERROR] queryGroupMemberList code = \(error.code)")
             }
@@ -278,36 +284,36 @@ class GroupDetailVC: _ViewController {
     
     func updateUI() {
         self.memberListTipLabel.text = L10n("look_member", self.memberList.count)
-        heightConstraint.constant = CGFloat(54 + 17 + calculateCollectionViewLines() * 58 + (calculateCollectionViewLines() - 1) * 13)
+        let heightConstraint = groupMemberView.heightAnchor.constraint(equalToConstant: CGFloat(54 + 17 + calculateCollectionViewLines() * 58 + (calculateCollectionViewLines() - 1) * 13))
         heightConstraint.isActive = true
         groupMemberView.layoutIfNeeded()
         addInviteMemberJoinGroupButton()
         collectionView.reloadData()
+        delegate?.groupMemberList(memberCount: self.memberList.count - 1 )
+        
     }
     
     @objc func didItemClick(_ button: UISwitch) {
         if button.tag == 1 {
-            ZIMKit.setConversationNotificationStatus(for: self.conversation.id, type: .group, status: button.isOn ? .doNotDisturb : .notify) { [self] error in
+            ZIMKit.setConversationNotificationStatus(for: self.conversation.id, type: .group, status: button.isOn ? .doNotDisturb : .notify) { [weak self] error in
                 if error.code.rawValue != 0 {
                     print("[ERROR] 设置群组免打扰 \(button.isOn ? "免打扰": "接收消息") errorCode = \(error.code)")
                 } else {
-                  self.delegate?.groupMessageNotDisturb(isDisturb: button.isOn ? false : true)
-
+                    self?.delegate?.groupMessageNotDisturb(isDisturb: button.isOn ? false : true)
                 }
             }
         } else {
-            ZIMKit.updateConversationPinnedState(for: self.conversation.id, type: .group, isPinned: button.isOn ? true : false) { [self] error in
+            ZIMKit.updateConversationPinnedState(for: self.conversation.id, type: .group, isPinned: button.isOn ? true : false) { [weak self] error in
                 if error.code.rawValue != 0 {
                     print("[ERROR] 设置群组消息置顶 \(button.isOn ? "置顶": "取消置顶") errorCode = \(error.code)")
                 } else {
-                  self.delegate?.groupMessagePinned(isPinned: button.isOn ? true : false)
+                    self?.delegate?.groupMessagePinned(isPinned: button.isOn ? true : false)
                 }
             }
         }
     }
     
     @objc func backItemClick(_ button: UIButton) {
-        delegate?.groupMemberList(memberCount: self.memberList.count - 1 )
         navigationController?.popViewController(animated: true)
     }
     
@@ -315,11 +321,6 @@ class GroupDetailVC: _ViewController {
         let vc:GroupMemberListVC = GroupMemberListVC(conversationID: conversation.id, memberList: memberList)
         navigationController?.pushViewController(vc, animated: true)
     }
-    
-    //    @objc func tap(_ gestureRecognizer: UITapGestureRecognizer) {
-    //        UIPasteboard.general.string = groupID
-    //        HUDHelper.showMessage(L10n("group_copy_success"))
-    //    }
     
     func addInviteMemberJoinGroupButton() {
         let inviteMemberInfo: ZIMKitGroupMemberInfo = ZIMKitGroupMemberInfo()
@@ -333,18 +334,17 @@ class GroupDetailVC: _ViewController {
             self.memberList.insert(inviteMemberInfo, at: 9)
         }
     }
-  
-    func inviteUserInToGroup() {
-      let popView: ZIMKitInviteUserInGroupView = ZIMKitInviteUserInGroupView.init(conversationID: conversation.id)
-      popView.showView()
     
-      popView.sureBlock = { [self] result in
-          if result {
-            self.queryGroupMemberList()
-          }
-      }
+    func inviteUserInToGroup() {
+        let popView: ZIMKitInviteUserInGroupView = ZIMKitInviteUserInGroupView.init(conversationID: conversation.id)
+        popView.showView()
+        
+        popView.sureBlock = { [weak self] result in
+            if result {
+                self?.queryGroupMemberList()
+            }
+        }
     }
-  
 }
 
 extension GroupDetailVC :UICollectionViewDataSource,
@@ -384,7 +384,7 @@ extension GroupDetailVC :UICollectionViewDataSource,
         collectionView.deselectItem(at: indexPath, animated: true)
         let model:ZIMKitGroupMemberInfo = memberList[indexPath.row]
         if model.memberRole == .robot {
-          self.inviteUserInToGroup()
+            self.inviteUserInToGroup()
         }
     }
 }

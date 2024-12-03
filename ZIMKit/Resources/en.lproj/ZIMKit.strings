@@ -22,6 +22,7 @@
 "common_message_audio" = "[Audio]";
 "common_message_video" = "[Video]";
 "common_message_file" = "[File]";
+"common_message_system" = "[System Message]";
 "common_open_file_tips" = "Select an app to open the file";
 "common_title_cancel" = "Cancel";
 "common_sure" = "OK";
@@ -96,7 +97,6 @@
 "group_group_id_not_exit" = "The group doesn't exist. Please try again.";
 "group_group_id" = "Group ID";
 "group_copy" = "Copy";
-"group_copy_success" = "Copied.";
 
 "album_download_image" = "Save Image";
 "album_redownload_image" = "Relaod";
@@ -135,6 +135,26 @@
 "message_delete_confirmation_desc_tip" = "确认要删除此消息？";
 "delete_message_title" = "Delete Message";
 "revoke_message" = "%@ A message was withdrawn";
-"common_message_revoked" = "[Message withdrawn]";
+"common_message_revoked" = "withdrew a message";
 "invite_success" = "Invite Success";
 "already_belong" = "already belong to this group";
+"you" = "You";
+"forward_part" = "Forward item by item";
+"forward_merge" = "Merge forward";
+"chat_list" = "Chat List";
+"merge_forward_group" = "[Merge forward] ";
+"merge_forward_peer" = "[Forward item by item] ";
+"group_message" = "Group chat session records";
+"peer_message" = "Record of session";
+"forward_message_peer" = "%@ and %@";
+"combine_message" = "Combine Message";
+"combine_success" = "Forwarding Successful";
+"combine_failed" = "Forwarding Failure";
+"invite_group_tips_title" = "Invitation";
+"invite_group_tips_des" = "Join this group";
+"invite_group" = "[Invite to group]";
+"revoke_message_title" = "Message Retraction";
+"revoke_message_des" = "Are you sure you want to withdraw this message?";
+"forward_msg_least_one" = "Please select at least one message";
+"reaction_reply_failed" = "Failed to reply to a position message";
+"history_message_no_support_reaction" = "Historical messages are not supported reaction";

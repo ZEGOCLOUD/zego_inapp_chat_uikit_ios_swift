@@ -8,11 +8,11 @@
 import Foundation
 
 class SystemMessageCell: MessageCell {
-
+    
     override class var reuseId: String {
         String(describing: SystemMessageCell.self)
     }
-
+    
     lazy var messageLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textAlignment = .center
@@ -21,14 +21,14 @@ class SystemMessageCell: MessageCell {
         label.numberOfLines = 0
         return label
     }()
-
+    
     private var messageLabelTopConstraint: NSLayoutConstraint!
     private var messageLabelHeightConstraint: NSLayoutConstraint!
-
+    
     override func setUp() {
         super.setUp()
     }
-
+    
     override func setUpLayout() {
         contentView.addSubview(timeLabel)
         NSLayoutConstraint.activate([
@@ -36,7 +36,7 @@ class SystemMessageCell: MessageCell {
             timeLabel.topAnchor.pin(equalTo: contentView.topAnchor, constant: 4),
             timeLabel.heightAnchor.pin(equalToConstant: 16.5)
         ])
-
+        
         contentView.addSubview(messageLabel)
         NSLayoutConstraint.activate([
             messageLabel.leadingAnchor.pin(equalTo: contentView.leadingAnchor, constant: 30),
@@ -47,7 +47,7 @@ class SystemMessageCell: MessageCell {
         messageLabelHeightConstraint.isActive = true
         updateMessageLabelConstraint()
     }
-
+    
     private func updateMessageLabelConstraint() {
         if messageLabelTopConstraint != nil {
             messageLabelTopConstraint.isActive = false
@@ -61,16 +61,14 @@ class SystemMessageCell: MessageCell {
                 constant: 12)
         }
         messageLabelTopConstraint.isActive = true
-
         messageLabelHeightConstraint.constant = messageVM?.contentSize.height ?? 18.0
     }
-
+    
     override func updateContent() {
-
+        
         updateMessageLabelConstraint()
-
         guard let messageVM = messageVM as? SystemMessageViewModel else { return }
-
+        
         messageLabel.attributedText = messageVM.attributedContent
         timeLabel.text = timestampToMessageDateStr(messageVM.message.info.timestamp)
     }

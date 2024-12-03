@@ -6,7 +6,7 @@
 //
 
 import UIKit
-
+import ZIM
 class RevokeMessageCell: MessageCell {
     
     override class var reuseId: String {
@@ -26,8 +26,10 @@ class RevokeMessageCell: MessageCell {
         contentView.addSubview(revokeLabel)
         NSLayoutConstraint.activate([
             revokeLabel.centerXAnchor.pin(equalTo: contentView.centerXAnchor),
-            revokeLabel.topAnchor.pin(equalTo: contentView.topAnchor, constant: 4),
-            revokeLabel.heightAnchor.pin(equalToConstant: 16.5)
+            revokeLabel.centerYAnchor.pin(equalTo: contentView.centerYAnchor),
+            revokeLabel.rightAnchor.pin(equalTo: contentView.rightAnchor, constant: -4),
+            revokeLabel.leadingAnchor.pin(equalTo: contentView.leadingAnchor, constant: 4),
+            revokeLabel.heightAnchor.pin(equalToConstant: 15)
         ])
     }
     
@@ -35,23 +37,34 @@ class RevokeMessageCell: MessageCell {
         super.updateContent()
         
         guard let messageVM = messageVM as? RevokeMessageViewModel else { return }
-        
+        guard let messageZIM:ZIMRevokeMessage = messageVM.message.zim as? ZIMRevokeMessage else { return }
         updateMessageLabelConstraint()
         
-        if let data = messageVM.message.revokeExtendedData.data(using:.utf8),
-           let jsonObject = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: String] {
-            
-            revokeLabel.text = L10n("revoke_message", jsonObject["revokeUserName"] ?? "")
+        if messageVM.message.info.senderUserID == ZIMKit.localUser?.id {
+            revokeLabel.text = L10n("revoke_message", L10n("you") )
         } else {
-            
+            ZIMKit.queryUserInfo(by: messageVM.message.info.senderUserID) {[weak self] userInfo, error in
+                self?.revokeLabel.text = L10n("revoke_message", userInfo?.name ?? "")
+                self?.setRevokeAttributedText(originalString: (self?.revokeLabel.text)!, colorStr: userInfo?.name ?? "")
+            }
         }
         
-          revokeLabel.isHidden = messageVM.message.type == .revoke ? false : true
-          timeLabel.isHidden = messageVM.message.type == .revoke ? true : false
-          nameLabel.isHidden = messageVM.message.type == .revoke ? true : false
-          avatarImageView.isHidden = messageVM.message.type == .revoke ? true : false
-          containerView.isHidden = messageVM.message.type == .revoke ? true : false
-          
+        if messageVM.message.type == .revoke {
+            revokeLabel.isHidden = messageVM.message.type == .revoke ? false : true
+            timeLabel.isHidden = messageVM.message.type == .revoke ? true : false
+            nameLabel.isHidden = messageVM.message.type == .revoke ? true : false
+            avatarImageView.isHidden = messageVM.message.type == .revoke ? true : false
+            containerView.isHidden = messageVM.message.type == .revoke ? true : false
+            nameLabel.isHidden = messageVM.message.type == .revoke ? true : false
+        }
+    }
+    
+    func setRevokeAttributedText(originalString: String, colorStr: String) {
+        let rangeToColor = (originalString as NSString).range(of: colorStr)
+        
+        let attributedString = NSMutableAttributedString(string: originalString)
+        attributedString.addAttribute(.foregroundColor, value: UIColor(hex: 0x3478FC), range: rangeToColor)
+        revokeLabel.attributedText = attributedString
     }
     
     override func awakeFromNib() {

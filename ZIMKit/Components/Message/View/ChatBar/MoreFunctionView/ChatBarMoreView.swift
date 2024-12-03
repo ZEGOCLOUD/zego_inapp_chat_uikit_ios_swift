@@ -7,11 +7,6 @@
 
 import Foundation
 
-//enum MoreFunctionType {
-//    case photo
-//    case file
-//}
-
 struct ChatBarMoreModel{
     let icon: String
     let title: String
@@ -49,15 +44,7 @@ class ChatBarMoreView: _View {
     }()
     
     weak var delegate: ChatBarMoreViewDelegate?
-    
-    //    lazy var dataSource: [ChatBarMoreModel] = [
-    //        ChatBarMoreModel(icon: "chat_face_photo",
-    //                         title: L10n("message_album"),
-    //                         type: .picture),
-    //        ChatBarMoreModel(icon: "chat_face_file",
-    //                         title: L10n("message_file"),
-    //                         type: .file)
-    //    ]
+
     public var dataSource:[ChatBarMoreModel] = []
     override func setUp() {
         super.setUp()
@@ -68,7 +55,6 @@ class ChatBarMoreView: _View {
         super.setUpLayout()
         
         addSubview(collectionView)
-        
         NSLayoutConstraint.activate([
             collectionView.topAnchor.pin(equalTo: topAnchor),
             collectionView.leadingAnchor.pin(equalTo: leadingAnchor),
@@ -91,9 +77,7 @@ extension ChatBarMoreView: UICollectionViewDataSource,
         }
         
         if indexPath.row >= dataSource.count { return cell }
-        
         cell.fillData(dataSource[indexPath.row])
-        
         return cell
     }
     

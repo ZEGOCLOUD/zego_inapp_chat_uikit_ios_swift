@@ -35,4 +35,11 @@ extension ZIMKit {
                                            callback: UserAvatarUrlUpdateCallback? = nil) {
         ZIMKitCore.shared.updateUserAvatarUrl(avatarUrl, callback: callback)
     }
+  
+    @objc public static func queryUserInfoFromLocalCache(userID: String,
+                                                         groupID:String = "",
+                                           callback: QueryUserInfoCallback? = nil) {
+        ZIMKitCore.shared.queryUserInfoFromLocalCache(userID: userID, groupID:groupID,callback: callback)
+    }
+  
 }

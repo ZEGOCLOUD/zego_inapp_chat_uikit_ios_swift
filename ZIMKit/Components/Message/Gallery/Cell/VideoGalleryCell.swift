@@ -20,12 +20,10 @@ class VideoGalleryCell: GalleryCollectionViewCell {
 
     override func setUpLayout() {
         super.setUpLayout()
-
     }
 
     override func updateContent() {
         super.updateContent()
-
     }
 
     override func viewForZooming(in scrollView: UIScrollView) -> UIView? {

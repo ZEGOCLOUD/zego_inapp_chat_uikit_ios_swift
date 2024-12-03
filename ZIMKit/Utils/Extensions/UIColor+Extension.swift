@@ -44,3 +44,39 @@ public func loadColorSafely(_ colorName: String) -> UIColor {
         return UIColor.white
     }
 }
+
+// 将十六进制颜色值转换为 UIColor
+func colorFromHex(hex: String) -> UIColor {
+    var cString:String = hex.trimmingCharacters(in:.whitespacesAndNewlines).uppercased()
+
+    if cString.hasPrefix("#") {
+        cString.remove(at: cString.startIndex)
+    }
+
+    if cString.count != 6 {
+        return UIColor.gray
+    }
+
+    var rgbValue:UInt64 = 0
+    Scanner(string: cString).scanHexInt64(&rgbValue)
+
+    return UIColor(
+        red: CGFloat((rgbValue & 0xFF0000) >> 16) / 255.0,
+        green: CGFloat((rgbValue & 0x00FF00) >> 8) / 255.0,
+        blue: CGFloat(rgbValue & 0x0000FF) / 255.0,
+        alpha: 1.0
+    )
+}
+
+// 生成图像
+func generateImageWithColor(colorHex: String) -> UIImage? {
+    let color = colorFromHex(hex: colorHex)
+    let rect = CGRect(x: 0, y: 0, width: 100, height: 40)
+    UIGraphicsBeginImageContext(rect.size)
+    let context = UIGraphicsGetCurrentContext()
+    context?.setFillColor(color.cgColor)
+    context?.fill(rect)
+    let image = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return image
+}

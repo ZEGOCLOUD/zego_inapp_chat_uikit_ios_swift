@@ -15,9 +15,9 @@ class FileMessageCell: MessageCell {
     override class var reuseId: String {
         String(describing: FileMessageCell.self)
     }
-
+    
     lazy var iconImageView = UIImageView().withoutAutoresizingMaskConstraints
-
+    
     lazy var titleLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textColor = .zim_textBlack1
@@ -25,7 +25,7 @@ class FileMessageCell: MessageCell {
         label.font = .systemFont(ofSize: 15)
         return label
     }()
-
+    
     lazy var sizeLabel: UILabel = {
         let label = UILabel().withoutAutoresizingMaskConstraints
         label.textColor = .zim_textBlack1
@@ -33,7 +33,15 @@ class FileMessageCell: MessageCell {
         label.font = .systemFont(ofSize: 12)
         return label
     }()
-
+    
+    lazy var fileContentView: UIView = {
+        let view = UIView().withoutAutoresizingMaskConstraints
+        view.backgroundColor = .zim_backgroundWhite
+        view.clipsToBounds = true
+        view.layer.cornerRadius = 12
+        return view
+    }()
+    
     lazy var downloadingIndicator: UIActivityIndicatorView = {
         var style = UIActivityIndicatorView.Style.gray
         if #available(iOS 13.0, *) {
@@ -42,7 +50,7 @@ class FileMessageCell: MessageCell {
         let indicator = UIActivityIndicatorView(style: style).withoutAutoresizingMaskConstraints
         return indicator
     }()
-
+    
     override var messageVM: MessageViewModel? {
         didSet {
             guard let messageVM = messageVM as? FileMessageViewModel else { return }
@@ -53,62 +61,103 @@ class FileMessageCell: MessageCell {
             }
         }
     }
-
+    
     override func setUp() {
         super.setUp()
         containerView.backgroundColor = .zim_backgroundWhite
         containerView.layer.cornerRadius = 8.0
-
+        
         let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
         containerView.addGestureRecognizer(tap)
         containerView.isUserInteractionEnabled = true
     }
-
+    
+    var fileTopConstraint: NSLayoutConstraint!
+    var fileLeftConstraint: NSLayoutConstraint!
+    
     override func setUpLayout() {
         super.setUpLayout()
-
-        containerView.addSubview(iconImageView)
-        iconImageView.pin(anchors: [.centerY], to: containerView)
-        iconImageView.pin(to: 39)
-        iconImageView.trailingAnchor.pin(
-            equalTo: containerView.trailingAnchor,
-            constant: -19.5)
-            .isActive = true
-
-        containerView.addSubview(titleLabel)
+        fileTopConstraint = fileContentView.leadingAnchor.pin(equalTo: containerView.leadingAnchor,constant: 0)
+        fileLeftConstraint = fileContentView.topAnchor.pin(equalTo: containerView.topAnchor, constant: 0)
+        
+        updateSubviewsConstraint()
+    }
+    
+    func updateSubviewsConstraint() {
+        guard let messageModel = messageVM as? FileMessageViewModel else { return }
+        
+        containerView.addSubview(fileContentView)
+        
         NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.pin(equalTo: containerView.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.pin(equalTo: iconImageView.leadingAnchor, constant: -23),
-            titleLabel.topAnchor.pin(equalTo: containerView.topAnchor, constant: 11),
+            fileTopConstraint,
+            fileLeftConstraint,
+            fileContentView.widthAnchor.pin(equalToConstant: messageModel.contentMediaSize.width),
+            fileContentView.heightAnchor.pin(equalToConstant: messageModel.contentMediaSize.height),
+        ])
+        fileTopConstraint.isActive = true
+        fileLeftConstraint.isActive = true
+        
+        fileContentView.addSubview(iconImageView)
+        iconImageView.pin(anchors: [.centerY], to: fileContentView)
+        iconImageView.pin(to: 39)
+        iconImageView.leadingAnchor.pin(
+            equalTo: fileContentView.leadingAnchor,
+            constant: 19.5)
+        .isActive = true
+        
+        fileContentView.addSubview(titleLabel)
+        NSLayoutConstraint.activate([
+            titleLabel.leadingAnchor.pin(equalTo: iconImageView.trailingAnchor, constant: 8),
+            titleLabel.trailingAnchor.pin(equalTo: fileContentView.trailingAnchor, constant: -23),
+            titleLabel.topAnchor.pin(equalTo: fileContentView.topAnchor, constant: 11),
             titleLabel.heightAnchor.pin(equalToConstant: 21)
         ])
-
-        containerView.addSubview(sizeLabel)
+        
+        fileContentView.addSubview(sizeLabel)
         NSLayoutConstraint.activate([
             sizeLabel.leadingAnchor.pin(equalTo: titleLabel.leadingAnchor),
-            sizeLabel.trailingAnchor.pin(equalTo: titleLabel.trailingAnchor),
+            sizeLabel.trailingAnchor.pin(equalTo: fileContentView.trailingAnchor,constant: -23),
             sizeLabel.topAnchor.pin(equalTo: titleLabel.bottomAnchor, constant: 2),
             sizeLabel.heightAnchor.pin(equalToConstant: 16.5)
         ])
-
-        containerView.addSubview(downloadingIndicator)
+        
+        fileContentView.addSubview(downloadingIndicator)
         downloadingIndicator.pin(anchors: [.centerX, .centerY], to: iconImageView)
         downloadingIndicator.pin(to: 24.0)
     }
-
+    
     override func updateContent() {
         super.updateContent()
-
+        
         guard let messageVM = messageVM as? FileMessageViewModel else { return }
         let message = messageVM.message
         
         titleLabel.text = message.fileName
-        sizeLabel.text = getFileSizeName(message.fileSize)
-        iconImageView.image = loadImageSafely(with: getFileExtensionIcon(message.fileName))
-
+        sizeLabel.text = FileInfoManager.getFileSizeName(message.fileSize)
+        iconImageView.image = loadImageSafely(with: FileInfoManager.getFileExtensionIcon(message.fileName))
+        
         updateDownloadingIndicator(messageVM)
+        
+        if message.reactions.count > 0 {
+            if message.info.direction == .send {
+                containerView.backgroundColor = UIColor(hex: 0x3478FC)
+                fileContentView.layer.borderWidth = 0
+            } else {
+                containerView.backgroundColor = UIColor(hex: 0xFFFFFF)
+                fileContentView.layer.borderColor = UIColor(hex: 0xEFF0F2).cgColor
+                fileContentView.layer.borderWidth = 1
+            }
+            containerView.layer.cornerRadius = 12
+            
+            fileTopConstraint.constant = 10
+            fileLeftConstraint.constant = 12
+        } else {
+            fileTopConstraint.constant = 0
+            fileLeftConstraint.constant = 0
+        }
+        updateSubviewsConstraint()
     }
-
+    
     private func updateDownloadingIndicator(_ messageVM: FileMessageViewModel) {
         if messageVM.isDownloading {
             downloadingIndicator.startAnimating()
@@ -116,56 +165,7 @@ class FileMessageCell: MessageCell {
             downloadingIndicator.stopAnimating()
         }
     }
-
-    private func getFileSizeName(_ size: Int64) -> String {
-        if size < 1024 {
-            return String(size) + " B"
-        } else if size < 1024 * 1024 {
-            return String(format: "%.2f", Double(size)/1024.0) + " KB"
-        } else if size < 1024 * 1024 * 1024 {
-            return String(format: "%.2f", Double(size)/1024.0/1024.0) + " MB"
-        } else if size < 1024 * 1024 * 1024 * 1024 {
-            return String(format: "%.2f", Double(size)/1024.0/1024.0/1024.0) + " GB"
-        }
-        return "0 B"
-    }
-
-    private func getFileExtensionIcon(_ path: String) -> String {
-
-        let excelArray = ["xlsx", "xlsm", "xlsb", "xltx", "xltm", "xls", "xlt", "xls", "xml", "xlr", "xlw", "xla", "xlam"]
-        let zipArray = ["rar", "zip", "arj", "gz", "arj", "z"]
-        let wordArray = ["doc", "docx", "rtf", "dot", "html", "tmp", "wps"]
-        let pptArray = ["ppt", "pptx", "pptm"]
-        let pdfArray = ["pdf"]
-        let txtArray = ["txt"]
-        let videoArray =  ["mp4", "m4v", "mov", "qt", "avi", "flv", "wmv", "asf", "mpeg", "mpg", "vob", "mkv", "asf", "rm", "rmvb", "vob", "ts", "dat","3gp","3gpp","3g2","3gpp2","webm"]
-        let audioArrary = ["mp3", "wma", "wav", "mid", "ape", "flac", "ape", "alac","m4a"]
-        let picArrary = ["tiff", "heif", "heic", "jpg", "jpeg", "png", "gif", "bmp","webp"]
-
-        let url = URL(fileURLWithPath: path)
-        let pathExtension = url.pathExtension.lowercased()
-
-        if excelArray.contains(pathExtension) {
-            return "file_icon_excel"
-        } else if zipArray.contains(pathExtension) {
-            return "file_icon_zip"
-        } else if wordArray.contains(pathExtension) {
-            return "file_icon_word"
-        } else if pptArray.contains(pathExtension) {
-            return "file_icon_ppt"
-        } else if pdfArray.contains(pathExtension) {
-            return "file_icon_pdf"
-        } else if txtArray.contains(pathExtension) {
-            return "file_icon_txt"
-        } else if videoArray.contains(pathExtension) {
-            return "file_icon_video"
-        } else if audioArrary.contains(pathExtension) {
-            return "file_icon_audio"
-        } else if picArrary.contains(pathExtension) {
-            return "file_icon_pic"
-        }
-        return "file_icon_other"
-    }
+    
 }
 
 extension FileMessageCell {

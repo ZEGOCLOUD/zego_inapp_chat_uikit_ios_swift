@@ -12,24 +12,21 @@ let MessageCell_System_Max_Width = UIScreen.main.bounds.width - 60.0
 
 class SystemMessageViewModel: MessageViewModel {
 
-    convenience init(with content: String) {
-        let msg = ZIMKitMessage()
-        msg.systemContent.content = content
-        self.init(with: msg)
+    override init(with msg: ZIMKitMessage) {
+        super.init(with: msg)
         msg.type = .system
         cellConfig.contentInsets = .zero
-        self.content = content
+        self.content = msg.systemContent.content
         setContent(content)
     }
-
+    
     var content: String = "" {
         didSet {
             setContent(content)
         }
     }
     var attributedContent = NSAttributedString(string: "")
-
-
+    
     override var contentSize: CGSize {
         if _contentSize == .zero {
             var size = attributedContent.boundingRect(with: CGSize(width: MessageCell_System_Max_Width,
@@ -48,18 +45,18 @@ class SystemMessageViewModel: MessageViewModel {
 extension SystemMessageViewModel {
     func setContent(_ message: String) {
         let attributedStr = NSMutableAttributedString(string: message)
-
+        
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = .byCharWrapping
         paragraphStyle.minimumLineHeight = 21.0
         paragraphStyle.alignment = .center
-
+        
         let attributes: [NSAttributedString.Key : Any] = [.font : UIFont.systemFont(ofSize: 13, weight: .medium),
                                                           .paragraphStyle : paragraphStyle,
                                                           .foregroundColor: UIColor.zim_textGray2]
-
+        
         attributedStr.setAttributes(attributes, range: NSRange(location: 0, length: attributedStr.length))
-
+        
         attributedContent = attributedStr
     }
 }

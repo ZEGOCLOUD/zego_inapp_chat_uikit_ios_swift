@@ -12,6 +12,7 @@ protocol messageConversationUpdateDelegate: AnyObject {
     func messageNotDisturb(isDisturb: Bool)
     
 }
+
 class ZIMKitSingleDetailChatVC: _ViewController {
     public convenience init(conversation: ZIMKitConversation) {
         self.init()
@@ -54,7 +55,16 @@ class ZIMKitSingleDetailChatVC: _ViewController {
         label.text = conversation.name
         return label
     }()
-  
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.navigationBar.backgroundColor = .zim_backgroundWhite
+        
+        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
+        statusBarView.backgroundColor = UIColor.white
+        view.addSubview(statusBarView)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setUpUI()
@@ -165,14 +175,14 @@ class ZIMKitSingleDetailChatVC: _ViewController {
     
     @objc func didItemClick(_ button: UISwitch) {
         if button.tag == 1 {
-            ZIMKit.setConversationNotificationStatus(for: self.conversation.id, type: .peer, status: button.isOn ? .doNotDisturb : .notify) { [self] error in
+            ZIMKit.setConversationNotificationStatus(for: self.conversation.id, type: .peer, status: button.isOn ? .doNotDisturb : .notify) { [weak self] error in
                 print("设置免打扰 \(button.isOn ? "免打扰": "接收消息") error = \(error)")
-                self.delegate?.messageNotDisturb(isDisturb: button.isOn ? false : true)
+                self?.delegate?.messageNotDisturb(isDisturb: button.isOn ? false : true)
             }
         } else {
-            ZIMKit.updateConversationPinnedState(for: self.conversation.id, type: .peer, isPinned: button.isOn ? true : false) { [self] error in
+            ZIMKit.updateConversationPinnedState(for: self.conversation.id, type: .peer, isPinned: button.isOn ? true : false) { [weak self] error in
                 print("设置消息置顶 \(button.isOn ? "置顶": "取消置顶") error = \(error)")
-                self.delegate?.messagePinned(isPinned: button.isOn ? true : false)
+                self?.delegate?.messagePinned(isPinned: button.isOn ? true : false)
             }
         }
     }

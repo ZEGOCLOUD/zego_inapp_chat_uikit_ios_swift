@@ -25,12 +25,11 @@ class ZIMKitCore: NSObject {
     var messageList: MessageList = MessageList()
     var groupMemberDict: GroupMemberDict = .init()
     var userDict: ThreadSafeDictionary<String, ZIMKitUser> = .init()
-    
     var isLoadedAllConversations = false
     var isConversationInit = false
     var config : ZIMKitConfig?
     let delegates: NSHashTable<ZIMKitDelegate> = NSHashTable(options: .weakMemory)
-  
+
     func initWith(appID: UInt32, appSign: String,config:ZIMKitConfig?) {
 
         ZegoUIKitSignalingPlugin.shared.initWith(appID: appID, appSign: appSign)

@@ -58,6 +58,7 @@ extension ZIMKitCore {
         zim?.queryGroupMemberInfo(by: userID, groupID: groupID, callback: { _, zimMemberInfo, error in
             let groupMember = ZIMKitGroupMember(with: zimMemberInfo)
             self.groupMemberDict.add(groupID, member: groupMember)
+            self.userDict[userID] = ZIMKitUser(userID: zimMemberInfo.userID, userName: zimMemberInfo.userName)
             callback?(groupMember, error)
         })
     }

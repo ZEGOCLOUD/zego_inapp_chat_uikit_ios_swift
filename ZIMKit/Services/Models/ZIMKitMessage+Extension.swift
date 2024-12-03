@@ -11,9 +11,16 @@ import ZIM
 extension ZIMKitMessage {
     func update(with zim: ZIMMessage) {
         type = zim.type
-        
+        reactions = zim.reactions
+        if zim.type == .custom {
+            let customerMessage:ZIMCustomMessage = zim as! ZIMCustomMessage
+            if customerMessage.subType == systemMessageSubType {
+                type = .system
+            }
+        }
         info.messageID = zim.messageID
         info.localMessageID = zim.localMessageID
+        info.cbInnerID = zim.cbInnerID
         info.senderUserID = zim.senderUserID
         info.conversationID = zim.conversationID
         info.conversationType = zim.conversationType
@@ -32,6 +39,9 @@ extension ZIMKitMessage {
             systemContent.content = zim.message
         }
         
+        if let zim = zim as? ZIMCustomMessage {
+            systemContent.content = zim.message
+        }
         
         func f<T: Empty>(_ left: T, _ right: T) -> T.T {
             if right.isEmpty {
@@ -88,6 +98,10 @@ extension ZIMKitMessage {
           if let revokeObject = zim as? ZIMRevokeMessage {
             revokeExtendedData = revokeObject.revokeExtendedData
           }
+        }
+      
+        if (zim.repliedInfo != nil) {
+          replyMessage = zim.repliedInfo!.messageInfo
         }
     }
     

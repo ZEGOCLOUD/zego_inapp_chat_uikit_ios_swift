@@ -68,30 +68,51 @@ extension ZIMKitCore: ZIMEventHandler {
         
         for msg in kitMessages {
             updateKitMessageProperties(msg)
+            msg.info.senderUserName = userDict[msg.info.senderUserID]?.name
+            msg.info.senderUserAvatarUrl = userDict[msg.info.senderUserID]?.avatarUrl
             messageList.add([msg])
-            
+          
             let conversationID = msg.info.conversationID
             let conversationType = msg.info.conversationType
             
             for delegate in delegates.allObjects {
                 delegate.onMessageReceived?(conversationID,
-                                             type: conversationType,
-                                             messages: kitMessages)
+                                            type: conversationType,
+                                            messages: kitMessages)
             }
         }
     }
-  
+    
     func zim(_ zim: ZIM, messageRevokeReceived messageList: [ZIMRevokeMessage]) {
-      for delegate in delegates.allObjects {
-//          let messages = messageList.compactMap({ ZIMKitMessage(with: $0) })
-          delegate.onMessageRevoked?(messageList)
-      }
-    }
-  
-    func zim(_ zim: ZIM, groupMemberStateChanged state: ZIMGroupMemberState, event: ZIMGroupMemberEvent, userList: [ZIMGroupMemberInfo], operatedInfo: ZIMGroupOperatedInfo, groupID: String) {
-      if isConversationInit == false { return }
-        for delegate in delegates.allObjects {
-          delegate.onGroupMemberStateChanged?(state, event: event, groupID: groupID)
+        
+        if messageList.count == 0 { return }
+        
+        let zimMessageList = messageList.sorted { $0.timestamp < $1.timestamp }
+        let kitMessages = zimMessageList.compactMap({ ZIMKitMessage(with: $0) })
+        
+        for msg in kitMessages {
+            updateKitMessageProperties(msg)
+            
+            self.messageList.delete([msg])
+            self.messageList.add([msg])
+            
         }
-      }
+        for delegate in delegates.allObjects {
+            delegate.onMessageRevoked?(messageList)
+        }
+    }
+    
+    func zim(_ zim: ZIM, groupMemberStateChanged state: ZIMGroupMemberState, event: ZIMGroupMemberEvent, userList: [ZIMGroupMemberInfo], operatedInfo: ZIMGroupOperatedInfo, groupID: String) {
+        if isConversationInit == false { return }
+        for delegate in delegates.allObjects {
+            delegate.onGroupMemberStateChanged?(state, event: event, groupID: groupID)
+        }
+    }
+                         
+    func zim(_ zim: ZIM, messageReactionsChanged reactions: [ZIMMessageReaction]) {
+        if reactions.count == 0 { return }
+        for delegate in delegates.allObjects {
+            delegate.onMessageReactionsChanged?(reactions)
+        }
+    }
 }

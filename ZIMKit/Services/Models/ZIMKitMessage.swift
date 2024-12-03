@@ -10,6 +10,7 @@ import ZIM
 
 public class MessageBaseInfo: NSObject {
     @objc public var messageID: Int64 = 0
+    @objc public var cbInnerID: String = ""
     @objc public var localMessageID: Int64 = 0
     @objc public var senderUserID: String = ""
     @objc public var conversationID: String = ""
@@ -116,7 +117,8 @@ final public class ZIMKitMessage: NSObject {
     @objc public let videoContent: VideoMessageContent = .init()
     @objc public let fileContent: FileMessageContent = .init()
     @objc public var revokeExtendedData :String = ""
-  
+    @objc public var replyMessage :ZIMMessageLiteInfo?
+    @objc public var reactions = [ZIMMessageReaction]()
     init(with zim: ZIMMessage) {
         self.zim = zim
         super.init()

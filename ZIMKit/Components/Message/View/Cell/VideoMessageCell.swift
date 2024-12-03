@@ -15,72 +15,78 @@ class VideoMessageCell: MessageCell {
     override class var reuseId: String {
         String(describing: VideoMessageCell.self)
     }
-
-    lazy var videoImageView: UIImageView = {
-        let imageView = UIImageView().withoutAutoresizingMaskConstraints
-        imageView.layer.cornerRadius = 5.0
-        imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        return imageView
+    
+    lazy var videoMediaView: MediaVideoReplyView = {
+        let view = MediaVideoReplyView().withoutAutoresizingMaskConstraints
+        view.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
+        view.addGestureRecognizer(tap)
+        return view
     }()
-
-    lazy var playImageView: UIImageView = {
-        let imageView = UIImageView().withoutAutoresizingMaskConstraints
-        imageView.image = loadImageSafely(with: "message_video_play")
-        imageView.layer.cornerRadius = 22.0
-        imageView.layer.masksToBounds = true
-        imageView.contentMode = .scaleAspectFill
-        return imageView
-    }()
-
-    lazy var durationLabel: UILabel = {
-        let label = UILabel().withoutAutoresizingMaskConstraints
-        label.font = .systemFont(ofSize: 10, weight: .semibold)
-        label.textColor = .zim_textWhite
-        label.textAlignment = .right
-        return label
-    }()
-
+    
+    var videoTopConstraint: NSLayoutConstraint!
+    var videoLeftConstraint: NSLayoutConstraint!
+    var videoWidthConstraint: NSLayoutConstraint!
+    var videoHeightConstraint: NSLayoutConstraint!
+    
     override func setUp() {
         super.setUp()
-
-        let tap = UITapGestureRecognizer(target: self, action: #selector(tapAction(_:)))
-        videoImageView.addGestureRecognizer(tap)
-        videoImageView.isUserInteractionEnabled = true
+        videoLeftConstraint = videoMediaView.leadingAnchor.pin(equalTo: containerView.leadingAnchor,constant: 0)
+        videoTopConstraint = videoMediaView.topAnchor.pin(equalTo: containerView.topAnchor, constant: 0)
+        videoWidthConstraint = videoMediaView.widthAnchor.pin(equalToConstant: 0)
+        videoHeightConstraint = videoMediaView.heightAnchor.pin(equalToConstant: 0)
     }
-
+    
     override func setUpLayout() {
         super.setUpLayout()
-
-        containerView.embed(videoImageView)
-
-        containerView.addSubview(playImageView)
-        playImageView.pin(anchors: [.centerX, .centerY], to: containerView)
-        playImageView.pin(to: 44.0)
-
-        containerView.addSubview(durationLabel)
-        NSLayoutConstraint.activate([
-            durationLabel.trailingAnchor.pin(equalTo: containerView.trailingAnchor, constant: -8),
-            durationLabel.bottomAnchor.pin(equalTo: containerView.bottomAnchor, constant: -5),
-            durationLabel.heightAnchor.pin(equalToConstant: 14)
-        ])
+        updateSubviewsConstraint()
     }
-
+    
+    func updateSubviewsConstraint() {
+        containerView.addSubview(videoMediaView)
+        guard let messageVM = messageVM as? VideoMessageViewModel else { return }
+        videoWidthConstraint.constant = messageVM.contentMediaSize.width
+        videoHeightConstraint.constant = messageVM.contentMediaSize.height
+        NSLayoutConstraint.activate([
+            videoHeightConstraint,
+            videoWidthConstraint,
+            videoLeftConstraint,
+            videoTopConstraint
+        ])
+        
+        videoLeftConstraint.isActive = true
+        videoTopConstraint.isActive = true
+        videoWidthConstraint.isActive = true
+        videoHeightConstraint.isActive = true
+    }
+    
     override func updateContent() {
         super.updateContent()
-
         guard let messageVM = messageVM as? VideoMessageViewModel else { return }
         let message = messageVM.message
+        updateSubviewsConstraint()
         
-        let placeHolder = "chat_image_fail_bg"
-        let url = message.videoContent.firstFrameDownloadUrl.count > 0
-        ? message.videoContent.firstFrameDownloadUrl
-        : message.videoContent.firstFrameLocalPath
-        videoImageView.loadImage(with: url, placeholder: placeHolder)
-
-        let min = message.videoContent.duration / 60
-        let seconds = message.videoContent.duration % 60
-        durationLabel.text = String(format: "%d:%02d", min, seconds)
+        videoMediaView.updateContent(messageVM: messageVM)
+        
+        if message.reactions.count > 0 {
+            if message.info.direction == .send {
+                containerView.backgroundColor = UIColor(hex: 0x3478FC)
+            } else {
+                containerView.backgroundColor = UIColor(hex: 0xFFFFFF)
+            }
+            containerView.layer.cornerRadius = 12
+            
+            videoTopConstraint.constant = 10
+            videoLeftConstraint.constant = 12
+            
+        } else {
+            videoTopConstraint.constant = 0
+            videoLeftConstraint.constant = 0
+        }
+        
+        videoWidthConstraint.constant = messageVM.contentMediaSize.width
+        videoHeightConstraint.constant = messageVM.contentMediaSize.height
     }
 }
 
