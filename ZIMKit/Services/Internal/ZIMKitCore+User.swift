@@ -39,12 +39,6 @@ extension ZIMKitCore {
     }
     
     func queryUserInfo(by userID: String, callback: QueryUserCallback? = nil) {
-        let userInfo:ZIMKitUser = self.userDict[userID] ?? ZIMKitUser(userID: "", userName: "")
-        if userInfo.name.count <= 0 || userInfo.avatarUrl?.count ?? 0 <= 0 {
-            callback?(userInfo, ZIMError())
-            return
-        }
-        
         let config = ZIMUsersInfoQueryConfig()
         config.isQueryFromServer = true
         zim?.queryUsersInfo(by: [userID], config: config, callback: { [weak self] fullInfos, errorUserInfos, error in

@@ -208,7 +208,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         addNotifications()
         setupNav()
         getCurrentConversionInfo()
-        initCallConfig()
+        
     }
     
     deinit {
@@ -233,17 +233,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         chatBar.resignFirstResponder()
     }
     //MARK: Customer
-    func initCallConfig() {
-        
-        let appID = ZIMKit().imKitConfig.appID
-        let appSign = ZIMKit().imKitConfig.appSign
-        let userID = ZIMKit.localUser?.id ?? ""
-        let userName = ZIMKit.localUser?.name ?? ""
-        let callConfig = ZIMKit().imKitConfig.callPluginConfig
-        if (appID ?? 0 <= 0) || appSign.count <= 0  || callConfig == nil {return}
-        ZegoPluginAdapter.callPlugin?.initWith(appID: appID!, appSign: appSign, userID: userID, userName: userName, callPluginConfig: callConfig!)
-        
-    }
+
     
     // observe viewModel's properties
     func configViewModel() {

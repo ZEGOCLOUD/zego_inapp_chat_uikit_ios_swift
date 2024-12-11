@@ -30,7 +30,6 @@ class MessageListViewModel: NSObject {
     var isLoadingData: Bool = false
     var isNoMoreMsg: Bool = false
     var isShowCheckBox: Bool = false
-    private let lock = NSLock()
 
     init(conversationID: String, _ conversationType: ZIMConversationType) {
         self.conversationID = conversationID
@@ -225,24 +224,22 @@ extension MessageListViewModel {
     }
     
     private func handleSentCallback(_ message: ZIMKitMessage) {
-        lock.lock()
         handleMessageQueue.async { [self] in
-            guard let index = self.messageViewModels.firstIndex(where: { $0.message == message }) else {
-                handleReceiveNewMessages([message])
-                lock.unlock()
-                return
+                
+                guard let index = self.messageViewModels.firstIndex(where: { $0.message == message }) else {
+                    handleReceiveNewMessages([message])
+                    return
+                }
+                let viewModel = self.messageViewModels[index]
+                if index - 1 >= 0 {
+                    let lastViewModel = self.messageViewModels[index-1]
+                    viewModel.setNeedShowTime(lastViewModel.message.info.timestamp)
+                }
+                viewModel.reSetCellHeight()
             }
-            let viewModel = self.messageViewModels[index]
-            if index - 1 >= 0 {
-                let lastViewModel = self.messageViewModels[index-1]
-                viewModel.setNeedShowTime(lastViewModel.message.info.timestamp)
-            }
-            viewModel.reSetCellHeight()
             
             DispatchQueue.main.async { [self] in
-                lock.unlock()
                 isSendingNewMessage = (message.type == .image || message.type == .video) ? false : true
-            }
         }
     }
     

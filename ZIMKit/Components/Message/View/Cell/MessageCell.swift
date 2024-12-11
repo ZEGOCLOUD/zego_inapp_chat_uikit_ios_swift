@@ -350,7 +350,9 @@ class MessageCell: _TableViewCell {
     func updateSenderUserInfo() {
         guard let messageVM = messageVM else { return }
         let message = messageVM.message
-        
+        if message.info.senderUserAvatarUrl?.count ?? 0 <= 0 {
+            return
+        }
         avatarImageView.loadImage(with: message.info.senderUserAvatarUrl, placeholder: "avatar_default")
         
         nameLabel.isHidden = !messageVM.isShowName

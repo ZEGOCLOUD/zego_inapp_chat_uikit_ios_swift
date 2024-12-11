@@ -263,7 +263,8 @@ class ChatBar: _View {
         return view
     }()
     var buttons: [ZIMKitMenuBarButtonName] = ZIMKit().imKitConfig.bottomConfig.smallButtons
-    
+    var moreButtons: [ZIMKitMenuBarButtonName] = ZIMKit().imKitConfig.bottomConfig.expandButtons
+
     
     weak var delegate: ChatBarDelegate?
     
@@ -295,7 +296,7 @@ class ChatBar: _View {
     convenience init(peerConversation: Bool = true) {
         self.init()
         if peerConversation == false {
-            buttons.removeAll(where: { $0 == .voiceCall || $0 == .videoCall })
+            moreButtons.removeAll(where: { $0 == .voiceCall || $0 == .videoCall })
         }
         self.addCallListData()
     }
@@ -379,7 +380,7 @@ class ChatBar: _View {
     }
     
     func addCallListData() {
-        for (_, number) in ZIMKit().imKitConfig.bottomConfig.expandButtons.enumerated() {
+        for (_, number) in moreButtons.enumerated() {
             if number == .voiceCall ||
                 number == .videoCall {
                 callList.append(number)
@@ -425,7 +426,7 @@ class ChatBar: _View {
     
     func addMoreViewDataSource() {
         
-        for (_, number) in ZIMKit().imKitConfig.bottomConfig.expandButtons.enumerated() {
+        for (_, number) in moreButtons.enumerated() {
             if number == .expand {
                 continue
             }

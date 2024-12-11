@@ -82,10 +82,12 @@ extension ZIMKitCore {
         let config = ZIMMessageSendConfig()
         let notification = ZIMMessageSendNotification()
         notification.onMessageAttached = { message in
-            let message = ZIMKitMessage(with: message)
-            self.messageList.add([message])
-            for delegate in self.delegates.allObjects {
-                delegate.onMessageSentStatusChanged?(message)
+            if message.sentStatus != .sendFailed {
+                let message = ZIMKitMessage(with: message)
+                self.messageList.add([message])
+                for delegate in self.delegates.allObjects {
+                    delegate.onMessageSentStatusChanged?(message)
+                }
             }
         }
         let pushConfig: ZIMPushConfig = ZIMPushConfig()
@@ -125,10 +127,12 @@ extension ZIMKitCore {
         
         let notification = ZIMMessageSendNotification()
         notification.onMessageAttached = { message in
-            let message = ZIMKitMessage(with: message)
-            self.messageList.add([message])
-            for delegate in self.delegates.allObjects {
-                delegate.onMessageSentStatusChanged?(message)
+            if message.sentStatus != .sendFailed {
+                let message = ZIMKitMessage(with: message)
+                self.messageList.add([message])
+                for delegate in self.delegates.allObjects {
+                    delegate.onMessageSentStatusChanged?(message)
+                }
             }
         }
         let pushConfig: ZIMPushConfig = ZIMPushConfig()
@@ -246,11 +250,13 @@ extension ZIMKitCore {
         
         let notification = ZIMMediaMessageSendNotification()
         notification.onMessageAttached = { message in
-            let message = ZIMKitMessage(with: message)
-            self.updateKitMessageMediaProperties(message)
-            self.messageList.add([message])
-            for delegate in self.delegates.allObjects {
-                delegate.onMessageSentStatusChanged?(message)
+            if message.sentStatus != .sendFailed {
+                let message = ZIMKitMessage(with: message)
+                self.updateKitMessageMediaProperties(message)
+                self.messageList.add([message])
+                for delegate in self.delegates.allObjects {
+                    delegate.onMessageSentStatusChanged?(message)
+                }
             }
         }
         notification.onMediaUploadingProgress = { message, currentSize, totalSize in
@@ -396,6 +402,9 @@ extension ZIMKitCore {
         }
         zim?.insertMessageToLocalDB(message.zim!, conversationID: conversationID, conversationType: type, senderUserID: userID, callback: { zimMessage, errorInfo in
             callback?(ZIMKitMessage(with: zimMessage),errorInfo)
+            for delegate in self.delegates.allObjects {
+                delegate.onMessageSentStatusChanged?(ZIMKitMessage(with: zimMessage))
+            }
         })
     }
     
@@ -413,11 +422,13 @@ extension ZIMKitCore {
         let config = ZIMMessageSendConfig()
         let notification = ZIMMessageSendNotification()
         notification.onMessageAttached = { message in
-            let message = ZIMKitMessage(with: message)
-            message.info.senderUserName = self.localUser?.name
-            self.messageList.add([message])
-            for delegate in self.delegates.allObjects {
-                delegate.onMessageSentStatusChanged?(message)
+            if message.sentStatus != .sendFailed {
+                let message = ZIMKitMessage(with: message)
+                message.info.senderUserName = self.localUser?.name
+                self.messageList.add([message])
+                for delegate in self.delegates.allObjects {
+                    delegate.onMessageSentStatusChanged?(message)
+                }
             }
         }
         

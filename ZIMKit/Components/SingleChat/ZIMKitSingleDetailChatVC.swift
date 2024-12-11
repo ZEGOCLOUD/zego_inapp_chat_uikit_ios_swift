@@ -108,6 +108,7 @@ class ZIMKitSingleDetailChatVC: _ViewController {
         userInfoView.addSubview(userNameLB)
         NSLayoutConstraint.activate([
             userNameLB.leadingAnchor.pin(equalTo: userAvatarView.trailingAnchor, constant: 12.0),
+            userNameLB.trailingAnchor.pin(equalTo: userInfoView.trailingAnchor, constant: -12.0),
             userNameLB.centerYAnchor.pin(equalTo: userInfoView.centerYAnchor),
             userNameLB.heightAnchor.pin(equalToConstant: 24.0)
         ])

@@ -62,6 +62,7 @@ class SystemMessageCell: MessageCell {
         }
         messageLabelTopConstraint.isActive = true
         messageLabelHeightConstraint.constant = messageVM?.contentSize.height ?? 18.0
+        timeLabel.isHidden = true
     }
     
     override func updateContent() {
@@ -71,5 +72,6 @@ class SystemMessageCell: MessageCell {
         
         messageLabel.attributedText = messageVM.attributedContent
         timeLabel.text = timestampToMessageDateStr(messageVM.message.info.timestamp)
+        timeLabel.isHidden = true
     }
 }

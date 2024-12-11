@@ -303,7 +303,7 @@ extension ZIMKit {
     
     @objc public static func insertSystemMessageToLocalDB(_ content: String,
                                                           to conversationID: String,
-                                                          groupConversationType: Bool = true,
+                                                          groupConversationType: Bool = false,
                                                           callback: InsertMessageCallback? = nil) {
         let systemMessage: ZIMCustomMessage = ZIMCustomMessage(message: content, subType: systemMessageSubType)
         let systemMsg =  ZIMKitMessage(with: systemMessage)

@@ -22,7 +22,7 @@ class GroupMemberListVC: _ViewController {
         let tableView: UITableView = UITableView(frame: .zero, style: .plain).withoutAutoresizingMaskConstraints
         tableView.dataSource = self
         tableView.delegate = self
-        
+        tableView.backgroundColor = .clear
         tableView.register(ZIMKitGroupMemberInfoTableViewCell.self, forCellReuseIdentifier: ZIMKitGroupMemberInfoTableViewCell.reuseId)
         tableView.separatorStyle = .none
         return tableView
@@ -100,7 +100,7 @@ extension GroupMemberListVC :UITableViewDelegate,UITableViewDataSource {
         let model:ZIMKitGroupMemberInfo = memberList[indexPath.row]
         cell.selectionStyle = .none
         cell.configure(with: model.userName, avatarUrl: model.userAvatarUrl)
-        cell.lineView.isHidden = indexPath.row == (self.memberList.count - 1)
+        cell.lineView.isHidden = (indexPath.row == (self.memberList.count - 1) ? true : false)
         return cell
     }
     

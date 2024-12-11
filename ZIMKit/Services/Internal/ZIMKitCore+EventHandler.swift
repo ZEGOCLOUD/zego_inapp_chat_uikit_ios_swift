@@ -59,6 +59,8 @@ extension ZIMKitCore: ZIMEventHandler {
         handleReceiveNewMessages(messageList)
     }
     
+    
+    
     private func handleReceiveNewMessages(_ zimMessageList: [ZIMMessage]) {
         
         if zimMessageList.count == 0 { return }

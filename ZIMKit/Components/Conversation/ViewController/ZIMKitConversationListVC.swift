@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ZegoPluginAdapter
 
 open class ZIMKitConversationListVC: _ViewController {
     
@@ -53,6 +54,19 @@ open class ZIMKitConversationListVC: _ViewController {
         configViewModel()
         getConversationList()
         LocalAPNS.shared.setupLocalAPNS()
+        initCallConfig()
+    }
+    
+    func initCallConfig() {
+        
+        let appID = ZIMKit().imKitConfig.appID
+        let appSign = ZIMKit().imKitConfig.appSign
+        let userID = ZIMKit.localUser?.id ?? ""
+        let userName = ZIMKit.localUser?.name ?? ""
+        let callConfig = ZIMKit().imKitConfig.callPluginConfig
+        if (appID ?? 0 <= 0) || appSign.count <= 0  || callConfig == nil {return}
+        ZegoPluginAdapter.callPlugin?.initWith(appID: appID!, appSign: appSign, userID: userID, userName: userName, callPluginConfig: callConfig!)
+        
     }
     
     deinit {
