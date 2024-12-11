@@ -215,10 +215,15 @@ extension MessageListViewModel {
     func removeDuplicates(from models: [MessageViewModel]) -> [MessageViewModel] {
         var uniqueModels = [MessageViewModel]()
         for model in models {
-            if
-                !uniqueModels.contains(where: { $0.message.zim?.messageID == model.message.zim?.messageID }) {
+            if model.message.type == .system {
                 uniqueModels.append(model)
+            } else {
+                if
+                    !uniqueModels.contains(where: { $0.message.zim?.messageID == model.message.zim?.messageID }) {
+                    uniqueModels.append(model)
+                }
             }
+            
         }
         return uniqueModels
     }

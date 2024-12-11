@@ -306,7 +306,9 @@ extension ZIMKit {
                                                           groupConversationType: Bool = false,
                                                           callback: InsertMessageCallback? = nil) {
         let systemMessage: ZIMCustomMessage = ZIMCustomMessage(message: content, subType: systemMessageSubType)
+        
         let systemMsg =  ZIMKitMessage(with: systemMessage)
+        systemMsg.info.conversationID = conversationID
         ZIMKitCore.shared.insertMessageToLocalDB(systemMsg, from: "", to: conversationID, type: groupConversationType ? .group : .peer, callback: callback)
     }
 }

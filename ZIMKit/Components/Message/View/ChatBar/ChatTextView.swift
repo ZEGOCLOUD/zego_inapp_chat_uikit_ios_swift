@@ -134,7 +134,7 @@ class ChatTextView: _View {
         
         NSLayoutConstraint.activate([
             placeholderLabel.centerYAnchor.pin(equalTo: textView.centerYAnchor,constant: 0),
-            placeholderLabel.leadingAnchor.pin(equalTo: textView.leadingAnchor, constant: 2),
+            placeholderLabel.leadingAnchor.pin(equalTo: textView.leadingAnchor, constant: 6),
             placeholderLabel.heightAnchor.pin(equalToConstant: 20)
         ])
         

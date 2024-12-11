@@ -224,7 +224,6 @@ open class ZIMKitMessagesListVC: _ViewController {
     
     open override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.customerHeaderView?.removeFromSuperview()
     }
     
     open override func viewDidDisappear(_ animated: Bool) {
