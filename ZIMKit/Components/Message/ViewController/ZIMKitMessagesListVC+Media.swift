@@ -121,13 +121,14 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
                         if let fileSize = attributes[FileAttributeKey.size] as? UInt64 {
                             let sizeInMB = Double(fileSize) / (1024.0 * 1024.0)
                             print("图片大小为\(sizeInMB) MB")
-                            // 在这里可以添加是否超过某个大小的判断，比如是否超过100MB
-                            if sizeInMB > 100 {
+                            // 在这里可以添加是否超过某个大小的判断，比如是否超过10MB
+                            if sizeInMB > 10 {
+                                HUDHelper.showMessage(L10n("message_photo_size_err_tips"))
                                 return
                             }
                         }
                     } catch {
-                        print("获取文件属性出错: \(error)")
+                        print("获取图片属性出错: \(error)")
                     }
                     self?.sendImageMessage(with: url)
                 }
@@ -164,7 +165,7 @@ extension ZIMKitMessagesListVC : PHPickerViewControllerDelegate, UIImagePickerCo
                 
                 if let pickedImage = info[.originalImage] as? UIImage {
                     // 在这里调用函数判断图片大小是否超过100MB
-                    if let sizeInMB = self?.getImageSizeInMB(image: pickedImage), sizeInMB > 100 {
+                    if let sizeInMB = self?.getImageSizeInMB(image: pickedImage), sizeInMB > 10 {
                         HUDHelper.showMessage(L10n("message_photo_size_err_tips"))
                         return
                     }

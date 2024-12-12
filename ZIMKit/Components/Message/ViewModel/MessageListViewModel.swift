@@ -216,7 +216,9 @@ extension MessageListViewModel {
         var uniqueModels = [MessageViewModel]()
         for model in models {
             if model.message.type == .system {
-                uniqueModels.append(model)
+                if !uniqueModels.contains(where: { $0.message.zim?.localMessageID == model.message.zim?.localMessageID }) {
+                    uniqueModels.append(model)
+                }
             } else {
                 if
                     !uniqueModels.contains(where: { $0.message.zim?.messageID == model.message.zim?.messageID }) {
