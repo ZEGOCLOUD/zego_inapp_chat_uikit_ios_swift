@@ -30,7 +30,7 @@ class MessageList {
         } else {
             messages.insert(contentsOf: newMessages, at: 0)
         }
-        messages = messages.sorted { $0.info.timestamp < $1.info.timestamp }
+        messages = messages.sorted { $0.info.orderKey < $1.info.orderKey }
         cache.put(key, messages)
     }
     

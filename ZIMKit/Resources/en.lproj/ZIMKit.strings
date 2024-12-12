@@ -158,3 +158,4 @@
 "forward_msg_least_one" = "Please select at least one message";
 "reaction_reply_failed" = "Failed to reply to a position message";
 "history_message_no_support_reaction" = "Historical messages are not supported reaction";
+"call_user_not_exist" = "The ID does not exist. Please enter the correct ID";

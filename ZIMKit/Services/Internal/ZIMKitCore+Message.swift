@@ -401,10 +401,11 @@ extension ZIMKitCore {
             userID = self.localUser?.id ?? ""
         }
         message.info.conversationID = conversationID
-        message.info.timestamp = UInt64(Date().timeIntervalSince1970) * 1000
-        self.messageList.add([message])
         zim?.insertMessageToLocalDB(message.zim!, conversationID: conversationID, conversationType: type, senderUserID: userID, callback: { zimMessage, errorInfo in
+            let zimKitMessage = ZIMKitMessage(with: zimMessage)
+            self.messageList.add([zimKitMessage])
             callback?(ZIMKitMessage(with: zimMessage),errorInfo)
+            
             for delegate in self.delegates.allObjects {
                 delegate.onMessageSentStatusChanged?(ZIMKitMessage(with: zimMessage))
             }

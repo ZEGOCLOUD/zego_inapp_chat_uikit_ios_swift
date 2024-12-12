@@ -159,3 +159,4 @@
 "forward_msg_least_one"= "请至少选择一条消息";
 "reaction_reply_failed" = "回复表态消息失败";
 "history_message_no_support_reaction" = "历史消息不支持表态回复";
+"call_user_not_exist" = "ID不存在，请输入正确ID";
