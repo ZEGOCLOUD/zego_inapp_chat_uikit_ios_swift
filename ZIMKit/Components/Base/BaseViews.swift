@@ -317,7 +317,9 @@ open class _ViewController: UIViewController, Customizable {
     //视图将要显示
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+
+        self.navigationController?.navigationBar.isTranslucent = (ZIMKit().imKitConfig.navigationBarColor == UIColor.clear) ? true : false
+
         if ZIMKit().imKitConfig.navigationBarColor == UIColor.clear {
             //设置导航栏背景透明
             self.navigationController?.navigationBar.setBackgroundImage(UIImage(),
@@ -329,9 +331,16 @@ open class _ViewController: UIViewController, Customizable {
                 appearance.backgroundColor = ZIMKit().imKitConfig.navigationBarColor
                 navigationController?.navigationBar.standardAppearance = appearance
                 navigationController?.navigationBar.scrollEdgeAppearance = appearance
+            } else {
+                self.navigationController?.navigationBar.barTintColor = ZIMKit().imKitConfig.navigationBarColor
+                self.navigationController?.navigationBar.backgroundColor = ZIMKit().imKitConfig.navigationBarColor
             }
             
         }
+    }
+    
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
     override open func viewWillDisappear(_ animated: Bool) {

@@ -556,7 +556,7 @@ extension ZIMKitMessagesListVC {
             self.navigationController?.pushViewController(groupDetailVC, animated: true)
             
         } else {
-            let singleChatDetailVC = ZIMKitSingleDetailChatVC(conversation: conversation!)
+            let singleChatDetailVC = ZIMKitSingleDetailChatVC(conversation: conversation!,messageCount: viewModel.messageViewModels.count)
             singleChatDetailVC.delegate = self
             self.navigationController?.pushViewController(singleChatDetailVC, animated: true)
             

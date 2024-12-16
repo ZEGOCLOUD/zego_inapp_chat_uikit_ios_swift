@@ -31,10 +31,7 @@ class GroupMemberListVC: _ViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.backgroundColor = .zim_backgroundWhite
-        
-        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
-        statusBarView.backgroundColor = UIColor.white
-        view.addSubview(statusBarView)
+
     }
     
     override func viewDidLoad() {

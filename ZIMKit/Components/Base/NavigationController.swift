@@ -17,7 +17,7 @@ open class NavigationController: UINavigationController {
         let view = UIView()
         view.backgroundColor = .zim_backgroundGray3
         navigationBar.barTintColor = ZIMKit().imKitConfig.navigationBarColor
-        self.navigationBar.isTranslucent = true
+        self.navigationBar.isTranslucent = (ZIMKit().imKitConfig.navigationBarColor == UIColor.clear) ? true : false
 
         navigationBar.addSubview(view)
         view.frame = CGRect(x: 0, y: navigationBar.bounds.height-1, width: navigationBar.bounds.width, height: 1)

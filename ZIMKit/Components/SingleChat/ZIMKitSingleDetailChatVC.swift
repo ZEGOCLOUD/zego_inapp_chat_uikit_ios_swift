@@ -14,11 +14,12 @@ protocol messageConversationUpdateDelegate: AnyObject {
 }
 
 class ZIMKitSingleDetailChatVC: _ViewController {
-    public convenience init(conversation: ZIMKitConversation) {
+    public convenience init(conversation: ZIMKitConversation,messageCount: Int) {
         self.init()
+        self.messageCount = messageCount
         self.conversation = conversation
     }
-    
+    var messageCount:Int = 0
     var conversation: ZIMKitConversation!
     var delegate:messageConversationUpdateDelegate?
     //    var isNotDisturb:Bool = true
@@ -59,10 +60,6 @@ class ZIMKitSingleDetailChatVC: _ViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         navigationController?.navigationBar.backgroundColor = .zim_backgroundWhite
-        
-        let statusBarView = UIView(frame: UIApplication.shared.statusBarFrame)
-        statusBarView.backgroundColor = UIColor.white
-        view.addSubview(statusBarView)
     }
     
     override func viewDidLoad() {
@@ -70,6 +67,18 @@ class ZIMKitSingleDetailChatVC: _ViewController {
         setUpUI()
         setUpSubviewsLayoutConstraint()
         updateSubviewsContent()
+        loadConversationInfo()
+        self.contentItemView.isHidden = (self.messageCount > 0) ? false : true
+    }
+    
+    func loadConversationInfo() {
+        ZIMKit.queryUserInfo(by: self.conversation.id) {[weak self] userInfo, error in
+            guard let self = self else { return }
+            if error.code == .ZIMErrorCodeSuccess {
+                self.userAvatarView.loadImage(with: userInfo?.avatarUrl, placeholder: "avatar_default")
+                self.userNameLB.text = userInfo?.name ?? ""
+            }
+        }
     }
     
     func setUpUI() {
