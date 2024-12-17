@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name                    = 'ZIMKit'
-  s.version                 = '2.6.2'
+  s.version                 = '2.6.3'
   s.summary                 = 'ZIMKit'
 
   s.description             = 'The ZIMKit written in Swift'
@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
   s.cocoapods_version       = '>= 1.10.0'
   s.swift_version           = ['5.0']
   
-  s.ios.deployment_target   = '12.0'
+  s.ios.deployment_target   = '13.0'
   s.source_files            = 'ZIMKit/**/*.swift'
   
   s.resource_bundles        = {
@@ -25,6 +25,6 @@ Pod::Spec.new do |s|
   
   s.dependency 'ZegoUIKitSignalingPlugin', '>= 2.5.4'
   s.dependency 'ZegoPluginAdapter', '>= 2.5.3'
-  s.dependency 'Kingfisher', '~>7.6.2'
+  s.dependency 'Kingfisher'
 
 end
