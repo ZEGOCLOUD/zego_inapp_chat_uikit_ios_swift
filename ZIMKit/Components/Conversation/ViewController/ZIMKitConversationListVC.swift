@@ -55,8 +55,14 @@ open class ZIMKitConversationListVC: _ViewController {
         getConversationList()
         LocalAPNS.shared.setupLocalAPNS()
         initCallConfig()
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = ZIMKit().imKitConfig.navigationBarColor
+    }
+    
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+    }
+    
+    open override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
     }
     
     func initCallConfig() {
