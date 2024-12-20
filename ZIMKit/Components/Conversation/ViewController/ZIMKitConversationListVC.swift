@@ -48,13 +48,27 @@ open class ZIMKitConversationListVC: _ViewController {
         view.embed(noDataView)
     }
     
+    func customizeNavigationBar() {
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = ZIMKit().imKitConfig.navigationBarColor
+        let shadowColor = ZIMKit().imKitConfig.advancedConfig?[ZIMKitAdvancedKey.navigationBarShadowColor]
+        if shadowColor is UIColor && shadowColor != nil {
+            appearance.shadowColor = ZIMKit().imKitConfig.advancedConfig?[ZIMKitAdvancedKey.navigationBarShadowColor] as? UIColor// 设置分割线颜色
+        }
+        self.navigationController?.navigationBar.standardAppearance = appearance
+        self.navigationController?.navigationBar.compactAppearance = appearance
+        self.navigationController?.navigationBar.scrollEdgeAppearance = appearance
+     }
+    
     open override func viewDidLoad() {
         super.viewDidLoad()
-        
+        view.backgroundColor = ZIMKit().imKitConfig.navigationBarColor
         configViewModel()
         getConversationList()
         LocalAPNS.shared.setupLocalAPNS()
         initCallConfig()
+        customizeNavigationBar()
+        
     }
     
     open override func viewWillAppear(_ animated: Bool) {

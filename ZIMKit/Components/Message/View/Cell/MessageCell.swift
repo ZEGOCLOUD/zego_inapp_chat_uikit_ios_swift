@@ -331,7 +331,7 @@ class MessageCell: _TableViewCell {
             with: messageVM.isSelected
             ? "message_multiSelect_selected"
             : "message_multiSelect_normal")
-        if messageVM.message.type == .revoke || messageVM.message.type == .unknown || messageVM.message.type == .system || messageVM.message.type == .tips || messageVM.message.info.sentStatus == .sendFailed {
+        if messageVM.message.type == .revoke || messageVM.message.type == .unknown || messageVM.message.type == .custom  || messageVM.message.type == .system || messageVM.message.type == .tips || messageVM.message.info.sentStatus == .sendFailed {
             selectIcon.isHidden = true
             selectButton.isHidden = true
         }

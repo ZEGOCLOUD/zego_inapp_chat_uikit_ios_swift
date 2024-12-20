@@ -52,7 +52,8 @@ class ZIMKitBottomPopView: UIView {
         backgroundColor = UIColor(hex: 0x000000, a: 0.4)
         
         addSubview(containerView)
-        let bottomMargin = (UIApplication.shared.keyWindow?.safeAreaInsets.bottom)! + 12
+        let UIKitKeyWindow = UIApplication.shared.windows.first { $0.isKeyWindow }
+        let bottomMargin = (UIKitKeyWindow?.safeAreaInsets.bottom)! + 12
         let topMargin = 12.0
         // 布局设置
         containerView.translatesAutoresizingMaskIntoConstraints = false

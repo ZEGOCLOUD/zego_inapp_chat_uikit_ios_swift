@@ -37,7 +37,7 @@ class MessageViewModel: Equatable {
         CGSize(width: 0, height: 0)
     }
     var reuseIdentifier: String {
-        if message.replyMessage != nil && message.type != .revoke && message.type != .system && message.type != .tips {
+        if message.replyMessage != nil && message.type != .revoke && message.type != .custom  && message.type != .system && message.type != .tips {
             return ReplyMessageCell.reuseId
         }
         switch message.type {
@@ -46,7 +46,7 @@ class MessageViewModel: Equatable {
         case .image:
             return ImageMessageCell.reuseId
         case .system:
-            return SystemMessageCell.reuseId
+            return CustomerMessageCell.reuseId
         case .audio:
             return AudioMessageCell.reuseId
         case .video:
@@ -83,7 +83,7 @@ class MessageViewModel: Equatable {
         }
         // only timestamp difference between current and last message is less then 5 mins
         isShowTime = (Float(message.info.timestamp) / 1000.0 - Float(preTimestamp) / 1000.0) > 5 * 60
-        if message.type == .revoke || message.type == .tips || message.type == .system {
+        if message.type == .revoke || message.type == .tips || message.type == .custom || message.type == .system {
             isShowTime = false
         }
     }

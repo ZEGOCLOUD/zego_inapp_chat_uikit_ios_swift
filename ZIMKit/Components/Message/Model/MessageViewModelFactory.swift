@@ -11,7 +11,7 @@ import ZIM
 class MessageViewModelFactory {
     static func createMessage(with msg: ZIMKitMessage) -> MessageViewModel {
         
-        if msg.replyMessage != nil && msg.type != .revoke && msg.type != .system && msg.type != .tips {
+        if msg.replyMessage != nil && msg.type != .revoke && msg.type != .custom && msg.type != .system && msg.type != .tips {
             return createReplyMessage(with: msg)
         }
         switch msg.type {
@@ -31,8 +31,8 @@ class MessageViewModelFactory {
             return CombineMessageViewModel(with: msg)
         case .tips:
             return TipsMessageViewModel(with: msg)
-        case .system:
-            return SystemMessageViewModel(with: msg)
+        case .custom:
+            return CustomerMessageViewModel(with: msg)
         default:
             return UnknownMessageViewModel(with: msg)
         }

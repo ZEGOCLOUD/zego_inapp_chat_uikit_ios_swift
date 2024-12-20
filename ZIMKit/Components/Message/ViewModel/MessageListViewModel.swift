@@ -180,7 +180,15 @@ extension MessageListViewModel {
             }
         }
     }
-    
+    func insertMessageToLocalCache(message:ZIMKitMessage) {
+        let model = MessageViewModelFactory.createMessage(with: message)
+        model.setCellHeight()
+        model.setNeedShowTime(UInt64(Date().timeIntervalSince1970) * 1000)
+        self.messageViewModels.append(model)
+        DispatchQueue.main.async {
+            self.isReceiveNewMessage = true
+        }
+    }
 }
 
 // MARK: - Private
@@ -205,6 +213,7 @@ extension MessageListViewModel {
             }
             self.messageViewModels.append(contentsOf: newMessages)
 //            self.messageViewModels = removeDuplicates(from: self.messageViewModels)
+            removeLoadingMessage()
             DispatchQueue.main.async {
                 self.isReceiveNewMessage = true
             }
@@ -212,10 +221,19 @@ extension MessageListViewModel {
         clearConversationUnreadMessageCount()
     }
     
+    func removeLoadingMessage() {
+        if ZIMKit().imKitConfig.advancedConfig != nil && ((ZIMKit().imKitConfig.advancedConfig?.keys.contains(ZIMKitAdvancedKey.showLoadingWhenSend)) != nil) {
+            self.messageViewModels = self.messageViewModels.filter { viewModel in
+                viewModel.message.type != .text || viewModel.message.textContent.content != "[...]"
+            }
+        }
+        
+    }
+    
     func removeDuplicates(from models: [MessageViewModel]) -> [MessageViewModel] {
         var uniqueModels = [MessageViewModel]()
         for model in models {
-            if model.message.type == .system {
+            if model.message.type == .custom || model.message.type == .system {
                 if !uniqueModels.contains(where: { $0.message.zim?.localMessageID == model.message.zim?.localMessageID }) {
                     uniqueModels.append(model)
                 }

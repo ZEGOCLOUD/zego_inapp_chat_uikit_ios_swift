@@ -7,6 +7,7 @@
 
 import Foundation
 import ZIM
+import ZegoUIKitReport
 
 extension ZIMKitCore {
     func connectUser(userID: String,
@@ -14,6 +15,10 @@ extension ZIMKitCore {
                      avatarUrl: String? = nil,
                      callback: ConnectUserCallback? = nil) {
         assert(zim != nil, "Must create ZIM first!!!")
+        
+        let updateData = ["user_id": userID as AnyObject]
+        ReportUtil.sharedInstance().updateCommonParams(updateData)
+        
         let zimUserInfo = ZIMUserInfo()
         zimUserInfo.userID = userID
         zimUserInfo.userName = userName ?? ""
@@ -29,6 +34,12 @@ extension ZIMKitCore {
             if let userAvatarUrl = avatarUrl {
                 self?.updateUserAvatarUrl(userAvatarUrl, callback: nil)
             }
+            
+            let reportData = ["user_id": userID as AnyObject,
+                              "user_name": userName as AnyObject,
+                              "error": error.code.rawValue as AnyObject,
+                              "msg": error.message]
+            ReportUtil.sharedInstance().reportEvent("zim/login", paramsDict: reportData)
             callback?(error)
         }
     }
@@ -36,6 +47,7 @@ extension ZIMKitCore {
     func disconnectUser() {
         zim?.logout()
         clearData()
+        ReportUtil.sharedInstance().reportEvent("zim/logout", paramsDict: [:])
     }
     
     func queryUserInfo(by userID: String, callback: QueryUserCallback? = nil) {

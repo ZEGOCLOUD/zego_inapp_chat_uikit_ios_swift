@@ -30,7 +30,7 @@ class GroupChatRecordsVC: UIViewController {
         tableView.delegate = self
         
         tableView.register(TextMessageCell.self, forCellReuseIdentifier: TextMessageCell.reuseId)
-        tableView.register(SystemMessageCell.self, forCellReuseIdentifier: SystemMessageCell.reuseId)
+        tableView.register(CustomerMessageCell.self, forCellReuseIdentifier: CustomerMessageCell.reuseId)
         tableView.register(ImageMessageCell.self, forCellReuseIdentifier: ImageMessageCell.reuseId)
         tableView.register(AudioMessageCell.self, forCellReuseIdentifier: AudioMessageCell.reuseId)
         tableView.register(VideoMessageCell.self, forCellReuseIdentifier: VideoMessageCell.reuseId)

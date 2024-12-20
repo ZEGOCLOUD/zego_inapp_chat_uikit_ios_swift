@@ -13,6 +13,6 @@ class RevokeMessageViewModel: MessageViewModel {
     }
     
     override var contentSize: CGSize {
-        return CGSize(width: MessageCell_System_Max_Width, height: 35)
+        return CGSize(width: MessageCell_Custom_Max_Width, height: 35)
     }
 }

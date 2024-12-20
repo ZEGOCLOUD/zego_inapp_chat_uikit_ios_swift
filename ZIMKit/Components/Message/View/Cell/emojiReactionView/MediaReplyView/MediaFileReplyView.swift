@@ -37,7 +37,7 @@ class MediaFileReplyView: UIView {
     }()
     
     lazy var downloadingIndicator: UIActivityIndicatorView = {
-        var style = UIActivityIndicatorView.Style.gray
+        var style = UIActivityIndicatorView.Style.medium
         if #available(iOS 13.0, *) {
             style = .medium
         }

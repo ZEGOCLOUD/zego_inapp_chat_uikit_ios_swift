@@ -41,6 +41,10 @@ public class ZIMKit: NSObject {
         ZIMKitCore.shared.initWith(appID: appID, appSign: appSign,config: config)
     }
     
+    @objc public static func unInit() {
+        ZIMKitCore.shared.unInit()
+    }
+    
     @objc public static func registerZIMKitDelegate(_ delegate: ZIMKitDelegate) {
         ZIMKitCore.shared.registerZIMKitDelegate(delegate)
     }
@@ -74,9 +78,13 @@ public class ZIMKit: NSObject {
   
     @objc public var navigationBarColor: UIColor = UIColor.white
     @objc public var inputPlaceholder:NSAttributedString =  NSAttributedString(string: L10n("enter_new_message"), attributes: [NSAttributedString.Key.foregroundColor: UIColor(hex: 0x8E9093), NSAttributedString.Key.font: UIFont.systemFont(ofSize: 16)])
-
+    @objc public var advancedConfig:[String:AnyObject]?
 }
 
+@objc public class ZIMKitAdvancedKey :NSObject {
+    @objc public static let showLoadingWhenSend:String = "show_loading_when_send";
+    @objc public static let navigationBarShadowColor:String = "ShadowColor";
+}
 
 @objc public class ZIMKitBottomConfig : NSObject{
     public var smallButtons: [ZIMKitMenuBarButtonName] = [.audio, .emoji, .picture, .expand]

@@ -78,6 +78,8 @@ class MessageList {
             key += "group"
         case .room:
             key += "room"
+        case .unknown:
+            break
         @unknown default:
             break
         }

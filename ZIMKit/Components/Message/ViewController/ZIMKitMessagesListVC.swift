@@ -64,7 +64,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         tableView.tableHeaderView = indicatorView
         
         tableView.register(TextMessageCell.self, forCellReuseIdentifier: TextMessageCell.reuseId)
-        tableView.register(SystemMessageCell.self, forCellReuseIdentifier: SystemMessageCell.reuseId)
+        tableView.register(CustomerMessageCell.self, forCellReuseIdentifier: CustomerMessageCell.reuseId)
         tableView.register(ImageMessageCell.self, forCellReuseIdentifier: ImageMessageCell.reuseId)
         tableView.register(AudioMessageCell.self, forCellReuseIdentifier: AudioMessageCell.reuseId)
         tableView.register(VideoMessageCell.self, forCellReuseIdentifier: VideoMessageCell.reuseId)
@@ -669,12 +669,16 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             ZIMKit.sendTextMessage(text, to: conversationID, type: conversationType) { [weak self] error in
                 if error.code != .ZIMErrorCodeSuccess {
                     self?.showError(error)
+                } else {
+                    self?.insertLocalLoadingMessage()
                 }
             }
         } else if conversationType == .group {
             ZIMKit.sendTextMessage(text, to: conversationID, type: conversationType,conversationName: conversationName) { [weak self] error in
                 if error.code != .ZIMErrorCodeSuccess {
                     self?.showError(error)
+                }else {
+                    self?.insertLocalLoadingMessage()
                 }
             }
         }
@@ -710,13 +714,11 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             
             let user: ZegoPluginCallUser = ZegoPluginCallUser(userID: self.conversation?.id ?? "", userName: self.conversation?.name ?? "", avatar: self.conversation?.avatarUrl ?? "")
             let customerData = zimKit_convertDictToString(dict: ["source": "zimkit"] as [String :AnyObject]) ?? ""
-            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: customerData, timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? "", title: "", message: ""), callback: { data in
+            ZegoPluginAdapter.callPlugin?.sendInvitationWithUIChange(invitees: [user], invitationType: type == .voiceCall ? .voiceCall : .videoCall, customData: customerData, timeout: 60, notificationConfig: ZegoSignalingPluginNotificationConfig(resourceID: ZIMKit().imKitConfig.callPluginConfig?.resourceID ?? "", title: "", message: ""),source:"IMKit", callback: { data in
                 let code = data?["code"] as! Int
-                let message = data?["message"] as! String
+//                let message = data?["message"] as! String
                 if code == 6000281 {
                     HUDHelper.showMessage(L10n("call_user_not_exist"))
-                } else {
-                    HUDHelper.showMessage(message)
                 }
             })
         }
@@ -792,6 +794,30 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
             //            if error.code.rawValue == 0 {
             self?.replyMessageSuccess()
             //            }
+        }
+    }
+    
+    func insertLocalLoadingMessage() {
+        if ZIMKit().imKitConfig.advancedConfig != nil && ((ZIMKit().imKitConfig.advancedConfig?.keys.contains(ZIMKitAdvancedKey.showLoadingWhenSend)) != nil) {
+            let textMessage = ZIMTextMessage(message: "[...]")
+            textMessage.localExtendedData = "loading"
+            
+            let message = ZIMKitMessage(with: textMessage)
+            message.info.direction = .receive
+            message.info.conversationID = self.conversationID
+            message.info.senderUserID = self.conversationID
+            message.info.senderUserName = self.conversationName
+            message.info.senderUserAvatarUrl = ""
+            ZIMKit.queryUserInfoFromLocalCache(userID: self.conversationID, groupID: "") { [weak self] userInfo in
+                guard let self = self else { return }
+                message.info.senderUserID = userInfo?.id ?? self.conversationID
+                message.info.senderUserName = userInfo?.name ?? self.conversationName
+                message.info.senderUserAvatarUrl = userInfo?.avatarUrl ?? ""
+            }
+            let workItem = DispatchWorkItem {
+                self.viewModel.insertMessageToLocalCache(message: message)
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
         }
     }
     
@@ -876,6 +902,7 @@ extension ZIMKitMessagesListVC: ImageMessageCellDelegate,
     
     func messageCell(_ cell: MessageCell, longPressWith message: MessageViewModel) {
         if chatBar.status == .select {return}
+        chatBar.resignFirstResponder()
         showOptionsView(cell, message)
     }
     

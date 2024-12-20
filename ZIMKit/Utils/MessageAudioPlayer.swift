@@ -82,7 +82,7 @@ class MessageAudioPlayer: NSObject, AVAudioPlayerDelegate {
     private func startAudioAnimation() {
         currentMessageVM?.isPlayingAudio = true
         guard let cells = tableView?.visibleCells else { return }
-        for cell in cells {
+        for _ in cells {
 
             for cell in cells {
                 if let audioCell = cell as? AudioMessageCell {

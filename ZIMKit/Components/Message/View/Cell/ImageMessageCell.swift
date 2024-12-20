@@ -46,7 +46,7 @@ class ImageMessageCell: MessageCell {
     
     private func updateImageConstraint() {
         //        let insets = messageVM?.cellConfig.contentInsets ?? UIEdgeInsets()
-        guard let messageModel = messageVM as? ImageMessageViewModel else { return }
+        guard messageVM is ImageMessageViewModel else { return }
         
         containerView.addSubview(imageMediaView)
         

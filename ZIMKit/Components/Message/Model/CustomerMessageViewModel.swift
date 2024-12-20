@@ -1,5 +1,5 @@
 //
-//  SystemMessage.swift
+//  CustomerMessageViewModel.swift
 //  ZIMKit
 //
 //  Created by Kael Ding on 2022/8/16.
@@ -8,9 +8,9 @@
 import Foundation
 import ZIM
 
-let MessageCell_System_Max_Width = UIScreen.main.bounds.width - 60.0
+let MessageCell_Custom_Max_Width = UIScreen.main.bounds.width - 60.0
 
-class SystemMessageViewModel: MessageViewModel {
+class CustomerMessageViewModel: MessageViewModel {
 
     override init(with msg: ZIMKitMessage) {
         super.init(with: msg)
@@ -29,7 +29,7 @@ class SystemMessageViewModel: MessageViewModel {
     
     override var contentSize: CGSize {
         if _contentSize == .zero {
-            var size = attributedContent.boundingRect(with: CGSize(width: MessageCell_System_Max_Width,
+            var size = attributedContent.boundingRect(with: CGSize(width: MessageCell_Custom_Max_Width,
                                                                    height: CGFloat(MAXFLOAT)),
                                                       options: .usesLineFragmentOrigin, context: nil).size
             if size.height < MessageCell_Default_Content_Height {
@@ -42,7 +42,7 @@ class SystemMessageViewModel: MessageViewModel {
     }
 }
 
-extension SystemMessageViewModel {
+extension CustomerMessageViewModel {
     func setContent(_ message: String) {
         let attributedStr = NSMutableAttributedString(string: message)
         

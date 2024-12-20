@@ -26,7 +26,7 @@ class TextMessageViewModel: MessageViewModel {
         msg.textContent.content = content
         self.init(with: msg)
     }
-    
+//    
     override var contentSize: CGSize {
         if _contentSize == .zero {
             var size = attributedContent.boundingRect(with: CGSize(width: MessageCell_Text_Max_Width,
@@ -36,6 +36,11 @@ class TextMessageViewModel: MessageViewModel {
                 size.height = MessageCell_Default_Content_Height
             }
             size.width += 1.0
+            
+            if ZIMKit().imKitConfig.advancedConfig != nil && ((ZIMKit().imKitConfig.advancedConfig?.keys.contains(ZIMKitAdvancedKey.showLoadingWhenSend)) != nil && message.textContent.content == "[...]") {
+                size.width = 60;
+            }
+            
             _contentSize = size
         }
         return _contentSize

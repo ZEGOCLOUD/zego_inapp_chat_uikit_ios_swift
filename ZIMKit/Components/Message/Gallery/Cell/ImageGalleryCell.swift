@@ -78,16 +78,16 @@ class ImageGalleryCell: GalleryCollectionViewCell {
             self?.imageView.loadImage(
                 with: url,
                 placeholder: placeholder,
-                isResize: false
-            ) { [weak self] result in
-                if case .failure = result {
-                    self?.imageView.contentMode = .scaleAspectFit
-                    let h = self?.contentView.bounds.height ?? 0
-                    self?.updateImageViewConstraints(width: width, height: h)
-                } else {
-                    self?.updateImageViewConstraints(width: width, height: height)
-                }
-            }
+                isResize: false,
+                completionHandler:  { [weak self] result in
+                    if case .failure = result {
+                        self?.imageView.contentMode = .scaleAspectFit
+                        let h = self?.contentView.bounds.height ?? 0
+                        self?.updateImageViewConstraints(width: width, height: h)
+                    } else {
+                        self?.updateImageViewConstraints(width: width, height: height)
+                    }
+                })
         }
     }
 

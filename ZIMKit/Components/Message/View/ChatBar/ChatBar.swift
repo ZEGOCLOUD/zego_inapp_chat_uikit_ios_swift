@@ -652,7 +652,7 @@ extension ChatBar {
         // 获取光标位置
         let selectedRange = chatTextView.textView.selectedRange
         let beginning = chatTextView.textView.beginningOfDocument
-        let cursorPosition = chatTextView.textView.position(from: beginning, offset: selectedRange.location)
+//        let cursorPosition = chatTextView.textView.position(from: beginning, offset: selectedRange.location)
         
         let newPosition = chatTextView.textView.position(from: beginning, offset: newCursorPosition)
         chatTextView.textView.selectedTextRange = chatTextView.textView.textRange(from: newPosition!, to: newPosition!)

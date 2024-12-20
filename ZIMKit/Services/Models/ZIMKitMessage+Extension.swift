@@ -12,12 +12,12 @@ extension ZIMKitMessage {
     func update(with zim: ZIMMessage) {
         type = zim.type
         reactions = zim.reactions
-        if zim.type == .custom {
-            let customerMessage:ZIMCustomMessage = zim as! ZIMCustomMessage
-            if customerMessage.subType == systemMessageSubType {
-                type = .system
-            }
-        }
+//        if zim.type == .custom {
+//            let customerMessage:ZIMCustomMessage = zim as! ZIMCustomMessage
+//            if customerMessage.subType == systemMessageSubType {
+//                type = .custom
+//            }
+//        }
         info.messageID = zim.messageID
         info.localMessageID = zim.localMessageID
         info.cbInnerID = zim.cbInnerID
@@ -35,7 +35,7 @@ extension ZIMKitMessage {
             textContent.content = zim.message
         }
         
-        if let zim = zim as? ZIMSystemMessage {
+        if let zim = zim as? ZIMCustomMessage {
             systemContent.content = zim.message
         }
         

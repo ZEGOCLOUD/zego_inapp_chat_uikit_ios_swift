@@ -1,5 +1,5 @@
 //
-//  SystemMessageCell.swift
+//  CustomerMessageCell.swift
 //  ZIMKit
 //
 //  Created by Kael Ding on 2022/8/18.
@@ -7,10 +7,10 @@
 
 import Foundation
 
-class SystemMessageCell: MessageCell {
+class CustomerMessageCell: MessageCell {
     
     override class var reuseId: String {
-        String(describing: SystemMessageCell.self)
+        String(describing: CustomerMessageCell.self)
     }
     
     lazy var messageLabel: UILabel = {
@@ -68,7 +68,7 @@ class SystemMessageCell: MessageCell {
     override func updateContent() {
         
         updateMessageLabelConstraint()
-        guard let messageVM = messageVM as? SystemMessageViewModel else { return }
+        guard let messageVM = messageVM as? CustomerMessageViewModel else { return }
         
         messageLabel.attributedText = messageVM.attributedContent
         timeLabel.text = timestampToMessageDateStr(messageVM.message.info.timestamp)

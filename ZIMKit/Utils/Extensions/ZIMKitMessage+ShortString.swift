@@ -28,8 +28,14 @@ extension ZIMKitMessage {
             shortStr = "[\(L10n("peer_message"))]"
         case .tips:
             shortStr = L10n("invite_group")
-        case .system:
+        case .custom, .system:
             shortStr = L10n("common_message_system")
+            if self.zim?.type == .custom {
+                let customerMessage:ZIMCustomMessage = self.zim as! ZIMCustomMessage
+                if customerMessage.subType == systemMessageSubType {
+                    shortStr = self.systemContent.content
+                }
+            }
         default:
             shortStr = L10n("common_message_unknown")
         }
