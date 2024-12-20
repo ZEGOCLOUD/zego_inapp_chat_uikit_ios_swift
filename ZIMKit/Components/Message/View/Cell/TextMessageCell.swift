@@ -47,7 +47,7 @@ class TextMessageCell: BubbleMessageCell {
         bubbleView.addSubview(loadingView)
         NSLayoutConstraint.activate([
             loadingView.centerYAnchor.pin(equalTo: bubbleView.centerYAnchor, constant: 5),
-            loadingView.centerXAnchor.pin(equalTo: bubbleView.centerXAnchor, constant: 0),
+            loadingView.centerXAnchor.pin(equalTo: bubbleView.centerXAnchor, constant: 9),
             loadingView.heightAnchor.pin(equalToConstant: 10),
             loadingView.widthAnchor.pin(equalToConstant: 40)
         ])

@@ -333,7 +333,7 @@ open class _ViewController: UIViewController, Customizable {
                 if shadowColor is UIColor && shadowColor != nil {
                     appearance.shadowColor = ZIMKit().imKitConfig.advancedConfig?[ZIMKitAdvancedKey.navigationBarShadowColor] as? UIColor// 设置分割线颜色
                 }
-                self.navigationController?.navigationBar.compactAppearance = appearance                
+                self.navigationController?.navigationBar.compactAppearance = appearance
                 navigationController?.navigationBar.standardAppearance = appearance
                 navigationController?.navigationBar.scrollEdgeAppearance = appearance
             } else {
