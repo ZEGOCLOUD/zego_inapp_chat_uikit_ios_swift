@@ -41,5 +41,8 @@ extension ZIMKit {
                                            callback: QueryUserInfoCallback? = nil) {
         ZIMKitCore.shared.queryUserInfoFromLocalCache(userID: userID, groupID:groupID,callback: callback)
     }
-  
+    
+    @objc public static func updateOtherUserInfo(userID: String,_ avatarUrl: String,_ name: String) {
+        ZIMKitCore.shared.updateOtherUserInfo(userID: userID, avatarUrl, name)
+    }
 }

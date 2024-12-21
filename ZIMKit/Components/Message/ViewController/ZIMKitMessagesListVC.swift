@@ -203,7 +203,7 @@ open class ZIMKitMessagesListVC: _ViewController {
         super.viewDidLoad()
         
         configViewModel()
-        getMessageList()
+//        getMessageList()
         loadConversationInfo()
         addNotifications()
         setupNav()
@@ -213,6 +213,11 @@ open class ZIMKitMessagesListVC: _ViewController {
     
     deinit {
         removeNotifications()
+    }
+    
+    open override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        getMessageList()
     }
     
     open override func willMove(toParent parent: UIViewController?) {

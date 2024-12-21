@@ -84,4 +84,42 @@ extension ZIMKitCore {
             callback?(url, error)
         })
     }
+    
+    func updateOtherUserInfo(userID: String,_ avatarUrl: String,_ name: String) {
+        if let userInfo = userDict[userID] {
+            let user = userInfo
+            if !avatarUrl.isEmpty {
+                user.avatarUrl = avatarUrl
+            }
+
+            if !name.isEmpty {
+                user.name = name
+            }
+            userDict[userID] = user
+        }
+        
+        let messages = messageList.get(userID, type: .peer)
+        for kitMessage in messages {
+            if kitMessage.info.senderUserID == userID {
+                if !name.isEmpty {
+                    kitMessage.info.senderUserName = name
+                }
+
+                if !avatarUrl.isEmpty {
+                    kitMessage.info.senderUserAvatarUrl = avatarUrl
+                }
+            }
+        }
+        for kitConversation in conversations {
+            if kitConversation.id == userID {
+                if !name.isEmpty {
+                    kitConversation.name = name
+                }
+
+                if !avatarUrl.isEmpty {
+                    kitConversation.avatarUrl = avatarUrl
+                }
+            }
+        }
+    }
 }
