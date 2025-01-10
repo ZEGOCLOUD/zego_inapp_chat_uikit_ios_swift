@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name                    = 'ZIMKit'
-  s.version                 = '2.6.7.beta'
+  s.version                 = '2.6.8'
   s.summary                 = 'ZIMKit'
 
   s.description             = 'The ZIMKit written in Swift'

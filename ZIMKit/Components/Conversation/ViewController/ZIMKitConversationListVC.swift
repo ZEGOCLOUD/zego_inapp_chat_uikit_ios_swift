@@ -190,7 +190,19 @@ extension ZIMKitConversationListVC: UITableViewDelegate {
         }
         pinnedAction.backgroundColor = conversation.isPinned ? .zim_backgroundLightGrey : .zim_backgroundBlue
         
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction,pinnedAction])
+        var actionArray: [UIContextualAction] = []
+        // 使用可选链和空合并运算符来处理可能的 nil 值
+        let hideSwipe = self.delegate?.shouldHideSwipePinnedItem?(self, didSelectWith: conversation) ?? false
+        if !hideSwipe {
+            actionArray.append(pinnedAction)
+        }
+
+        let hideDelete = self.delegate?.shouldHideSwipeDeleteItem!(self, didSelectWith: conversation) ?? false
+        if !hideDelete{
+            actionArray.append(deleteAction)
+        }
+        
+        let configuration = UISwipeActionsConfiguration(actions: actionArray)
         configuration.performsFirstActionWithFullSwipe = false
         
         return configuration

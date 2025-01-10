@@ -63,6 +63,21 @@ extension ZIMKitCore {
         })
     }
     
+    func queryUsersInfo(by userIDs: [String], callback: QueryUsersCallback? = nil) {
+        let config = ZIMUsersInfoQueryConfig()
+        config.isQueryFromServer = true
+        zim?.queryUsersInfo(by: userIDs, config: config, callback: { [weak self] fullInfos, errorUserInfos, error in
+            var userInfos: [ZIMKitUser]?
+            for (_,userInfo) in fullInfos.enumerated() {
+                var user = ZIMKitUser(userInfo)
+                userInfos?.append(user)
+                self?.userDict[user.id] = user
+            }
+            callback?(userInfos,errorUserInfos, error)
+        })
+    }
+    
+    
       func queryUserInfoFromLocalCache(userID:String, groupID:String,callback: QueryUserInfoCallback? = nil)  {
         var user: ZIMKitUser = ZIMKitUser(userID: userID, userName: "")
           if let userInfo = userDict[userID] {

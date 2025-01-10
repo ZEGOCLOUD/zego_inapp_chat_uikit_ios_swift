@@ -21,6 +21,10 @@ public typealias JoinGroupCallback = (_ groupInfo: ZIMKitGroupInfo, _ error: ZIM
 public typealias QueryUserCallback = (_ userInfo: ZIMKitUser?,
                                       _ error: ZIMError) -> Void
 
+public typealias QueryUsersCallback = (_ fullUserInfo: [ZIMKitUser]?,
+                                      _ errorUserInfos: [ZIMErrorUserInfo]?,
+                                      _ error: ZIMError) -> Void
+
 public typealias QueryUserInfoCallback = (_ userInfo: ZIMKitUser?) -> Void
 
 public typealias LeaveGroupCallback = (_ error: ZIMError) -> Void

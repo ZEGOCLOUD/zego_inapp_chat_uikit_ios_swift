@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import ZIM
 class CustomerMessageCell: MessageCell {
     
     override class var reuseId: String {
@@ -72,6 +72,15 @@ class CustomerMessageCell: MessageCell {
         
         messageLabel.attributedText = messageVM.attributedContent
         timeLabel.text = timestampToMessageDateStr(messageVM.message.info.timestamp)
-        timeLabel.isHidden = true
+        
+        if messageVM.message.zim is ZIMCustomMessage  {
+            if (messageVM.message.zim as! ZIMCustomMessage).subType == systemMessageSubType {
+                timeLabel.isHidden = false
+            } else {
+                timeLabel.isHidden = true
+            }
+        } else {
+            timeLabel.isHidden = true
+        }
     }
 }

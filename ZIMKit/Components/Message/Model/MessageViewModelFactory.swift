@@ -31,7 +31,7 @@ class MessageViewModelFactory {
             return CombineMessageViewModel(with: msg)
         case .tips:
             return TipsMessageViewModel(with: msg)
-        case .custom:
+        case .custom, .system:
             return CustomerMessageViewModel(with: msg)
         default:
             return UnknownMessageViewModel(with: msg)

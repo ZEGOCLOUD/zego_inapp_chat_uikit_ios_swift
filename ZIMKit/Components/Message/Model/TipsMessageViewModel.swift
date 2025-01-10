@@ -46,12 +46,16 @@ extension TipsMessageViewModel {
         contentMsg.addAttribute(.font, value: UIFont.systemFont(ofSize: 12, weight: .medium), range: NSRange(location: 0, length: contentMsg.string.count))
         
         for (index,user) in messageZIM.targetUserList.enumerated() {
-            let userNameAttributed = NSMutableAttributedString(string: user.userName)
-            userNameAttributed.addAttribute(.foregroundColor, value: UIColor(hex: 0x3478FC), range: NSRange(location: 0, length: userNameAttributed.length))
-            
-            contentMsg.append(userNameAttributed)
-            if index != (messageZIM.targetUserList.count - 1) {
-                contentMsg.append(NSAttributedString(string: "，"))
+            if user is ZIMGroupMemberSimpleInfo {
+                if (user as! ZIMGroupMemberSimpleInfo).memberRole != 0 {
+                    let userNameAttributed = NSMutableAttributedString(string: user.userName)
+                    userNameAttributed.addAttribute(.foregroundColor, value: UIColor(hex: 0x3478FC), range: NSRange(location: 0, length: userNameAttributed.length))
+                    
+                    contentMsg.append(userNameAttributed)
+                    if index != (messageZIM.targetUserList.count - 1) {
+                        contentMsg.append(NSAttributedString(string: "，"))
+                    }
+                }
             }
             
         }

@@ -31,6 +31,10 @@ extension ZIMKit {
         ZIMKitCore.shared.queryUserInfo(by: userID, callback: callback)
     }
     
+    @objc public static func queryUsersInfo(by userIDs: [String], callback: QueryUsersCallback? = nil) {
+        ZIMKitCore.shared.queryUsersInfo(by: userIDs, callback: callback)
+    }
+    
     @objc public static func updateUserAvatarUrl(_ avatarUrl: String,
                                            callback: UserAvatarUrlUpdateCallback? = nil) {
         ZIMKitCore.shared.updateUserAvatarUrl(avatarUrl, callback: callback)

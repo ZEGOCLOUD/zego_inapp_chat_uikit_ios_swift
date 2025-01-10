@@ -5,7 +5,7 @@ class DotAnimationView: UIView {
     private var dots = [UIView]()
     private var animationDuration: TimeInterval = 0.6
     private var dotSpacing: CGFloat = 5.0
-    private let minimumDotSize: CGFloat = 6.0  // 最小尺寸
+    private let minimumDotSize: CGFloat = 3.0  // 最小尺寸
     private let initialDotSize: CGFloat = 6.0  // 初始尺寸
 
     override init(frame: CGRect) {

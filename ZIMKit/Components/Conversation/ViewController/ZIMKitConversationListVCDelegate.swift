@@ -18,4 +18,9 @@ import Foundation
                           didSelectWith conversation: ZIMKitConversation,
                           withErrorCode code:UInt,
                           withErrorMsg msg:String)
+    @objc optional
+    func shouldHideSwipePinnedItem(_ conversationListVC: ZIMKitConversationListVC, didSelectWith conversation: ZIMKitConversation) -> Bool
+    
+    @objc optional
+    func shouldHideSwipeDeleteItem(_ conversationListVC: ZIMKitConversationListVC, didSelectWith conversation: ZIMKitConversation) -> Bool
 }

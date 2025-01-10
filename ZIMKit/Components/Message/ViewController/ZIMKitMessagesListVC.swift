@@ -242,9 +242,11 @@ open class ZIMKitMessagesListVC: _ViewController {
     // observe viewModel's properties
     func configViewModel() {
         viewModel.$isReceiveNewMessage.bind { [weak self] _ in
-            self?.tableView.reloadData()
-            self?.scrollToBottom(true)
-            self?.hideOptionsView()
+            if self?.viewModel.isReceiveNewMessage == true {
+                self?.tableView.reloadData()
+                self?.scrollToBottom(true)
+                self?.hideOptionsView()
+            }
         }
         
         viewModel.$isRevokeMessageIndexPath.bind { [weak self] _ in
@@ -268,6 +270,9 @@ open class ZIMKitMessagesListVC: _ViewController {
             }
         }
         viewModel.$isHistoryMessageLoaded.bind { [weak self] _ in
+            if self?.viewModel.isHistoryMessageLoaded == false {
+                return
+            }
             guard let self  = self else { return }
             if self.viewModel.isNoMoreMsg {
                 self.indicatorView.h = 0
@@ -291,8 +296,7 @@ open class ZIMKitMessagesListVC: _ViewController {
             if !lastMessageViewModel.isShowTime {
                 visibleHeight -= 32.5
             }
-            let contentY = visibleHeight - self.tableView.safeAreaInsets.top - self.tableView.contentInset.top
-            self.tableView.setContentOffset(CGPoint(x: 0, y: contentY), animated: false)
+            scrollToBottom(false)
         }
         viewModel.$isMessageNewReactionIndexPath.bind { [weak self] _ in
             if let indexPath = self?.viewModel.isMessageNewReactionIndexPath {
@@ -818,11 +822,9 @@ extension ZIMKitMessagesListVC: ChatBarDelegate {
                 message.info.senderUserID = userInfo?.id ?? self.conversationID
                 message.info.senderUserName = userInfo?.name ?? self.conversationName
                 message.info.senderUserAvatarUrl = userInfo?.avatarUrl ?? ""
-            }
-            let workItem = DispatchWorkItem {
                 self.viewModel.insertMessageToLocalCache(message: message)
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+        
         }
     }
     

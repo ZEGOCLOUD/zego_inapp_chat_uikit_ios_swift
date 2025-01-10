@@ -30,6 +30,18 @@ import ZegoPluginAdapter
     case expand // 更多按钮
 }
 
+@objc public enum ZIMKitLogLevel: Int {
+    case Debug   // 调试级别日志
+    case Info    // 提示级别
+    case Warning // 警告级别
+    case Error   // 错误级别
+}
+
+@objc public protocol ZIMKitLogDelegate: AnyObject {
+    @objc optional
+    func writeLog(_ level:ZIMKitLogLevel, msg:String)
+}
+
 public class ZIMKit: NSObject {
     var imKitConfig: ZIMKitConfig = ZIMKitCore.shared.config ?? ZIMKitConfig()
   
@@ -48,11 +60,17 @@ public class ZIMKit: NSObject {
     @objc public static func registerZIMKitDelegate(_ delegate: ZIMKitDelegate) {
         ZIMKitCore.shared.registerZIMKitDelegate(delegate)
     }
+    
+    
+    @objc public static func registerZIMKitLogDelegate(_ delegate: ZIMKitLogDelegate) {
+        ZIMKitLogUtil.shared.registerZIMKitLogDelegate(delegate)
+    }
+    
   
     @objc public static func registerCallKitDelegate(_ delegate: AnyObject) {
       ZegoPluginAdapter.callPlugin?.registerCallKitDelegate(delegate: delegate)
     }
-    
+        
     @objc public static func insertSystemMessage(_ content: String ,conversationID: String ,groupConversation: Bool = false) {
         ZIMKit.insertSystemMessageToLocalDB(content,to: conversationID,groupConversationType:groupConversation) { message, error in
             print("insertSystemMessage errorCode:\(error.code)")
@@ -72,7 +90,7 @@ public class ZIMKit: NSObject {
     @objc public var bottomConfig = ZIMKitBottomConfig()
     @objc public var conversationConfig = ZIMKitConversationConfig()
     @objc public var messageConfig = ZIMKitMessageConfig()
-  
+
     internal var appID: UInt32?
     internal var appSign :String = ""
   

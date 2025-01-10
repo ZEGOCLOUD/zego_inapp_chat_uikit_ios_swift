@@ -84,7 +84,17 @@ class MessageViewModel: Equatable {
         // only timestamp difference between current and last message is less then 5 mins
         isShowTime = (Float(message.info.timestamp) / 1000.0 - Float(preTimestamp) / 1000.0) > 5 * 60
         if message.type == .revoke || message.type == .tips || message.type == .custom || message.type == .system {
-            isShowTime = false
+            
+            
+            if message.zim is ZIMCustomMessage  {
+                if (message.zim as! ZIMCustomMessage).subType == systemMessageSubType {
+                    isShowTime = true
+                } else {
+                    isShowTime = false
+                }
+            } else {
+                isShowTime = false
+            }
         }
     }
     

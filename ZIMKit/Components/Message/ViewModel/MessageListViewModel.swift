@@ -50,6 +50,7 @@ extension MessageListViewModel {
                 self?.isLoadingData = false
                 return
             }
+            
             guard let self = self else { return }
             self.handleMessageQueue.async {
                 self.isNoMoreMsg = !hasMoreHistoryMessage
@@ -203,6 +204,12 @@ extension MessageListViewModel {
             var newMessages: [MessageViewModel] = []
             var lastMessage = self.messageViewModels.last
             for msg in messageList {
+                
+                let messageContent: String = msg.textContent.content
+                let orderKey:Int64 = msg.info.orderKey
+                let timestamp:UInt64 = msg.info.timestamp
+                ZIMKitLogI(filterName: "ZIMKit:MessageListViewModel", format: "handleReceiveNewMessages, content=%@, orderKey=%lld, timestamp=%lld", arguments: messageContent, orderKey, timestamp)
+                
                 let model = MessageViewModelFactory.createMessage(with: msg)
                 model.setNeedShowTime(lastMessage?.message.info.timestamp)
                 model.setCellHeight()
@@ -250,7 +257,11 @@ extension MessageListViewModel {
     
     private func handleSentCallback(_ message: ZIMKitMessage) {
         handleMessageQueue.async { [self] in
-                
+//            let messageContent: String = message.textContent.content
+//            let orderKey:Int64 = message.info.orderKey
+//            let timestamp:UInt64 = message.info.timestamp
+//            ZIMKitLogI(filterName: "MessageListViewModel", format: "handleSentCallback, content=%@, orderKey=%lld, timestamp=%lld", arguments: messageContent, orderKey, timestamp)
+            
                 guard let index = self.messageViewModels.firstIndex(where: { $0.message == message }) else {
                     handleReceiveNewMessages([message])
                     return
