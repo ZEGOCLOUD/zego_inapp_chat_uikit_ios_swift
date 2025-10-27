@@ -1,13 +1,13 @@
 Pod::Spec.new do |s|
 
   s.name                    = 'ZIMKit'
-  s.version                 = '2.6.8'
+  s.version                 = '2.6.9'
   s.summary                 = 'ZIMKit'
 
   s.description             = 'The ZIMKit written in Swift'
   s.homepage                = 'https://www.zegocloud.com/'
   s.documentation_url       = 'https://docs.zegocloud.com/article/14859'
-  s.license                 = { :type => "Copyright", :text => "Copyright @2021-2022 ZEGOCLOUD. All Rights Reserved.\n" }
+  s.license                 = { :type => "Copyright", :text => "Copyright © 2015-2025 ZEGOCLOUD. All Rights Reserved.\n" }
   s.author                  = {"ZEGOCLOUD" => "zegocloud.com"}
 
   
@@ -24,7 +24,7 @@ Pod::Spec.new do |s|
   }
   
   s.dependency 'ZegoUIKitSignalingPlugin', '>= 2.5.5'
-  s.dependency 'ZegoPluginAdapter', '>= 2.5.4'
+  s.dependency 'ZegoPluginAdapter', '>= 2.6.0'
   s.dependency 'Kingfisher'
 
 end

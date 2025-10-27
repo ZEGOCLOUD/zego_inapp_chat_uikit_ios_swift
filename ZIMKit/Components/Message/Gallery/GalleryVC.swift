@@ -7,7 +7,6 @@
 
 import Foundation
 import Photos
-import AssetsLibrary
 import SwiftUI
 
 class GalleryVC: _ViewController {

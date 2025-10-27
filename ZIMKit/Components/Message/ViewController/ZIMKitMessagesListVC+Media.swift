@@ -9,7 +9,6 @@ import Foundation
 import Photos
 import PhotosUI
 import MobileCoreServices
-import AssetsLibrary
 import QuickLook
 
 private var _currentFileMessageVM: MediaMessageViewModel?
