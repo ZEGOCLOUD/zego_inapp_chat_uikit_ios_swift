@@ -70,7 +70,7 @@ public class ZIMKit: NSObject {
     @objc public static func registerCallKitDelegate(_ delegate: AnyObject) {
       ZegoPluginAdapter.callPlugin?.registerCallKitDelegate(delegate: delegate)
     }
-        
+    
     @objc public static func insertSystemMessage(_ content: String ,conversationID: String ,groupConversation: Bool = false) {
         ZIMKit.insertSystemMessageToLocalDB(content,to: conversationID,groupConversationType:groupConversation) { message, error in
             print("insertSystemMessage errorCode:\(error.code)")
@@ -90,7 +90,7 @@ public class ZIMKit: NSObject {
     @objc public var bottomConfig = ZIMKitBottomConfig()
     @objc public var conversationConfig = ZIMKitConversationConfig()
     @objc public var messageConfig = ZIMKitMessageConfig()
-
+  
     internal var appID: UInt32?
     internal var appSign :String = ""
   

@@ -43,7 +43,7 @@ class FileMessageCell: MessageCell {
     }()
     
     lazy var downloadingIndicator: UIActivityIndicatorView = {
-        var style = UIActivityIndicatorView.Style.medium
+        var style = UIActivityIndicatorView.Style.white
         if #available(iOS 13.0, *) {
             style = .medium
         }

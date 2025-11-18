@@ -50,7 +50,6 @@ extension MessageListViewModel {
                 self?.isLoadingData = false
                 return
             }
-            
             guard let self = self else { return }
             self.handleMessageQueue.async {
                 self.isNoMoreMsg = !hasMoreHistoryMessage
@@ -239,19 +238,29 @@ extension MessageListViewModel {
     
     func removeDuplicates(from models: [MessageViewModel]) -> [MessageViewModel] {
         var uniqueModels = [MessageViewModel]()
+
+        var messageIdSet = Set<Int64>()
+        var localMessageIdSet = Set<Int64>()
         for model in models {
-            if model.message.type == .custom || model.message.type == .system {
-                if !uniqueModels.contains(where: { $0.message.zim?.localMessageID == model.message.zim?.localMessageID }) {
+            if (model.message.zim == nil) {
+                continue
+            }
+            
+            if (model.message.zim!.messageID != 0) {
+                // messageID 非 0，按 messageID 排重
+                if !messageIdSet.contains(model.message.zim!.messageID) {
+                    messageIdSet.insert(model.message.zim!.messageID)
                     uniqueModels.append(model)
                 }
             } else {
-                if
-                    !uniqueModels.contains(where: { $0.message.zim?.messageID == model.message.zim?.messageID }) {
+                // 否则按 localMessageID 排重
+                if !localMessageIdSet.contains(model.message.zim!.localMessageID) {
+                    localMessageIdSet.insert(model.message.zim!.localMessageID)
                     uniqueModels.append(model)
                 }
             }
-            
         }
+
         return uniqueModels
     }
     

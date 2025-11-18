@@ -57,16 +57,16 @@ extension ZIMKitCore {
     func loadMoreConversation(_ isCallbackListChanged: Bool = true,
                               callback: LoadMoreConversationCallback? = nil) {
         if isLoadedAllConversations { return }
-        let quryConfig = ZIMConversationQueryConfig()
-        quryConfig.count = 100
-        quryConfig.nextConversation = conversations.last?.zim
-        zim?.queryConversationList(with: quryConfig, callback: { zimConversations, error in
+        let queryConfig = ZIMConversationQueryConfig()
+        queryConfig.count = 100
+        queryConfig.nextConversation = conversations.last?.zim
+        zim?.queryConversationList(with: queryConfig, callback: { zimConversations, error in
             if error.code != .ZIMErrorCodeSuccess {
                 callback?(error)
                 return
             }
             
-            self.isLoadedAllConversations = zimConversations.count < quryConfig.count
+            self.isLoadedAllConversations = zimConversations.count < queryConfig.count
             
             let newConversations = zimConversations.compactMap({ ZIMKitConversation(with: $0) })
             self.conversations.append(contentsOf: newConversations)
