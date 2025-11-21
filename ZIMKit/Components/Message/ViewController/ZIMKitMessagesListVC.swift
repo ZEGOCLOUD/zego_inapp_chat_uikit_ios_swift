@@ -222,6 +222,7 @@ open class ZIMKitMessagesListVC: _ViewController {
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.navigationController?.setNavigationBarHidden(false, animated: animated)
         getMessageList()
     }
     
