@@ -163,11 +163,16 @@ open class ZIMKitMessagesListVC: _ViewController {
             leftButton.setImage(loadImageSafely(with: "chat_nav_left"), for: .normal)
         }
         leftButton.addTarget(self, action: #selector(leftItemClick), for: .touchUpInside)
-        leftButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
-        leftButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+
         if !viewModel.isShowCheckBox {
-            leftButton.contentEdgeInsets = UIEdgeInsets(top: 0, left: -20, bottom: 0, right: 0)
+            leftButton.widthAnchor.constraint(equalToConstant: 70).isActive = false
+            leftButton.widthAnchor.constraint(equalToConstant: 40).isActive = true
+        } else {
+            leftButton.widthAnchor.constraint(equalToConstant: 40).isActive = false
+            leftButton.widthAnchor.constraint(equalToConstant: 70).isActive = true
         }
+        leftButton.heightAnchor.constraint(equalToConstant: 40).isActive = true
+
         let leftItem = UIBarButtonItem(customView: leftButton)
         return leftItem
     }
