@@ -1,5 +1,5 @@
 //
-//  ConversationListVC.swift
+//  ZIMKitMessagesListVC.swift
 //  ZIMKitConversation
 //
 //  Created by Kael Ding on 2022/7/29.
@@ -217,13 +217,21 @@ open class ZIMKitMessagesListVC: _ViewController {
     }
     
     deinit {
+        self.customerHeaderView?.removeFromSuperview()
+        self.delegate?.messageListViewWillDisappear?()
         removeNotifications()
     }
     
     open override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.setNavigationBarHidden(false, animated: animated)
-        getMessageList()
+        
+        // Fixed the conflict between the edge-swipe gesture and the scrolling gesture of UITableView
+        setupInteractivePopGesture()
+        
+        if (isMovingToParent) {
+            getMessageList()
+        }
     }
     
     open override func willMove(toParent parent: UIViewController?) {
@@ -242,9 +250,8 @@ open class ZIMKitMessagesListVC: _ViewController {
         audioPlayer.stop()
         chatBar.resignFirstResponder()
     }
-    //MARK: Customer
 
-    
+    //MARK: Customer
     // observe viewModel's properties
     func configViewModel() {
         viewModel.$isReceiveNewMessage.bind { [weak self] _ in
@@ -439,6 +446,18 @@ open class ZIMKitMessagesListVC: _ViewController {
         }
     }
     
+    // MARK: GestureRecognizer
+    func setupInteractivePopGesture() {
+        guard let navController = navigationController,
+              let popGesture = navController.interactivePopGestureRecognizer else {
+            return
+        }
+        
+        popGesture.isEnabled = true
+        popGesture.delegate = self
+        tableView.panGestureRecognizer.require(toFail: popGesture)
+    }
+    
     @objc func tap(_ tap: UITapGestureRecognizer?) {
         chatBar.resignFirstResponder()
     }
@@ -558,8 +577,6 @@ extension ZIMKitMessagesListVC {
         if viewModel.isShowCheckBox {
             enableMultiSelect(false)
         } else {
-            self.customerHeaderView?.removeFromSuperview()
-            self.delegate?.messageListViewWillDisappear?()
             navigationController?.popViewController(animated: true)
         }
     }
@@ -1093,5 +1110,51 @@ extension ZIMKitMessagesListVC : messageConversationUpdateDelegate,groupConversa
     func groupMemberList(memberCount: Int) {
         let title = conversationName + "  " + "(\(memberCount))"
         self.setNavigationBarTitle(title: title)
+    }
+}
+
+// MARK: - Gesture Recognizer Delegate
+extension ZIMKitMessagesListVC: UIGestureRecognizerDelegate {
+    /// 判断是否应该开始识别返回手势
+    public func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        // 这里只处理返回手势
+        guard gestureRecognizer == navigationController?.interactivePopGestureRecognizer else {
+            return true
+        }
+        
+        guard let navController = navigationController, navController.viewControllers.count > 1 else {
+            return false
+        }
+        
+        if tableView.isDragging || tableView.isDecelerating {
+            return false
+        }
+        
+        if tableView.contentOffset.x != 0 {
+            return false
+        }
+        
+        if let panGesture = gestureRecognizer as? UIScreenEdgePanGestureRecognizer {
+            let location = panGesture.location(in: view)
+            
+            if tableView.contentOffset.y <= 0 {
+                return true
+            }
+            
+            if location.x <= 50 {
+                return true
+            }
+        }
+        
+        return false
+    }
+    
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        // 如果是返回手势和 tableView 的滑动手势，允许同时识别
+        if gestureRecognizer == navigationController?.interactivePopGestureRecognizer ||
+           otherGestureRecognizer == navigationController?.interactivePopGestureRecognizer {
+            return true
+        }
+        return false
     }
 }
