@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name                    = 'ZIMKit'
-  s.version                 = '2.6.11'
+  s.version                 = '2.8.0'
   s.summary                 = 'ZIMKit'
 
   s.description             = 'The ZIMKit written in Swift'
@@ -24,7 +24,6 @@ Pod::Spec.new do |s|
   }
   
   s.dependency 'ZegoUIKitSignalingPlugin', '>= 2.5.5'
-  s.dependency 'ZegoPluginAdapter', '>= 2.6.0'
   s.dependency 'Kingfisher'
 
 end
